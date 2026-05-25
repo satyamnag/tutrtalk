@@ -48,6 +48,7 @@ export function ViewController({ appConfig }: ViewControllerProps) {
         <MotionSessionView
           key="session-view"
           {...VIEW_MOTION_PROPS}
+          preConnectMessage="TutrTalk is live, tell her which chapter you want to revise"
           supportsChatInput={appConfig.supportsChatInput}
           supportsVideoInput={appConfig.supportsVideoInput}
           supportsScreenShare={appConfig.supportsScreenShare}
