@@ -18,10 +18,12 @@ const LIVEKIT_URL = process.env.LIVEKIT_URL;
 export const revalidate = 0;
 
 export async function POST(req: Request) {
-  if (process.env.NODE_ENV !== 'development') {
-    throw new Error(
-      'THIS API ROUTE IS INSECURE. DO NOT USE THIS ROUTE IN PRODUCTION WITHOUT AN AUTHENTICATION LAYER.'
-    );
+  // 1. Restrict to our own domain
+  const origin = req.headers.get('origin') || req.headers.get('referer');
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://tutrtalk.vercel.app';
+
+  if (!origin || !origin.startsWith(allowedOrigin)) {
+    return new NextResponse('Unauthorized', { status: 401 });
   }
 
   try {
