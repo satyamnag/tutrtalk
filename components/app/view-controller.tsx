@@ -12,12 +12,8 @@ const MotionSessionView = motion.create(AgentSessionView_01);
 
 const VIEW_MOTION_PROPS = {
   variants: {
-    visible: {
-      opacity: 1,
-    },
-    hidden: {
-      opacity: 0,
-    },
+    visible: { opacity: 1 },
+    hidden: { opacity: 0 },
   },
   initial: 'hidden',
   animate: 'visible',
@@ -26,7 +22,7 @@ const VIEW_MOTION_PROPS = {
     duration: 0.5,
     ease: 'linear',
   },
-};
+} as const;
 
 interface ViewControllerProps {
   appConfig: AppConfig;

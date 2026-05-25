@@ -34,18 +34,18 @@ export interface AppConfig {
 
 export const APP_CONFIG_DEFAULTS: AppConfig = {
   companyName: 'TutrTalk',
-  pageTitle: 'TutrTalk an AI Voice Tutor',
-  pageDescription: 'An AI Voice Tutor for Students',
+  pageTitle: 'TutrTalk - Voice AI Tutor',
+  pageDescription: 'An Voice AI Tutor for Students',
 
   supportsChatInput: true,
   supportsVideoInput: false,
   supportsScreenShare: false,
   isPreConnectBufferEnabled: true,
 
-  logo: '/lk-logo.svg',
-  accent: '#002cf2',
-  logoDark: '/lk-logo-dark.svg',
-  accentDark: '#1fd5f9',
+  logo: '/tutrtalk_logo.png',
+  accent: '#f39a8b',
+  logoDark: '/tutrtalk_logo.png',
+  accentDark: '#f39a8b',
   startButtonText: 'Start Now',
 
   // optional: audio visualization configuration
