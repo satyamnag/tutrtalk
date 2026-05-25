@@ -34,7 +34,7 @@ export const WelcomeView = ({
         <WelcomeImage />
 
         <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with TutrTalk: your chapter revision tutor.
+          Chat live with TutrTalk: your daily chapter revision tutor.
         </p>
 
         <Button
