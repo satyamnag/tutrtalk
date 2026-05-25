@@ -33,20 +33,20 @@ export interface AppConfig {
 }
 
 export const APP_CONFIG_DEFAULTS: AppConfig = {
-  companyName: 'LiveKit',
-  pageTitle: 'LiveKit Voice Agent',
-  pageDescription: 'A voice agent built with LiveKit',
+  companyName: 'TutrTalk',
+  pageTitle: 'TutrTalk an AI Voice Tutor',
+  pageDescription: 'An AI Voice Tutor for Students',
 
   supportsChatInput: true,
-  supportsVideoInput: true,
-  supportsScreenShare: true,
+  supportsVideoInput: false,
+  supportsScreenShare: false,
   isPreConnectBufferEnabled: true,
 
   logo: '/lk-logo.svg',
   accent: '#002cf2',
   logoDark: '/lk-logo-dark.svg',
   accentDark: '#1fd5f9',
-  startButtonText: 'Start call',
+  startButtonText: 'Start Now',
 
   // optional: audio visualization configuration
   // audioVisualizerType: 'bar',
@@ -61,8 +61,8 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   // audioVisualizerGridRowCount: 25,
   // audioVisualizerGridColumnCount: 25,
   // audioVisualizerType: 'wave',
-  // audioVisualizerWaveLineWidth: 3,
-  // audioVisualizerType: 'aura',
+  audioVisualizerWaveLineWidth: 3,
+  audioVisualizerType: 'aura',
 
   // agent dispatch configuration
   agentName: process.env.AGENT_NAME ?? undefined,
