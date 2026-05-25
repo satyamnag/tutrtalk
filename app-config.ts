@@ -42,7 +42,7 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   supportsScreenShare: false,
   isPreConnectBufferEnabled: true,
 
-  logo: '/tutrtalk_logo.png',
+  logo: '/tutrtalk-logo.png',
   accent: '#002cf2',
   logoDark: '/tutrtalk_logo.png',
   accentDark: '#1fd5f9',
