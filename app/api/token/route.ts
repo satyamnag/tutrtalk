@@ -14,15 +14,17 @@ const API_KEY = process.env.LIVEKIT_API_KEY;
 const API_SECRET = process.env.LIVEKIT_API_SECRET;
 const LIVEKIT_URL = process.env.LIVEKIT_URL;
 
+// Allowed origin – set in Vercel to your production URL, defaults to localhost for dev
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+
 // don't cache the results
 export const revalidate = 0;
 
 export async function POST(req: Request) {
   // 1. Restrict to our own domain
   const origin = req.headers.get('origin') || req.headers.get('referer');
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://tutrtalk.vercel.app';
 
-  if (!origin || !origin.startsWith(allowedOrigin)) {
+  if (!origin || !origin.startsWith(ALLOWED_ORIGIN)) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
