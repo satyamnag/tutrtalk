@@ -43,9 +43,9 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   isPreConnectBufferEnabled: true,
 
   logo: '/tutrtalk_logo.png',
-  accent: '#f39a8b',
+  accent: '#002cf2',
   logoDark: '/tutrtalk_logo.png',
-  accentDark: '#f39a8b',
+  accentDark: '#1fd5f9',
   startButtonText: 'Start Now',
 
   // optional: audio visualization configuration
