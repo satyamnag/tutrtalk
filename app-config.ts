@@ -44,7 +44,7 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
 
   logo: '/tutrtalk-logo.png',
   accent: '#002cf2',
-  logoDark: '/tutrtalk_logo.png',
+  logoDark: '/tutrtalk-logo.png',
   accentDark: '#1fd5f9',
   startButtonText: 'Start Now',
 
