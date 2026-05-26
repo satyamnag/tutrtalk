@@ -97,7 +97,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 </Show>
                 <Show when="signed-in">
                   <UserButton
-                    afterSignOutUrl="/"
                     appearance={{
                       elements: {
                         avatarBox: 'h-6 w-6',
