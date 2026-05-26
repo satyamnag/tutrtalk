@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { AccessToken, type AccessTokenOptions, type VideoGrant } from 'livekit-server-sdk';
 import { RoomConfiguration } from '@livekit/protocol';
 
@@ -21,7 +22,13 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 export const revalidate = 0;
 
 export async function POST(req: Request) {
-  // 1. Restrict to our own domain
+  // 1. Clerk authentication check
+  const { userId } = await auth();
+  if (!userId) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  // 2. Restrict to our own domain
   const origin = req.headers.get('origin') || req.headers.get('referer');
 
   if (!origin || !origin.startsWith(ALLOWED_ORIGIN)) {
