@@ -51,7 +51,13 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   const { pageTitle, pageDescription, companyName, logo, logoDark } = appConfig;
 
   return (
-    <ClerkProvider>
+    <ClerkProvider
+    appearance={{
+      layout: {
+        unsafe_disableDevelopmentModeWarnings: true,
+      },
+    }}
+    >
       <html
         lang="en"
         suppressHydrationWarning
