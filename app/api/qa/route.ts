@@ -8,39 +8,49 @@ export async function GET(request: Request) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // Parse query parameters
   const { searchParams } = new URL(request.url);
   const chapterId = searchParams.get('chapter_id');
   const search = searchParams.get('search');
-  // class, subject, book are not used yet – they are placeholders for future schema extensions
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const limit = 10; // fixed page size
 
-  // Base query: questions joined with chapters
-  let query = supabase
+  // Base query with count
+  let baseQuery = supabase
     .from('questions')
-    .select('id, question_text, answer_text, chapter_id, chapters(name)')
+    .select('id, question_text, answer_text, chapter_id, chapters(name)', { count: 'exact' })
     .order('id');
 
-  // Filter by chapter if provided
   if (chapterId) {
     const id = parseInt(chapterId, 10);
     if (!isNaN(id)) {
-      query = query.eq('chapter_id', id);
+      baseQuery = baseQuery.eq('chapter_id', id);
     }
   }
-
-  // Filter by question text search (case‑insensitive)
   if (search && search.trim().length > 0) {
-    query = query.ilike('question_text', `%${search.trim()}%`);
+    baseQuery = baseQuery.ilike('question_text', `%${search.trim()}%`);
   }
 
-  const { data, error } = await query;
+  // First get total count
+  const { count, error: countError } = await baseQuery;
+
+  if (countError) {
+    console.error(countError);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+
+  const total = count ?? 0;
+  const totalPages = Math.ceil(total / limit);
+  const offset = (page - 1) * limit;
+
+  // Now fetch the page of data
+  const { data, error } = await baseQuery.range(offset, offset + limit - 1);
 
   if (error) {
     console.error(error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 
-  const flattened = data?.map((q: any) => ({
+  const items = data?.map((q: any) => ({
     id: q.id,
     question_text: q.question_text,
     answer_text: q.answer_text,
@@ -48,5 +58,10 @@ export async function GET(request: Request) {
     chapter_name: q.chapters?.name ?? 'Unknown',
   })) ?? [];
 
-  return NextResponse.json(flattened);
+  return NextResponse.json({
+    items,
+    page,
+    totalPages,
+    total,
+  });
 }

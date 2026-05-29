@@ -18,9 +18,16 @@ interface FilterOptions {
   chapters: { id: number; name: string }[];
 }
 
+interface QAResponse {
+  items: QAItem[];
+  page: number;
+  totalPages: number;
+  total: number;
+}
+
 export default function QAPage() {
   const { isLoaded, isSignedIn } = useUser();
-  const [items, setItems] = useState<QAItem[]>([]);
+  const [data, setData] = useState<QAResponse>({ items: [], page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
 
   // Filter state
@@ -35,8 +42,9 @@ export default function QAPage() {
   const [selectedBook, setSelectedBook] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [page, setPage] = useState(1);
 
-  // Fetch filter options (chapters, etc.) once
+  // Fetch filter options once
   useEffect(() => {
     if (!isSignedIn) return;
 
@@ -46,7 +54,12 @@ export default function QAPage() {
       .catch(console.error);
   }, [isSignedIn]);
 
-  // Fetch Q&A items whenever filters change
+  // Reset page to 1 whenever filters change
+  useEffect(() => {
+    setPage(1);
+  }, [selectedChapter, searchText]);
+
+  // Fetch Q&A items
   const fetchItems = useCallback(() => {
     if (!isSignedIn) return;
 
@@ -55,14 +68,14 @@ export default function QAPage() {
     const params = new URLSearchParams();
     if (selectedChapter) params.set('chapter_id', selectedChapter);
     if (searchText.trim()) params.set('search', searchText.trim());
-    // class/subject/book are not sent yet – they will be ignored by the API
+    params.set('page', page.toString());
 
     fetch(`/api/qa?${params.toString()}`)
       .then((res) => res.json())
-      .then((data) => setItems(data))
+      .then((json: QAResponse) => setData(json))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [isSignedIn, selectedChapter, searchText]);
+  }, [isSignedIn, selectedChapter, searchText, page]);
 
   useEffect(() => {
     fetchItems();
@@ -178,24 +191,49 @@ export default function QAPage() {
         </div>
       )}
 
-      {!loading && items.length === 0 && (
+      {!loading && data.items.length === 0 && (
         <p className="text-muted-foreground">No questions found.</p>
       )}
 
-      {!loading && items.length > 0 && (
-        <div className="space-y-6">
-          {items.map((item) => (
-            <div key={item.id} className="rounded-xl border p-4">
-              <p className="text-sm text-muted-foreground">
-                Chapter: {item.chapter_name}
-              </p>
-              <p className="mt-2 font-semibold">Q: {item.question_text}</p>
-              <p className="mt-1 text-green-700 dark:text-green-400">
-                A: {item.answer_text}
-              </p>
-            </div>
-          ))}
-        </div>
+      {!loading && data.items.length > 0 && (
+        <>
+          <div className="space-y-6">
+            {data.items.map((item) => (
+              <div key={item.id} className="rounded-xl border p-4">
+                <p className="text-sm text-muted-foreground">
+                  Chapter: {item.chapter_name}
+                </p>
+                <p className="mt-2 font-semibold">Q: {item.question_text}</p>
+                <p className="mt-1 text-green-700 dark:text-green-400">
+                  A: {item.answer_text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination controls */}
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-muted-foreground">
+              Page {data.page} of {data.totalPages} ({data.total} questions)
+            </span>
+
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page === data.totalPages}
+              className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
     </main>
   );
