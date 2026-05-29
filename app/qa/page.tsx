@@ -245,23 +245,49 @@ export default function QAPage() {
               </div>
 
               {/* Pagination controls */}
-              <div className="mt-8 flex items-center justify-between">
+              <div className="mt-8 flex items-center justify-center gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
-
-                <span className="text-sm text-muted-foreground">
-                  Page {data.page} of {data.totalPages} ({data.total} questions)
-                </span>
-
+                {(() => {
+                  const totalPages = data.totalPages;
+                  const current = data.page;
+                  let start = Math.max(1, current - 2);
+                  let end = Math.min(totalPages, current + 2);
+                  // Ensure we show up to 5 page numbers when possible
+                  if (end - start + 1 < 5) {
+                    if (start === 1) {
+                      end = Math.min(totalPages, start + 4);
+                    } else if (end === totalPages) {
+                      start = Math.max(1, end - 4);
+                    }
+                  }
+                  const pages = [];
+                  for (let i = start; i <= end; i++) {
+                    pages.push(i);
+                  }
+                  return pages.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md border ${
+                        p === current
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-accent'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ));
+                })()}
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={page === data.totalPages}
-                  className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
