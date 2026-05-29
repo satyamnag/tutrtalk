@@ -90,151 +90,158 @@ export default function QAPage() {
   }
 
   return (
-    <main className="container mx-auto max-w-4xl px-4 py-16">
+    <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold">Questions &amp; Answers</h1>
 
-      {/* Filter bar */}
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Class
-          </label>
-          <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            disabled={filterOptions.classes.length === 0}
-          >
-            <option value="">All Classes</option>
-            {filterOptions.classes.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Subject
-          </label>
-          <select
-            value={selectedSubject}
-            onChange={(e) => setSelectedSubject(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            disabled={filterOptions.subjects.length === 0}
-          >
-            <option value="">All Subjects</option>
-            {filterOptions.subjects.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Book
-          </label>
-          <select
-            value={selectedBook}
-            onChange={(e) => setSelectedBook(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            disabled={filterOptions.books.length === 0}
-          >
-            <option value="">All Books</option>
-            {filterOptions.books.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Chapter
-          </label>
-          <select
-            value={selectedChapter}
-            onChange={(e) => setSelectedChapter(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          >
-            <option value="">All Chapters</option>
-            {filterOptions.chapters.map((ch) => (
-              <option key={ch.id} value={ch.id}>
-                {ch.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Search question
-          </label>
-          <input
-            type="text"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Type to search..."
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
+      {/* Search bar at top */}
+      <div className="mb-8">
+        <label className="mb-1 block text-sm font-medium text-muted-foreground">
+          Search question
+        </label>
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Type to search..."
+          className="w-full max-w-md rounded-md border px-3 py-2 text-sm"
+        />
       </div>
 
-      {/* Results */}
-      {loading && (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-        </div>
-      )}
+      <div className="flex flex-col gap-8 lg:flex-row">
+        {/* Left sidebar filters */}
+        <aside className="w-full shrink-0 lg:w-56">
+          <div className="space-y-4 rounded-xl border p-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                Class
+              </label>
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                disabled={filterOptions.classes.length === 0}
+              >
+                <option value="">All Classes</option>
+                {filterOptions.classes.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-      {!loading && data.items.length === 0 && (
-        <p className="text-muted-foreground">No questions found.</p>
-      )}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                Subject
+              </label>
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                disabled={filterOptions.subjects.length === 0}
+              >
+                <option value="">All Subjects</option>
+                {filterOptions.subjects.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-      {!loading && data.items.length > 0 && (
-        <>
-          <div className="space-y-6">
-            {data.items.map((item) => (
-              <div key={item.id} className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground">
-                  Chapter: {item.chapter_name}
-                </p>
-                <p className="mt-2 font-semibold">Q: {item.question_text}</p>
-                <p className="mt-1 text-green-700 dark:text-green-400">
-                  A: {item.answer_text}
-                </p>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                Book
+              </label>
+              <select
+                value={selectedBook}
+                onChange={(e) => setSelectedBook(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                disabled={filterOptions.books.length === 0}
+              >
+                <option value="">All Books</option>
+                {filterOptions.books.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                Chapter
+              </label>
+              <select
+                value={selectedChapter}
+                onChange={(e) => setSelectedChapter(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+              >
+                <option value="">All Chapters</option>
+                {filterOptions.chapters.map((ch) => (
+                  <option key={ch.id} value={ch.id}>
+                    {ch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content area */}
+        <div className="flex-1">
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+            </div>
+          )}
+
+          {!loading && data.items.length === 0 && (
+            <p className="text-muted-foreground">No questions found.</p>
+          )}
+
+          {!loading && data.items.length > 0 && (
+            <>
+              <div className="space-y-6">
+                {data.items.map((item) => (
+                  <div key={item.id} className="rounded-xl border p-4">
+                    <p className="text-sm text-muted-foreground">
+                      Chapter: {item.chapter_name}
+                    </p>
+                    <p className="mt-2 font-semibold">Q: {item.question_text}</p>
+                    <p className="mt-1 text-green-700 dark:text-green-400">
+                      A: {item.answer_text}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Pagination controls */}
-          <div className="mt-8 flex items-center justify-between">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
+              {/* Pagination controls */}
+              <div className="mt-8 flex items-center justify-between">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
 
-            <span className="text-sm text-muted-foreground">
-              Page {data.page} of {data.totalPages} ({data.total} questions)
-            </span>
+                <span className="text-sm text-muted-foreground">
+                  Page {data.page} of {data.totalPages} ({data.total} questions)
+                </span>
 
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page === data.totalPages}
-              className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </>
-      )}
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page === data.totalPages}
+                  className="px-4 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </main>
   );
 }
