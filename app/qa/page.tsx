@@ -91,6 +91,10 @@ export default function QAPage() {
     return <div className="flex h-screen items-center justify-center">Please sign in.</div>;
   }
 
+  // Common select classes for consistent styling
+  const selectClasses =
+    'w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50';
+
   return (
     <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold">Questions &amp; Answers</h1>
@@ -109,7 +113,7 @@ export default function QAPage() {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Type to search..."
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
@@ -119,7 +123,7 @@ export default function QAPage() {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className={selectClasses}
               >
                 <option value="asc">Ascending order</option>
                 <option value="desc">Descending order</option>
@@ -142,7 +146,7 @@ export default function QAPage() {
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className={selectClasses}
                 disabled={filterOptions.classes.length === 0}
               >
                 <option value="">All Classes</option>
@@ -161,7 +165,7 @@ export default function QAPage() {
               <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className={selectClasses}
                 disabled={filterOptions.subjects.length === 0}
               >
                 <option value="">All Subjects</option>
@@ -180,7 +184,7 @@ export default function QAPage() {
               <select
                 value={selectedBook}
                 onChange={(e) => setSelectedBook(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className={selectClasses}
                 disabled={filterOptions.books.length === 0}
               >
                 <option value="">All Books</option>
@@ -199,7 +203,7 @@ export default function QAPage() {
               <select
                 value={selectedChapter}
                 onChange={(e) => setSelectedChapter(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className={selectClasses}
               >
                 <option value="">All Chapters</option>
                 {filterOptions.chapters.map((ch) => (
