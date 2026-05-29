@@ -99,11 +99,6 @@ export default function QAPage() {
               </option>
             ))}
           </select>
-          {filterOptions.classes.length === 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              No class data (not yet configured)
-            </p>
-          )}
         </div>
 
         <div>
@@ -123,11 +118,6 @@ export default function QAPage() {
               </option>
             ))}
           </select>
-          {filterOptions.subjects.length === 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              No subject data (not yet configured)
-            </p>
-          )}
         </div>
 
         <div>
@@ -147,11 +137,6 @@ export default function QAPage() {
               </option>
             ))}
           </select>
-          {filterOptions.books.length === 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              No book data (not yet configured)
-            </p>
-          )}
         </div>
 
         <div>
