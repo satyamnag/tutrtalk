@@ -236,6 +236,9 @@ export default function QAPage() {
                     <p className="text-sm text-muted-foreground">
                       Chapter: {item.chapter_name}
                     </p>
+                    <p className="text-xs text-muted-foreground/70 mt-0.5">
+                      Question #{item.id}
+                    </p>
                     <p className="mt-2 font-semibold">Q: {item.question_text}</p>
                     <p className="mt-1 text-green-700 dark:text-green-400">
                       A: {item.answer_text}
