@@ -45,15 +45,68 @@ export default function QAPage() {
   const [sort, setSort] = useState('asc');
   const [page, setPage] = useState(1);
 
-  // Fetch filter options once
+  // Fetch classes on mount
   useEffect(() => {
     if (!isSignedIn) return;
-
     fetch('/api/filters')
       .then((res) => res.json())
-      .then((data) => setFilterOptions(data))
+      .then((data: FilterOptions) => setFilterOptions((prev) => ({ ...prev, classes: data.classes })))
       .catch(console.error);
   }, [isSignedIn]);
+
+  // When class changes, fetch subjects and clear lower selections
+  useEffect(() => {
+    if (!selectedClass) {
+      setFilterOptions((prev) => ({ ...prev, subjects: [] }));
+      setSelectedSubject('');
+      setSelectedBook('');
+      setSelectedChapter('');
+      return;
+    }
+    fetch(`/api/filters?class_name=${encodeURIComponent(selectedClass)}`)
+      .then((res) => res.json())
+      .then((data: FilterOptions) => {
+        setFilterOptions((prev) => ({ ...prev, subjects: data.subjects }));
+        setSelectedSubject('');
+        setSelectedBook('');
+        setSelectedChapter('');
+      })
+      .catch(console.error);
+  }, [selectedClass]);
+
+  // When subject changes, fetch books and clear lower selections
+  useEffect(() => {
+    if (!selectedSubject) {
+      setFilterOptions((prev) => ({ ...prev, books: [] }));
+      setSelectedBook('');
+      setSelectedChapter('');
+      return;
+    }
+    fetch(`/api/filters?subject_name=${encodeURIComponent(selectedSubject)}`)
+      .then((res) => res.json())
+      .then((data: FilterOptions) => {
+        setFilterOptions((prev) => ({ ...prev, books: data.books }));
+        setSelectedBook('');
+        setSelectedChapter('');
+      })
+      .catch(console.error);
+  }, [selectedSubject]);
+
+  // When book changes, fetch chapters and clear chapter selection
+  useEffect(() => {
+    if (!selectedBook) {
+      setFilterOptions((prev) => ({ ...prev, chapters: [] }));
+      setSelectedChapter('');
+      return;
+    }
+    fetch(`/api/filters?book_name=${encodeURIComponent(selectedBook)}`)
+      .then((res) => res.json())
+      .then((data: FilterOptions) => {
+        setFilterOptions((prev) => ({ ...prev, chapters: data.chapters }));
+        setSelectedChapter('');
+      })
+      .catch(console.error);
+  }, [selectedBook]);
 
   // Reset page to 1 whenever filters change
   useEffect(() => {
@@ -91,7 +144,6 @@ export default function QAPage() {
     return <div className="flex h-screen items-center justify-center">Please sign in.</div>;
   }
 
-  // Common select classes for consistent styling
   const selectClasses =
     'w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50';
 
@@ -99,7 +151,7 @@ export default function QAPage() {
     <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold">Questions &amp; Answers</h1>
 
-      {/* Search bar + sort – aligned with content on desktop */}
+      {/* Search bar + sort */}
       <div className="mb-8 lg:flex lg:gap-8">
         <div className="hidden lg:block lg:w-56" />
         <div className="flex-1">
@@ -166,7 +218,7 @@ export default function QAPage() {
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
                 className={selectClasses}
-                disabled={filterOptions.subjects.length === 0}
+                disabled={!selectedClass || filterOptions.subjects.length === 0}
               >
                 <option value="">All Subjects</option>
                 {filterOptions.subjects.map((s) => (
@@ -185,7 +237,7 @@ export default function QAPage() {
                 value={selectedBook}
                 onChange={(e) => setSelectedBook(e.target.value)}
                 className={selectClasses}
-                disabled={filterOptions.books.length === 0}
+                disabled={!selectedSubject || filterOptions.books.length === 0}
               >
                 <option value="">All Books</option>
                 {filterOptions.books.map((b) => (
@@ -204,6 +256,7 @@ export default function QAPage() {
                 value={selectedChapter}
                 onChange={(e) => setSelectedChapter(e.target.value)}
                 className={selectClasses}
+                disabled={!selectedBook || filterOptions.chapters.length === 0}
               >
                 <option value="">All Chapters</option>
                 {filterOptions.chapters.map((ch) => (
@@ -261,7 +314,6 @@ export default function QAPage() {
                   const current = data.page;
                   let start = Math.max(1, current - 2);
                   let end = Math.min(totalPages, current + 2);
-                  // Ensure we show up to 5 page numbers when possible
                   if (end - start + 1 < 5) {
                     if (start === 1) {
                       end = Math.min(totalPages, start + 4);
