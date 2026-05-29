@@ -93,18 +93,22 @@ export default function QAPage() {
     <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold">Questions &amp; Answers</h1>
 
-      {/* Search bar at top */}
-      <div className="mb-8">
-        <label className="mb-1 block text-sm font-medium text-muted-foreground">
-          Search question
-        </label>
-        <input
-          type="text"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Type to search..."
-          className="w-full max-w-md rounded-md border px-3 py-2 text-sm"
-        />
+      {/* Search bar – aligned with content on desktop via spacer */}
+      <div className="mb-8 lg:flex lg:gap-8">
+        {/* Invisible spacer matching sidebar width on desktop */}
+        <div className="hidden lg:block lg:w-56" />
+        <div className="flex-1">
+          <label className="mb-1 block text-sm font-medium text-muted-foreground">
+            Search question
+          </label>
+          <input
+            type="text"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Type to search..."
+            className="w-full max-w-md rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-8 lg:flex-row">
