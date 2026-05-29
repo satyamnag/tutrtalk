@@ -42,6 +42,7 @@ export default function QAPage() {
   const [selectedBook, setSelectedBook] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [sort, setSort] = useState('asc');
   const [page, setPage] = useState(1);
 
   // Fetch filter options once
@@ -57,7 +58,7 @@ export default function QAPage() {
   // Reset page to 1 whenever filters change
   useEffect(() => {
     setPage(1);
-  }, [selectedChapter, searchText]);
+  }, [selectedChapter, searchText, sort]);
 
   // Fetch Q&A items
   const fetchItems = useCallback(() => {
@@ -68,6 +69,7 @@ export default function QAPage() {
     const params = new URLSearchParams();
     if (selectedChapter) params.set('chapter_id', selectedChapter);
     if (searchText.trim()) params.set('search', searchText.trim());
+    params.set('sort', sort);
     params.set('page', page.toString());
 
     fetch(`/api/qa?${params.toString()}`)
@@ -75,7 +77,7 @@ export default function QAPage() {
       .then((json: QAResponse) => setData(json))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [isSignedIn, selectedChapter, searchText, page]);
+  }, [isSignedIn, selectedChapter, searchText, sort, page]);
 
   useEffect(() => {
     fetchItems();
@@ -93,21 +95,39 @@ export default function QAPage() {
     <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold">Questions &amp; Answers</h1>
 
-      {/* Search bar – aligned with content on desktop via spacer */}
+      {/* Search bar + sort – aligned with content on desktop */}
       <div className="mb-8 lg:flex lg:gap-8">
-        {/* Invisible spacer matching sidebar width on desktop */}
         <div className="hidden lg:block lg:w-56" />
         <div className="flex-1">
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Search question
-          </label>
-          <input
-            type="text"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Type to search..."
-            className="w-full max-w-md rounded-md border px-3 py-2 text-sm"
-          />
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="flex-1">
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                Search question
+              </label>
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Type to search..."
+                className="w-full rounded-md border px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                Sort
+              </label>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+              >
+                <option value="asc">Ascending order</option>
+                <option value="desc">Descending order</option>
+                <option value="recent_created">Recently created</option>
+                <option value="recent_updated">Recently updated</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
