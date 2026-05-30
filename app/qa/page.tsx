@@ -149,7 +149,7 @@ export default function QAPage() {
 
   return (
     <main className="container mx-auto max-w-6xl px-4 py-16">
-      <h1 className="mb-8 text-3xl font-bold">Questions &amp; Answers</h1>
+      <h1 className="mb-8 text-3xl font-bold text-center">Questions &amp; Answers</h1>
 
       {/* Search bar + sort */}
       <div className="mb-8 lg:flex lg:gap-8">
