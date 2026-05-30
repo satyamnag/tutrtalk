@@ -52,7 +52,6 @@ export default function QAPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  // new: add mode
   const [isAddMode, setIsAddMode] = useState(false);
   // -------------------------------------------
 
@@ -156,7 +155,6 @@ export default function QAPage() {
     dialogRef.current?.showModal();
   };
 
-  // new: Add mode handler
   const handleAdd = () => {
     setEditingItem(null);
     setIsAddMode(true);
@@ -483,11 +481,24 @@ export default function QAPage() {
         </div>
       </div>
 
-      {/* Dialog for Add/Edit */}
-      <dialog ref={dialogRef} className="rounded-lg border p-6 w-full max-w-md backdrop:bg-black/50">
-        <h2 className="text-lg font-semibold mb-4">
-          {isAddMode ? 'Add New Question' : 'Edit Question'}
-        </h2>
+      {/* Dialog for Add/Edit – centred, polished UI */}
+      <dialog
+        ref={dialogRef}
+        className="fixed inset-0 m-auto max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border-0 bg-background p-6 shadow-2xl backdrop:bg-black/50 backdrop:opacity-100 transition-all"
+      >
+        <div className="flex items-start justify-between mb-4">
+          <h2 className="text-lg font-semibold">
+            {isAddMode ? 'Add New Question' : 'Edit Question'}
+          </h2>
+          <button
+            onClick={() => dialogRef.current?.close()}
+            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
         <div className="space-y-4">
           {isAddMode && selectedChapter && (
             <div>
@@ -507,7 +518,7 @@ export default function QAPage() {
             <textarea
               value={editQuestion}
               onChange={(e) => setEditQuestion(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               rows={3}
             />
           </div>
@@ -516,7 +527,7 @@ export default function QAPage() {
             <textarea
               value={editAnswer}
               onChange={(e) => setEditAnswer(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               rows={3}
             />
           </div>
@@ -524,14 +535,14 @@ export default function QAPage() {
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={() => dialogRef.current?.close()}
-            className="px-3 py-1.5 text-sm rounded-md border hover:bg-accent"
+            className="px-4 py-2 text-sm rounded-md border hover:bg-accent transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving || !editQuestion.trim() || !editAnswer.trim()}
-            className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition"
           >
             {isSaving ? 'Saving...' : isAddMode ? 'Create' : 'Save'}
           </button>
