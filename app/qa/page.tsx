@@ -26,7 +26,7 @@ interface QAResponse {
 }
 
 export default function QAPage() {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const [data, setData] = useState<QAResponse>({ items: [], page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -237,6 +237,21 @@ export default function QAPage() {
   if (!isSignedIn) {
     return <div className="flex h-screen items-center justify-center">Please sign in.</div>;
   }
+
+  // ----- ACCESS CONTROL: only famerelay@gmail.com -----
+  if (user?.primaryEmailAddress?.emailAddress !== 'famerelay@gmail.com') {
+    return (
+      <div className="flex h-screen items-center justify-center text-center px-4">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+          <p className="text-muted-foreground">
+            Only the admin can access this page. Please contact support.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  // ----------------------------------------------------
 
   const selectClasses =
     'w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50';
