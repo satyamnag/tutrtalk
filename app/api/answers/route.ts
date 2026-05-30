@@ -11,7 +11,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from('user_answers')
     .select('*')
-    .eq('user_id', userId)
+    .eq('participant_identity', userId)
     .order('created_at', { ascending: false });
 
   if (error) {
