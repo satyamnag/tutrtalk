@@ -52,6 +52,8 @@ export default function QAPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // new: add mode
+  const [isAddMode, setIsAddMode] = useState(false);
   // -------------------------------------------
 
   // Fetch classes on mount
@@ -148,28 +150,69 @@ export default function QAPage() {
   // ---------------- CRUD handlers ----------------
   const handleEdit = (item: QAItem) => {
     setEditingItem(item);
+    setIsAddMode(false);
     setEditQuestion(item.question_text);
     setEditAnswer(item.answer_text);
     dialogRef.current?.showModal();
   };
 
+  // new: Add mode handler
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsAddMode(true);
+    setEditQuestion('');
+    setEditAnswer('');
+    dialogRef.current?.showModal();
+  };
+
   const handleSave = async () => {
-    if (!editingItem || isSaving) return;
-    setIsSaving(true);
-    try {
-      const res = await fetch(`/api/qa/${editingItem.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question_text: editQuestion, answer_text: editAnswer }),
-      });
-      if (!res.ok) throw new Error('Failed to update');
-      dialogRef.current?.close();
-      setEditingItem(null);
-      fetchItems();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSaving(false);
+    if (isSaving) return;
+
+    if (isAddMode) {
+      // Add new question
+      if (!selectedChapter) {
+        return; // shouldn't happen because button is disabled
+      }
+      setIsSaving(true);
+      try {
+        const res = await fetch('/api/qa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question_text: editQuestion,
+            answer_text: editAnswer,
+            chapter_id: selectedChapter,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to create question');
+        dialogRef.current?.close();
+        setEditQuestion('');
+        setEditAnswer('');
+        fetchItems();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      // Edit existing question
+      if (!editingItem) return;
+      setIsSaving(true);
+      try {
+        const res = await fetch(`/api/qa/${editingItem.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_text: editQuestion, answer_text: editAnswer }),
+        });
+        if (!res.ok) throw new Error('Failed to update');
+        dialogRef.current?.close();
+        setEditingItem(null);
+        fetchItems();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -204,11 +247,11 @@ export default function QAPage() {
     <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold text-center">Questions &amp; Answers</h1>
 
-      {/* Search bar + sort */}
+      {/* Search bar + sort + Add button */}
       <div className="mb-8 lg:flex lg:gap-8">
         <div className="hidden lg:block lg:w-56" />
         <div className="flex-1">
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium text-muted-foreground">
                 Search question
@@ -235,6 +278,24 @@ export default function QAPage() {
                 <option value="recent_created">Recently created</option>
                 <option value="recent_updated">Recently updated</option>
               </select>
+            </div>
+            {/* Add New Question button */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground invisible">
+                Action
+              </label>
+              <button
+                onClick={handleAdd}
+                disabled={!selectedChapter}
+                title={
+                  !selectedChapter
+                    ? 'Select a chapter to add questions'
+                    : 'Add a new question'
+                }
+                className="rounded-md border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add New Question
+              </button>
             </div>
           </div>
         </div>
@@ -422,10 +483,25 @@ export default function QAPage() {
         </div>
       </div>
 
-      {/* Edit dialog (modal) */}
+      {/* Dialog for Add/Edit */}
       <dialog ref={dialogRef} className="rounded-lg border p-6 w-full max-w-md backdrop:bg-black/50">
-        <h2 className="text-lg font-semibold mb-4">Edit Question</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          {isAddMode ? 'Add New Question' : 'Edit Question'}
+        </h2>
         <div className="space-y-4">
+          {isAddMode && selectedChapter && (
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Chapter</label>
+              <input
+                type="text"
+                readOnly
+                value={
+                  filterOptions.chapters.find(ch => ch.id === parseInt(selectedChapter))?.name ?? selectedChapter
+                }
+                className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1">Question</label>
             <textarea
@@ -454,10 +530,10 @@ export default function QAPage() {
           </button>
           <button
             onClick={handleSave}
-            disabled={isSaving}
+            disabled={isSaving || !editQuestion.trim() || !editAnswer.trim()}
             className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? 'Saving...' : isAddMode ? 'Create' : 'Save'}
           </button>
         </div>
       </dialog>

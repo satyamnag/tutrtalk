@@ -15,10 +15,8 @@ export async function GET(request: Request) {
   const limit = 10;
   const sort = searchParams.get('sort') || 'asc';
 
-  // Determine ordering column and direction
   let orderColumn = 'id';
   let ascending = true;
-
   switch (sort) {
     case 'desc':
       ascending = false;
@@ -37,7 +35,6 @@ export async function GET(request: Request) {
       break;
   }
 
-  // Base query with count
   let baseQuery = supabase
     .from('questions')
     .select('id, question_text, answer_text, chapter_id, chapters(name)', { count: 'exact' })
@@ -53,9 +50,7 @@ export async function GET(request: Request) {
     baseQuery = baseQuery.ilike('question_text', `%${search.trim()}%`);
   }
 
-  // First get total count
   const { count, error: countError } = await baseQuery;
-
   if (countError) {
     console.error(countError);
     return new NextResponse('Internal Server Error', { status: 500 });
@@ -65,9 +60,7 @@ export async function GET(request: Request) {
   const totalPages = Math.ceil(total / limit);
   const offset = (page - 1) * limit;
 
-  // Fetch page
   const { data, error } = await baseQuery.range(offset, offset + limit - 1);
-
   if (error) {
     console.error(error);
     return new NextResponse('Internal Server Error', { status: 500 });
@@ -87,4 +80,39 @@ export async function GET(request: Request) {
     totalPages,
     total,
   });
+}
+
+// Added: POST handler for creating a new question
+export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const body = await request.json();
+  const { question_text, answer_text, chapter_id } = body;
+
+  if (!question_text || !answer_text || chapter_id === undefined) {
+    return new NextResponse('Missing required fields', { status: 400 });
+  }
+
+  const numericChapterId = parseInt(chapter_id, 10);
+  if (isNaN(numericChapterId)) {
+    return new NextResponse('Invalid chapter_id', { status: 400 });
+  }
+
+  const { error } = await supabase
+    .from('questions')
+    .insert({
+      question_text,
+      answer_text,
+      chapter_id: numericChapterId,
+    });
+
+  if (error) {
+    console.error('Error creating question:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+
+  return new NextResponse(null, { status: 201 });
 }
