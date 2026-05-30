@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 interface QAItem {
@@ -44,6 +44,15 @@ export default function QAPage() {
   const [searchText, setSearchText] = useState('');
   const [sort, setSort] = useState('asc');
   const [page, setPage] = useState(1);
+
+  // ---------------- CRUD state ----------------
+  const [editingItem, setEditingItem] = useState<QAItem | null>(null);
+  const [editQuestion, setEditQuestion] = useState('');
+  const [editAnswer, setEditAnswer] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  // -------------------------------------------
 
   // Fetch classes on mount
   useEffect(() => {
@@ -135,6 +144,50 @@ export default function QAPage() {
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  // ---------------- CRUD handlers ----------------
+  const handleEdit = (item: QAItem) => {
+    setEditingItem(item);
+    setEditQuestion(item.question_text);
+    setEditAnswer(item.answer_text);
+    dialogRef.current?.showModal();
+  };
+
+  const handleSave = async () => {
+    if (!editingItem || isSaving) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/qa/${editingItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_text: editQuestion, answer_text: editAnswer }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      dialogRef.current?.close();
+      setEditingItem(null);
+      fetchItems();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (deletingId !== null) return;
+    if (!window.confirm('Delete this question?')) return;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/qa/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      fetchItems();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+  // -----------------------------------------------
 
   if (!isLoaded) {
     return <div className="flex h-screen items-center justify-center">Loading…</div>;
@@ -296,6 +349,23 @@ export default function QAPage() {
                     <p className="mt-1 text-green-700 dark:text-green-400">
                       A: {item.answer_text}
                     </p>
+
+                    {/* Edit & Delete buttons */}
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="text-xs px-2 py-1 rounded border hover:bg-accent transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        disabled={deletingId === item.id}
+                        className="text-xs px-2 py-1 rounded border border-destructive/30 text-destructive hover:bg-destructive/10 transition disabled:opacity-50"
+                      >
+                        {deletingId === item.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -351,6 +421,46 @@ export default function QAPage() {
           )}
         </div>
       </div>
+
+      {/* Edit dialog (modal) */}
+      <dialog ref={dialogRef} className="rounded-lg border p-6 w-full max-w-md backdrop:bg-black/50">
+        <h2 className="text-lg font-semibold mb-4">Edit Question</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">Question</label>
+            <textarea
+              value={editQuestion}
+              onChange={(e) => setEditQuestion(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              rows={3}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">Answer</label>
+            <textarea
+              value={editAnswer}
+              onChange={(e) => setEditAnswer(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              rows={3}
+            />
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={() => dialogRef.current?.close()}
+            className="px-3 py-1.5 text-sm rounded-md border hover:bg-accent"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {isSaving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </dialog>
     </main>
   );
 }
