@@ -33,10 +33,17 @@ export function App({ appConfig }: AppProps) {
       : TokenSource.endpoint('/api/token');
   }, [appConfig]);
 
-  const session = useSession(
-    tokenSource,
-    appConfig.agentName ? { agentName: appConfig.agentName } : undefined
-  );
+  const sessionOptions = useMemo(() => {
+    if (appConfig.agentName) {
+      return {
+        agentName: appConfig.agentName,
+        agentJoinTimeout: 300, // wait up to 5 minutes for cold-start agent
+      };
+    }
+    return undefined;
+  }, [appConfig.agentName]);
+
+  const session = useSession(tokenSource, sessionOptions);
 
   return (
     <AgentSessionProvider session={session}>
