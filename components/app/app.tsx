@@ -8,6 +8,7 @@ import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
+import { Sidebar } from '@/components/app/sidebar'; // <-- new
 import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
@@ -37,7 +38,7 @@ export function App({ appConfig }: AppProps) {
     if (appConfig.agentName) {
       return {
         agentName: appConfig.agentName,
-        agentJoinTimeout: 300, // wait up to 5 minutes for cold-start agent
+        agentJoinTimeout: 300,
       };
     }
     return undefined;
@@ -48,6 +49,7 @@ export function App({ appConfig }: AppProps) {
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
+      <Sidebar /> {/* new sidebar */}
       <main className="grid h-svh grid-cols-1 place-content-center">
         <ViewController appConfig={appConfig} />
       </main>
