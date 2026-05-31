@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { ClerkProvider, SignInButton, UserButton, Show } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
+import { Sidebar } from '@/components/app/sidebar';      // <-- new
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -52,11 +53,11 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <ClerkProvider
-    appearance={{
-      layout: {
-        unsafe_disableDevelopmentModeWarnings: true,
-      },
-    }}
+      appearance={{
+        layout: {
+          unsafe_disableDevelopmentModeWarnings: true,
+        },
+      }}
     >
       <html
         lang="en"
@@ -91,7 +92,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                   className="hidden size-6 dark:block"
                 />
               </div>
-
               {/* Clerk authentication controls */}
               <div className="flex items-center gap-4">
                 <Show when="signed-out">
@@ -113,7 +113,14 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               </div>
             </header>
 
-            {children}
+            {/* SIDEBAR – common across all pages (visible when signed in) */}
+            <Sidebar />
+
+            {/* Main content area – add left margin when sidebar is shown */}
+            <div className="lg:ml-16 transition-all">
+              {children}
+            </div>
+
             <div className="group fixed bottom-0 left-1/2 z-50 mb-2 -translate-x-1/2">
               <ThemeToggle className="translate-y-20 transition-transform delay-150 duration-300 group-hover:translate-y-0" />
             </div>
