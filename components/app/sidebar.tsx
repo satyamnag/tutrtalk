@@ -97,88 +97,78 @@ export function Sidebar() {
   const isAdmin = user?.primaryEmailAddress?.emailAddress === 'famerelay@gmail.com';
 
   return (
-    <>
-      {/* Backdrop overlay – closes sidebar when clicking outside */}
-      {open && (
-        <div
-          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        />
+    <aside
+      className={cn(
+        'fixed left-0 top-0 z-40 flex h-svh w-64 flex-col border-r bg-background/95 backdrop-blur-md shadow-lg',
+        'transition-transform duration-300 ease-in-out',
+        open ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
+      {/* Navigation links */}
+      {isLoaded && isSignedIn ? (
+        <nav className="flex flex-col gap-1 px-3 mt-20">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                pathname === item.href
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+              onClick={() => setOpen(false)}
+            >
+              <item.icon size={18} />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+          {isAdmin && (
+            <Link
+              href="/qa"
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                pathname === '/qa'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+              onClick={() => setOpen(false)}
+            >
+              <SettingsIcon size={18} />
+              <span>Manage Questions</span>
+            </Link>
+          )}
+        </nav>
+      ) : (
+        <nav className="flex flex-col gap-2 px-3 mt-20 animate-pulse">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-8 w-full rounded-lg bg-muted" />
+          ))}
+        </nav>
       )}
 
-      <aside
-        className={cn(
-          'fixed left-0 top-0 z-40 flex h-svh w-64 flex-col border-r bg-background/95 backdrop-blur-md shadow-lg',
-          'transition-transform duration-300 ease-in-out',
-          open ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        {/* Navigation links */}
-        {isLoaded && isSignedIn ? (
-          <nav className="flex flex-col gap-1 px-3 mt-20">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                  pathname === item.href
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                )}
-                onClick={() => setOpen(false)}
-              >
-                <item.icon size={18} />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-            {isAdmin && (
-              <Link
-                href="/qa"
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                  pathname === '/qa'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                )}
-                onClick={() => setOpen(false)}
-              >
-                <SettingsIcon size={18} />
-                <span>Manage Questions</span>
-              </Link>
-            )}
-          </nav>
-        ) : (
-          <nav className="flex flex-col gap-2 px-3 mt-20 animate-pulse">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-8 w-full rounded-lg bg-muted" />
-            ))}
-          </nav>
-        )}
-
-        {/* User section at bottom – Clerk UserButton replaces manual avatar */}
-        {isLoaded && isSignedIn && (
-          <div className="mt-auto p-4 border-t">
-            <div className="flex items-center gap-3">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: 'h-8 w-8',
-                  },
-                }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {user?.fullName || user?.primaryEmailAddress?.emailAddress}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.primaryEmailAddress?.emailAddress}
-                </p>
-              </div>
+      {/* User section at bottom – Clerk UserButton replaces manual avatar */}
+      {isLoaded && isSignedIn && (
+        <div className="mt-auto p-4 border-t">
+          <div className="flex items-center gap-3">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: 'h-8 w-8',
+                },
+              }}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {user?.fullName || user?.primaryEmailAddress?.emailAddress}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.primaryEmailAddress?.emailAddress}
+              </p>
             </div>
           </div>
-        )}
-      </aside>
-    </>
+        </div>
+      )}
+    </aside>
   );
 }
