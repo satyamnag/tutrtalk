@@ -36,19 +36,23 @@ function formatDuration(seconds: number): string {
 export default function ProgressPage() {
   const { isLoaded, isSignedIn } = useUser();
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!isSignedIn) {
-      setLoading(false);
+      setDataReady(true);
       return;
     }
     fetch('/api/sessions')
       .then((res) => res.json())
-      .then(setSessions)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .then((data) => {
+        setSessions(data);
+        setDataReady(true);
+      })
+      .catch(() => {
+        setDataReady(true);
+      });
   }, [isSignedIn]);
 
   const toggleExpanded = (idx: number) => {
@@ -60,8 +64,8 @@ export default function ProgressPage() {
     });
   };
 
-  // Show loading spinner until everything is ready
-  if (!isLoaded || loading) {
+  // Wait until Clerk is loaded AND the API has responded
+  if (!isLoaded || !dataReady) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
