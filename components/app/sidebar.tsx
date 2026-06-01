@@ -62,21 +62,23 @@ export function HeaderLogo({ logo, logoDark }: { logo: string; logoDark?: string
 // ---- Toggle Button (placed in header) ----
 export function SidebarToggle() {
   const { open, setOpen } = useSidebar();
-  const { isSignedIn } = useUser();
-
-  if (!isSignedIn) return null;
+  const { isLoaded, isSignedIn } = useUser();
 
   const Icon = open ? PanelLeftCloseIcon : PanelLeftOpenIcon;
 
   return (
-    <button
-      onClick={() => setOpen(!open)}
-      className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-      title={open ? 'Close sidebar' : 'Open sidebar'}
-      aria-label={open ? 'Close sidebar' : 'Open sidebar'}
-    >
-      <Icon size={20} />
-    </button>
+    <div className="h-10 w-10 flex items-center justify-center">
+      {isLoaded && isSignedIn && (
+        <button
+          onClick={() => setOpen(!open)}
+          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          title={open ? 'Close sidebar' : 'Open sidebar'}
+          aria-label={open ? 'Close sidebar' : 'Open sidebar'}
+        >
+          <Icon size={20} />
+        </button>
+      )}
+    </div>
   );
 }
 
