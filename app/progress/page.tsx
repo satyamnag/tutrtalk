@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  MessageCircleIcon,
+  HashIcon,
+} from 'lucide-react';
 
 interface TranscriptTurn {
   role: 'agent' | 'user';
@@ -39,14 +45,14 @@ export default function ProgressPage() {
       return;
     }
     fetch('/api/sessions')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setSessions)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [isSignedIn]);
 
   const toggleExpanded = (idx: number) => {
-    setExpanded(prev => {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(idx)) next.delete(idx);
       else next.add(idx);
@@ -54,6 +60,7 @@ export default function ProgressPage() {
     });
   };
 
+  // Show loading spinner until everything is ready
   if (!isLoaded || loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -68,66 +75,131 @@ export default function ProgressPage() {
 
   return (
     <main className="container mx-auto max-w-3xl px-4 py-16">
-      <h1 className="mb-8 text-3xl font-bold">Your Progress</h1>
+      <h1 className="mb-8 text-3xl font-bold">Your Sessions</h1>
 
       {sessions.length === 0 && (
-        <p className="text-muted-foreground">No sessions recorded yet. Start a tutoring session!</p>
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4 opacity-30">📚</div>
+          <p className="text-muted-foreground text-lg">No sessions recorded yet.</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            Start a tutoring session to see your progress here!
+          </p>
+        </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {sessions.map((session, idx) => (
-          <div key={session.sessionId} className="rounded-xl border bg-card">
+          <div
+            key={session.sessionId}
+            className="rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow"
+          >
             {/* Session header */}
             <button
               onClick={() => toggleExpanded(idx)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-accent/50 transition-colors rounded-xl"
+              className="w-full flex items-center justify-between p-5 text-left group"
             >
-              <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div>
-                  <div className="text-xs text-muted-foreground">Session</div>
-                  <div className="font-mono text-sm truncate" title={session.sessionId}>
-                    {session.sessionId.slice(0, 12)}...
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded-full">
+                    {session.sessionId.slice(0, 12)}…
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="flex items-center gap-2">
+                    <ClockIcon size={16} className="text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Started</div>
+                      <div className="text-sm font-medium">
+                        {new Date(session.startedAt).toLocaleDateString()}{' '}
+                        {new Date(session.startedAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <ClockIcon size={16} className="text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Duration</div>
+                      <div className="text-sm font-medium">
+                        {formatDuration(session.duration)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <MessageCircleIcon size={16} className="text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Questions</div>
+                      <div className="text-sm font-medium">{session.totalQuestions}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <HashIcon size={16} className="text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Chapters</div>
+                      <div className="text-sm font-medium">{session.chapters.length}</div>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Started</div>
-                  <div className="text-sm">{new Date(session.startedAt).toLocaleString()}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Duration</div>
-                  <div className="text-sm">{formatDuration(session.duration)}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Questions</div>
-                  <div className="text-sm">{session.totalQuestions}</div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {session.chapters.map((ch) => (
+                    <span
+                      key={ch}
+                      className="text-xs bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium"
+                    >
+                      {ch}
+                    </span>
+                  ))}
                 </div>
               </div>
-              <div className="ml-4">
-                {expanded.has(idx) ? <ChevronDownIcon size={20} /> : <ChevronRightIcon size={20} />}
+              <div className="ml-4 text-muted-foreground group-hover:text-foreground transition-colors">
+                {expanded.has(idx) ? (
+                  <ChevronDownIcon size={22} />
+                ) : (
+                  <ChevronRightIcon size={22} />
+                )}
               </div>
             </button>
 
             {/* Expanded transcript */}
             {expanded.has(idx) && (
-              <div className="border-t px-4 py-3 space-y-3 max-h-96 overflow-y-auto">
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {session.chapters.map(ch => (
-                    <span key={ch} className="text-xs bg-muted px-2 py-1 rounded-full">
-                      {ch}
-                    </span>
-                  ))}
+              <div className="border-t px-5 py-4 space-y-4 max-h-96 overflow-y-auto bg-muted/20 rounded-b-xl">
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                  <span>Full Transcript</span>
+                  <span className="flex-1 h-px bg-border" />
                 </div>
                 {session.transcript.map((turn, i) => (
-                  <div key={i} className={`flex gap-3 ${turn.role === 'agent' ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                      turn.role === 'agent'
-                        ? 'bg-muted text-foreground'
-                        : 'bg-primary text-primary-foreground ml-auto'
-                    }`}>
-                      <div className="text-xs opacity-70 mb-1">
-                        {turn.role === 'agent' ? 'TutorTalk' : 'You'} · {new Date(turn.timestamp).toLocaleTimeString()}
+                  <div
+                    key={i}
+                    className={`flex gap-3 ${turn.role === 'agent' ? '' : 'flex-row-reverse'}`}
+                  >
+                    <div
+                      className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                        turn.role === 'agent'
+                          ? 'bg-background border text-foreground rounded-tl-sm'
+                          : 'bg-primary text-primary-foreground rounded-tr-sm'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1 gap-2">
+                        <span className="text-xs font-semibold opacity-80">
+                          {turn.role === 'agent' ? 'TutorTalk' : 'You'}
+                        </span>
+                        <span className="text-xs opacity-60">
+                          {new Date(turn.timestamp).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
                       </div>
-                      <div>{turn.content}</div>
+                      <div className="leading-relaxed whitespace-pre-wrap break-words">
+                        {turn.content}
+                      </div>
                     </div>
                   </div>
                 ))}
