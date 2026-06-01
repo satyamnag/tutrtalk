@@ -1,10 +1,11 @@
+// app/layout.tsx
 import { Public_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
-import { ClerkProvider, SignInButton, UserButton, Show } from '@clerk/nextjs';
+import { ClerkProvider, SignInButton, Show } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
-import { SidebarProvider, Sidebar, SidebarToggle } from '@/components/app/sidebar';
+import { SidebarProvider, Sidebar, SidebarToggle, HeaderLogo } from '@/components/app/sidebar';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -85,22 +86,15 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               <Sidebar />
 
               <header className="fixed top-0 left-0 z-50 flex w-full items-center justify-between p-6">
-              <div className="flex items-center gap-3">
-                {/* Logo */}
-                <div className="scale-100 transition-transform duration-300 hover:scale-110">
-                  <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
-                  <img
-                    src={logoDark ?? logo}
-                    alt={`${companyName} Logo`}
-                    className="hidden size-6 dark:block"
-                  />
+                <div className="flex items-center gap-3">
+                  {/* Sidebar toggle button (visible when signed in) */}
+                  <SidebarToggle />
+
+                  {/* Logo with conditional text (via HeaderLogo) */}
+                  <HeaderLogo logo={logo} logoDark={logoDark} />
                 </div>
 
-                {/* Sidebar toggle button (visible when signed in) */}
-                <SidebarToggle />
-              </div>
-
-                {/* Clerk authentication controls */}
+                {/* Clerk sign-in button (only when signed out) */}
                 <div className="flex items-center gap-4">
                   <Show when="signed-out">
                     <SignInButton mode="modal">
@@ -109,19 +103,10 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                       </button>
                     </SignInButton>
                   </Show>
-                  <Show when="signed-in">
-                    <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox: 'h-6 w-6',
-                        },
-                      }}
-                    />
-                  </Show>
                 </div>
               </header>
 
-              {/* Main content (no forced margin) */}
+              {/* Main content */}
               {children}
 
               <div className="group fixed bottom-0 left-1/2 z-50 mb-2 -translate-x-1/2">

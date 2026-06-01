@@ -1,9 +1,10 @@
+// components/app/sidebar.tsx
 'use client';
 
 import React, { createContext, useContext, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useUser, UserButton } from '@clerk/nextjs';
 import {
   HomeIcon,
   ActivityIcon,
@@ -37,6 +38,25 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
 function useSidebar() {
   return useContext(SidebarContext);
+}
+
+// ---- Header Logo (uses sidebar state to show/hide text) ----
+export function HeaderLogo({ logo, logoDark }: { logo: string; logoDark?: string }) {
+  const { open } = useSidebar();
+
+  return (
+    <div className="flex items-center gap-2">
+      <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
+      <img
+        src={logoDark ?? logo}
+        alt="TutrTalk Logo"
+        className="hidden size-6 dark:block"
+      />
+      {open && (
+        <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
+      )}
+    </div>
+  );
 }
 
 // ---- Toggle Button (placed in header) ----
@@ -76,80 +96,89 @@ export function Sidebar() {
 
   const isAdmin = user?.primaryEmailAddress?.emailAddress === 'famerelay@gmail.com';
 
-  // Always render the aside (fixed position) for smooth slide animation
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 flex h-svh w-64 flex-col border-r bg-background/95 backdrop-blur-md shadow-lg',
-        'transition-transform duration-300 ease-in-out',
-        open ? 'translate-x-0' : '-translate-x-full'
-      )}
-    >
-      {/* Navigation links – only visible when authenticated and loaded */}
-      {isLoaded && isSignedIn ? (
-        <nav className="flex flex-col gap-1 px-3 mt-20">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                pathname === item.href
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-              )}
-              onClick={() => setOpen(false)}
-            >
-              <item.icon size={18} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-          {isAdmin && (
-            <Link
-              href="/qa"
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                pathname === '/qa'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-              )}
-              onClick={() => setOpen(false)}
-            >
-              <SettingsIcon size={18} />
-              <span>Manage Questions</span>
-            </Link>
-          )}
-        </nav>
-      ) : (
-        <nav className="flex flex-col gap-2 px-3 mt-20 animate-pulse">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-8 w-full rounded-lg bg-muted" />
-          ))}
-        </nav>
+    <>
+      {/* Backdrop overlay – closes sidebar when clicking outside */}
+      {open && (
+        <div
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        />
       )}
 
-      {/* User avatar at bottom */}
-      {isLoaded && isSignedIn && (
-        <div className="mt-auto p-4 border-t">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-muted">
-              {user?.imageUrl ? (
-                <img src={user.imageUrl} alt="Avatar" className="h-full w-full object-cover" />
-              ) : (
-                <UserCircleIcon size={20} className="text-muted-foreground" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {user?.fullName || user?.primaryEmailAddress?.emailAddress}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {user?.primaryEmailAddress?.emailAddress}
-              </p>
+      <aside
+        className={cn(
+          'fixed left-0 top-0 z-40 flex h-svh w-64 flex-col border-r bg-background/95 backdrop-blur-md shadow-lg',
+          'transition-transform duration-300 ease-in-out',
+          open ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {/* Navigation links */}
+        {isLoaded && isSignedIn ? (
+          <nav className="flex flex-col gap-1 px-3 mt-20">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                  pathname === item.href
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                )}
+                onClick={() => setOpen(false)}
+              >
+                <item.icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+            {isAdmin && (
+              <Link
+                href="/qa"
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                  pathname === '/qa'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                )}
+                onClick={() => setOpen(false)}
+              >
+                <SettingsIcon size={18} />
+                <span>Manage Questions</span>
+              </Link>
+            )}
+          </nav>
+        ) : (
+          <nav className="flex flex-col gap-2 px-3 mt-20 animate-pulse">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-8 w-full rounded-lg bg-muted" />
+            ))}
+          </nav>
+        )}
+
+        {/* User section at bottom – Clerk UserButton replaces manual avatar */}
+        {isLoaded && isSignedIn && (
+          <div className="mt-auto p-4 border-t">
+            <div className="flex items-center gap-3">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: 'h-8 w-8',
+                  },
+                }}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {user?.fullName || user?.primaryEmailAddress?.emailAddress}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.primaryEmailAddress?.emailAddress}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </aside>
+        )}
+      </aside>
+    </>
   );
 }
