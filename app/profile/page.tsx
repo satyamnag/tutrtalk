@@ -83,7 +83,7 @@ export default function ProfilePage() {
           class: className.trim(),
           board: board.trim(),
           dob: dob || null,
-          study_language: studyLanguage.trim() || null,
+          study_language: studyLanguage || null,
           profile_photo_url: finalPhotoUrl || null,
         }),
       });
@@ -183,18 +183,29 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Study Language */}
+        {/* Study Language - dropdown */}
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-1">
             Preferred Study Language
           </label>
-          <input
-            type="text"
+          <select
             value={studyLanguage}
             onChange={(e) => setStudyLanguage(e.target.value)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            placeholder="e.g. English, Hindi, Kannada"
-          />
+          >
+            <option value="" disabled>Select language</option>
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Bengali">Bengali</option>
+            <option value="Marathi">Marathi</option>
+            <option value="Telugu">Telugu</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Gujarati">Gujarati</option>
+            <option value="Urdu">Urdu</option>
+            <option value="Kannada">Kannada</option>
+            <option value="Odia">Odia</option>
+            <option value="Malayalam">Malayalam</option>
+          </select>
         </div>
 
         {/* Profile Photo – file upload */}
