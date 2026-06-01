@@ -129,7 +129,7 @@ export default function ProfilePage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            placeholder="Your name"
+            placeholder="Your academic name"
             required
           />
         </div>
@@ -139,14 +139,18 @@ export default function ProfilePage() {
           <label className="block text-sm font-medium text-muted-foreground mb-1">
             Class <span className="text-destructive">*</span>
           </label>
-          <input
-            type="text"
+          <select
             value={className}
             onChange={(e) => setClassName(e.target.value)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            placeholder="e.g. 10th, 12th"
             required
-          />
+          >
+            <option value="" disabled>Select class</option>
+            <option value="10th">10th</option>
+            <option value="9th" disabled>9th</option>
+            <option value="11th" disabled>11th</option>
+            <option value="12th" disabled>12th</option>
+          </select>
         </div>
 
         {/* Board */}
