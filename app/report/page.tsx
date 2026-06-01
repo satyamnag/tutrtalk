@@ -175,7 +175,7 @@ export default function ReportPage() {
     const pieData = d3.rollups(answers, v => v.length, d => d.chapter)
       .map(([chapter, count]) => ({ chapter, count }));
     const radius = 100;
-    const arc = d3.arc<{ chapter: string; count: number }>().innerRadius(50).outerRadius(radius);
+    const arc = d3.arc<any>().innerRadius(50).outerRadius(radius);
     const pie = d3.pie<{ chapter: string; count: number }>().value(d => d.count).sort(null);
     const color = d3.scaleOrdinal(d3.schemeCategory10).domain(pieData.map(d => d.chapter));
     const g = svg.append('g').attr('transform', `translate(250,125)`);
@@ -214,13 +214,13 @@ export default function ReportPage() {
       .append('title').text(d => `${d.chapter}: avg ${d.avg} attempts`);
   }, [answers]);
 
-  // 7. Attempt Distribution (Histogram)
+  // 7. Attempt Distribution (Histogram) – fixed bin generic
   useEffect(() => {
     if (!answers.length || !histogramChartRef.current) return;
     const svg = d3.select(histogramChartRef.current);
     svg.selectAll('*').remove();
     const maxAttempt = d3.max(answers, d => d.attempt_number) ?? 1;
-    const bins = d3.bin<number>().domain([1, maxAttempt+1]).thresholds(maxAttempt)
+    const bins = d3.bin().domain([1, maxAttempt+1]).thresholds(maxAttempt)
       (answers.map(a => a.attempt_number));
     const margin = { top: 20, right: 20, bottom: 30, left: 40 };
     const width = 500 - margin.left - margin.right;
