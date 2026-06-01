@@ -66,7 +66,7 @@ const navItems = [
   { href: '/progress', label: 'Progress', icon: ActivityIcon },
   { href: '/report', label: 'Report', icon: BarChart3Icon },
   { href: '/profile', label: 'Profile', icon: UserCircleIcon },
-  { href: '/guardian', label: 'Guardian', icon: ShieldCheckIcon },
+  // { href: '/guardian', label: 'Guardian', icon: ShieldCheckIcon },
 ];
 
 export function Sidebar() {
