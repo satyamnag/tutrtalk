@@ -85,21 +85,9 @@ export function Sidebar() {
         open ? 'translate-x-0' : '-translate-x-full'
       )}
     >
-      {/* Header area */}
-      <div className="flex items-center justify-between p-4 pt-20">
-        <span className="font-semibold text-sm">Navigation</span>
-        <button
-          onClick={() => setOpen(false)}
-          className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-          aria-label="Close sidebar"
-        >
-          <PanelLeftCloseIcon size={18} />
-        </button>
-      </div>
-
       {/* Navigation links – only visible when authenticated and loaded */}
       {isLoaded && isSignedIn ? (
-        <nav className="flex flex-col gap-1 px-3">
+        <nav className="flex flex-col gap-1 px-3 mt-20">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -133,7 +121,7 @@ export function Sidebar() {
           )}
         </nav>
       ) : (
-        <nav className="flex flex-col gap-2 px-3 animate-pulse">
+        <nav className="flex flex-col gap-2 px-3 mt-20 animate-pulse">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-8 w-full rounded-lg bg-muted" />
           ))}
