@@ -85,20 +85,20 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               <Sidebar />
 
               <header className="fixed top-0 left-0 z-50 flex w-full items-center justify-between p-6">
-                <div className="flex items-center gap-3">
-                  {/* Sidebar toggle button (visible when signed in) */}
-                  <SidebarToggle />
-
-                  {/* Logo */}
-                  <div className="scale-100 transition-transform duration-300 hover:scale-110">
-                    <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
-                    <img
-                      src={logoDark ?? logo}
-                      alt={`${companyName} Logo`}
-                      className="hidden size-6 dark:block"
-                    />
-                  </div>
+              <div className="flex items-center gap-3">
+                {/* Logo */}
+                <div className="scale-100 transition-transform duration-300 hover:scale-110">
+                  <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
+                  <img
+                    src={logoDark ?? logo}
+                    alt={`${companyName} Logo`}
+                    className="hidden size-6 dark:block"
+                  />
                 </div>
+
+                {/* Sidebar toggle button (visible when signed in) */}
+                <SidebarToggle />
+              </div>
 
                 {/* Clerk authentication controls */}
                 <div className="flex items-center gap-4">
