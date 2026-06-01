@@ -156,7 +156,7 @@ export default function ProfilePage() {
         {/* Board */}
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-1">
-            Board / Curriculum <span className="text-destructive">*</span>
+            Board <span className="text-destructive">*</span>
           </label>
           <select
             value={board}
@@ -166,11 +166,7 @@ export default function ProfilePage() {
           >
             <option value="" disabled>Select board</option>
             <option value="CBSE">CBSE</option>
-            <option value="ICSE">ICSE</option>
-            <option value="State Board">State Board</option>
-            <option value="IB">IB</option>
-            <option value="IGCSE">IGCSE</option>
-            <option value="Other">Other</option>
+            <option value="ICSE" disabled>ICSE</option>
           </select>
         </div>
 
@@ -243,7 +239,7 @@ export default function ProfilePage() {
                        cursor-pointer"
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            Recommended: square image, max 5 MB. Your photo will be shown on your profile.
+            Recommended: Max 1 MB. .jpg / .jpeg / .png / .
           </p>
         </div>
 
