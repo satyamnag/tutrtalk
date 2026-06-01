@@ -239,7 +239,7 @@ export default function ProfilePage() {
                        cursor-pointer"
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            Recommended: Max 1 MB. .jpg / .jpeg / .png / .
+            Recommended: Max 1 MB. (.jpg / .jpeg / .png)
           </p>
         </div>
 

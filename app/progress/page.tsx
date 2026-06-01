@@ -2,40 +2,59 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
 
-interface Answer {
-  id: number;
-  chapter: string;
-  question_text: string;
-  answer_text: string;
-  attempt_number: number;
-  created_at: string;
+interface TranscriptTurn {
+  role: 'agent' | 'user';
+  content: string;
+  timestamp: string;
+}
+
+interface Session {
+  sessionId: string;
+  startedAt: string;
+  endedAt: string;
+  duration: number; // seconds
+  chapters: string[];
+  totalQuestions: number;
+  transcript: TranscriptTurn[];
+}
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
 }
 
 export default function ProgressPage() {
-  const { isLoaded, isSignedIn, user } = useUser();
-  const [answers, setAnswers] = useState<Answer[]>([]);
+  const { isLoaded, isSignedIn } = useUser();
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fetched, setFetched] = useState(false);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!isSignedIn) {
       setLoading(false);
-      setFetched(true);
       return;
     }
-    fetch('/api/answers')
-      .then((res) => res.json())
-      .then((data) => setAnswers(data))
+    fetch('/api/sessions')
+      .then(res => res.json())
+      .then(setSessions)
       .catch(console.error)
-      .finally(() => {
-        setLoading(false);
-        setFetched(true);
-      });
+      .finally(() => setLoading(false));
   }, [isSignedIn]);
 
-  // While Clerk is loading or we haven't fetched yet – show loading
-  if (!isLoaded || !fetched) {
+  const toggleExpanded = (idx: number) => {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  if (!isLoaded || loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
@@ -50,28 +69,73 @@ export default function ProgressPage() {
   return (
     <main className="container mx-auto max-w-3xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold">Your Progress</h1>
-      {loading && (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-        </div>
+
+      {sessions.length === 0 && (
+        <p className="text-muted-foreground">No sessions recorded yet. Start a tutoring session!</p>
       )}
-      {!loading && answers.length === 0 && (
-        <p className="text-muted-foreground">No answers recorded yet. Start a tutoring session!</p>
-      )}
-      {!loading && answers.length > 0 && (
-        <div className="space-y-6">
-          {answers.map((ans) => (
-            <div key={ans.id} className="rounded-xl border p-4">
-              <p className="text-sm text-muted-foreground">
-                Chapter: {ans.chapter} &middot; Attempt #{ans.attempt_number} &middot;{' '}
-                {new Date(ans.created_at).toLocaleString()}
-              </p>
-              <p className="mt-2 font-semibold">Q: {ans.question_text}</p>
-              <p className="mt-1">A: {ans.answer_text}</p>
-            </div>
-          ))}
-        </div>
-      )}
+
+      <div className="space-y-4">
+        {sessions.map((session, idx) => (
+          <div key={session.sessionId} className="rounded-xl border bg-card">
+            {/* Session header */}
+            <button
+              onClick={() => toggleExpanded(idx)}
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-accent/50 transition-colors rounded-xl"
+            >
+              <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <div className="text-xs text-muted-foreground">Session</div>
+                  <div className="font-mono text-sm truncate" title={session.sessionId}>
+                    {session.sessionId.slice(0, 12)}...
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Started</div>
+                  <div className="text-sm">{new Date(session.startedAt).toLocaleString()}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Duration</div>
+                  <div className="text-sm">{formatDuration(session.duration)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Questions</div>
+                  <div className="text-sm">{session.totalQuestions}</div>
+                </div>
+              </div>
+              <div className="ml-4">
+                {expanded.has(idx) ? <ChevronDownIcon size={20} /> : <ChevronRightIcon size={20} />}
+              </div>
+            </button>
+
+            {/* Expanded transcript */}
+            {expanded.has(idx) && (
+              <div className="border-t px-4 py-3 space-y-3 max-h-96 overflow-y-auto">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {session.chapters.map(ch => (
+                    <span key={ch} className="text-xs bg-muted px-2 py-1 rounded-full">
+                      {ch}
+                    </span>
+                  ))}
+                </div>
+                {session.transcript.map((turn, i) => (
+                  <div key={i} className={`flex gap-3 ${turn.role === 'agent' ? 'justify-start' : 'justify-end'}`}>
+                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                      turn.role === 'agent'
+                        ? 'bg-muted text-foreground'
+                        : 'bg-primary text-primary-foreground ml-auto'
+                    }`}>
+                      <div className="text-xs opacity-70 mb-1">
+                        {turn.role === 'agent' ? 'TutorTalk' : 'You'} · {new Date(turn.timestamp).toLocaleTimeString()}
+                      </div>
+                      <div>{turn.content}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
