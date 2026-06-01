@@ -20,7 +20,7 @@ export async function GET() {
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 
-  // Group by session_id (fallback to "unknown" if missing)
+  // Group by session_id
   const sessionsMap = new Map<string, typeof answers>();
   for (const a of answers || []) {
     const sid = a.session_id || 'unknown';
@@ -28,38 +28,57 @@ export async function GET() {
     sessionsMap.get(sid)!.push(a);
   }
 
-  const sessionList = Array.from(sessionsMap.entries()).map(([sessionId, items]) => {
-    const timestamps = items.map(i => new Date(i.created_at).getTime());
-    const startedAt = new Date(Math.min(...timestamps)).toISOString();
-    const endedAt = new Date(Math.max(...timestamps)).toISOString();
-    const durationMs = Math.max(...timestamps) - Math.min(...timestamps);
-    const chapters = [...new Set(items.map(i => i.chapter))];
-    const totalQuestions = items.length;
+  const sessionList = await Promise.all(
+    Array.from(sessionsMap.entries()).map(async ([sessionId, items]) => {
+      const timestamps = items.map(i => new Date(i.created_at).getTime());
+      const startedAt = new Date(Math.min(...timestamps)).toISOString();
+      const endedAt = new Date(Math.max(...timestamps)).toISOString();
+      const durationMs = Math.max(...timestamps) - Math.min(...timestamps);
+      const totalQuestions = items.length;
 
-    // Transcript: array of turns
-    const transcript = items.map((item, idx) => [
-      {
-        role: 'agent',
-        content: item.question_text,
-        timestamp: item.created_at,  // using same timestamp as answer (approximate)
-      },
-      {
-        role: 'user',
-        content: item.answer_text,
-        timestamp: item.created_at,
-      },
-    ]).flat();
+      // Unique chapter names
+      const chapterNames = [...new Set(items.map(i => i.chapter))];
 
-    return {
-      sessionId,
-      startedAt,
-      endedAt,
-      duration: Math.round(durationMs / 1000), // seconds
-      chapters,
-      totalQuestions,
-      transcript,
-    };
-  });
+      // Get book names for these chapters (via chapters.book_id -> books.name)
+      let books: string[] = [];
+      if (chapterNames.length > 0) {
+        const { data: chapterRows } = await supabase
+          .from('chapters')
+          .select('name, books(name)')
+          .in('name', chapterNames);
+        if (chapterRows) {
+          books = [...new Set(chapterRows
+            .map((c: any) => c.books?.name)
+            .filter(Boolean) as string[])];
+        }
+      }
+
+      // Transcript
+      const transcript = items.map(item => [
+        {
+          role: 'agent',
+          content: item.question_text,
+          timestamp: item.created_at,
+        },
+        {
+          role: 'user',
+          content: item.answer_text,
+          timestamp: item.created_at,
+        },
+      ]).flat();
+
+      return {
+        sessionId,
+        startedAt,
+        endedAt,
+        duration: Math.round(durationMs / 1000),
+        chapters: chapterNames,
+        books,
+        totalQuestions,
+        transcript,
+      };
+    })
+  );
 
   // Sort by startedAt descending
   sessionList.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());

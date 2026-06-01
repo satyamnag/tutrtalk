@@ -22,6 +22,7 @@ interface Session {
   endedAt: string;
   duration: number; // seconds
   chapters: string[];
+  books: string[];
   totalQuestions: number;
   transcript: TranscriptTurn[];
 }
@@ -64,7 +65,6 @@ export default function ProgressPage() {
     });
   };
 
-  // Wait until Clerk is loaded AND the API has responded
   if (!isLoaded || !dataReady) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -79,7 +79,7 @@ export default function ProgressPage() {
 
   return (
     <main className="container mx-auto max-w-3xl px-4 py-16">
-      <h1 className="mb-8 text-3xl font-bold">Your Sessions</h1>
+      <h1 className="mb-8 text-3xl font-bold text-center">Your Sessions</h1>
 
       {sessions.length === 0 && (
         <div className="text-center py-16">
@@ -97,18 +97,12 @@ export default function ProgressPage() {
             key={session.sessionId}
             className="rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow"
           >
-            {/* Session header */}
+            {/* Session header – no session ID displayed */}
             <button
               onClick={() => toggleExpanded(idx)}
               className="w-full flex items-center justify-between p-5 text-left group"
             >
               <div className="flex-1 space-y-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded-full">
-                    {session.sessionId.slice(0, 12)}…
-                  </span>
-                </div>
-
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex items-center gap-2">
                     <ClockIcon size={16} className="text-muted-foreground" />
@@ -151,6 +145,21 @@ export default function ProgressPage() {
                   </div>
                 </div>
 
+                {/* Books (if any) */}
+                {session.books.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {session.books.map((book) => (
+                      <span
+                        key={book}
+                        className="text-xs bg-secondary/10 text-secondary-foreground px-2.5 py-0.5 rounded-full font-medium"
+                      >
+                        {book}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Chapters */}
                 <div className="flex flex-wrap gap-1.5">
                   {session.chapters.map((ch) => (
                     <span
