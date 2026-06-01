@@ -192,7 +192,7 @@ export default function ProgressPage() {
                     >
                       <div className="flex items-center justify-between mb-1 gap-2">
                         <span className="text-xs font-semibold opacity-80">
-                          {turn.role === 'agent' ? 'TutorTalk' : 'You'}
+                          {turn.role === 'agent' ? 'TutrTalk' : 'You'}
                         </span>
                         <span className="text-xs opacity-60">
                           {new Date(turn.timestamp).toLocaleTimeString([], {
