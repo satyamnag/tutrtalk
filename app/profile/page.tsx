@@ -195,16 +195,16 @@ export default function ProfilePage() {
           >
             <option value="" disabled>Select language</option>
             <option value="English">English</option>
-            <option value="Hindi">Hindi</option>
-            <option value="Bengali">Bengali</option>
-            <option value="Marathi">Marathi</option>
-            <option value="Telugu">Telugu</option>
-            <option value="Tamil">Tamil</option>
-            <option value="Gujarati">Gujarati</option>
-            <option value="Urdu">Urdu</option>
-            <option value="Kannada">Kannada</option>
-            <option value="Odia">Odia</option>
-            <option value="Malayalam">Malayalam</option>
+            <option value="Hindi" disabled>Hindi</option>
+            <option value="Bengali" disabled>Bengali</option>
+            <option value="Marathi" disabled>Marathi</option>
+            <option value="Telugu" disabled>Telugu</option>
+            <option value="Tamil" disabled>Tamil</option>
+            <option value="Gujarati" disabled>Gujarati</option>
+            <option value="Urdu" disabled>Urdu</option>
+            <option value="Kannada" disabled>Kannada</option>
+            <option value="Odia" disabled>Odia</option>
+            <option value="Malayalam" disabled>Malayalam</option>
           </select>
         </div>
 
