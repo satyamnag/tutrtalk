@@ -1,5 +1,6 @@
 'use client';
 
+import React, { createContext, useContext, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
@@ -10,9 +11,56 @@ import {
   UserCircleIcon,
   ShieldCheckIcon,
   SettingsIcon,
+  PanelLeftOpenIcon,
+  PanelLeftCloseIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 
+// ---- Context ----
+interface SidebarContextValue {
+  open: boolean;
+  setOpen: (v: boolean) => void;
+}
+const SidebarContext = createContext<SidebarContextValue>({
+  open: false,
+  setOpen: () => {},
+});
+
+export function SidebarProvider({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <SidebarContext.Provider value={{ open, setOpen }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+}
+
+function useSidebar() {
+  return useContext(SidebarContext);
+}
+
+// ---- Toggle Button (placed in header) ----
+export function SidebarToggle() {
+  const { open, setOpen } = useSidebar();
+  const { isSignedIn } = useUser();
+
+  if (!isSignedIn) return null;
+
+  const Icon = open ? PanelLeftCloseIcon : PanelLeftOpenIcon;
+
+  return (
+    <button
+      onClick={() => setOpen(!open)}
+      className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+      title={open ? 'Close sidebar' : 'Open sidebar'}
+      aria-label={open ? 'Close sidebar' : 'Open sidebar'}
+    >
+      <Icon size={20} />
+    </button>
+  );
+}
+
+// ---- Sidebar ----
 const navItems = [
   { href: '/', label: 'Home', icon: HomeIcon },
   { href: '/progress', label: 'Progress', icon: ActivityIcon },
@@ -22,73 +70,95 @@ const navItems = [
 ];
 
 export function Sidebar() {
+  const { open, setOpen } = useSidebar();
   const { isLoaded, isSignedIn, user } = useUser();
   const pathname = usePathname();
 
   const isAdmin = user?.primaryEmailAddress?.emailAddress === 'famerelay@gmail.com';
 
-  // Always render the sidebar container to prevent layout shift
+  // Always render the aside (fixed position) for smooth slide animation
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-svh w-16 flex-col items-center border-r bg-background/80 backdrop-blur-sm pt-20 shadow-sm">
-      {/* Authenticated navigation */}
-      {isLoaded && isSignedIn && (
-        <nav className="flex flex-col items-center gap-4">
+    <aside
+      className={cn(
+        'fixed left-0 top-0 z-40 flex h-svh w-64 flex-col border-r bg-background/95 backdrop-blur-md shadow-lg',
+        'transition-transform duration-300 ease-in-out',
+        open ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
+      {/* Header area */}
+      <div className="flex items-center justify-between p-4 pt-20">
+        <span className="font-semibold text-sm">Navigation</span>
+        <button
+          onClick={() => setOpen(false)}
+          className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+          aria-label="Close sidebar"
+        >
+          <PanelLeftCloseIcon size={18} />
+        </button>
+      </div>
+
+      {/* Navigation links – only visible when authenticated and loaded */}
+      {isLoaded && isSignedIn ? (
+        <nav className="flex flex-col gap-1 px-3">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              title={item.label}
               className={cn(
-                'group flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                 pathname === item.href
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
+              onClick={() => setOpen(false)}
             >
-              <item.icon size={20} />
-              <span className="sr-only">{item.label}</span>
+              <item.icon size={18} />
+              <span>{item.label}</span>
             </Link>
           ))}
           {isAdmin && (
             <Link
               href="/qa"
-              title="Manage Questions"
               className={cn(
-                'group flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                 pathname === '/qa'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
+              onClick={() => setOpen(false)}
             >
-              <SettingsIcon size={20} />
-              <span className="sr-only">Manage Questions</span>
+              <SettingsIcon size={18} />
+              <span>Manage Questions</span>
             </Link>
           )}
         </nav>
-      )}
-
-      {/* Loading placeholder */}
-      {(!isLoaded || !isSignedIn) && (
-        <nav className="flex flex-col items-center gap-4 animate-pulse">
+      ) : (
+        <nav className="flex flex-col gap-2 px-3 animate-pulse">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-10 w-10 rounded-lg bg-muted" />
+            <div key={i} className="h-8 w-full rounded-lg bg-muted" />
           ))}
         </nav>
       )}
 
-      {/* User avatar at bottom (only when signed in) */}
+      {/* User avatar at bottom */}
       {isLoaded && isSignedIn && (
-        <div className="mt-auto mb-6">
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-muted">
-            {user?.imageUrl ? (
-              <img
-                src={user.imageUrl}
-                alt="Avatar"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <UserCircleIcon size={24} className="text-muted-foreground" />
-            )}
+        <div className="mt-auto p-4 border-t">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-muted">
+              {user?.imageUrl ? (
+                <img src={user.imageUrl} alt="Avatar" className="h-full w-full object-cover" />
+              ) : (
+                <UserCircleIcon size={20} className="text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {user?.fullName || user?.primaryEmailAddress?.emailAddress}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.primaryEmailAddress?.emailAddress}
+              </p>
+            </div>
           </div>
         </div>
       )}

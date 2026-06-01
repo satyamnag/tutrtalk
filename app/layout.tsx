@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { ClerkProvider, SignInButton, UserButton, Show } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
-import { Sidebar } from '@/components/app/sidebar';      // <-- new
+import { SidebarProvider, Sidebar, SidebarToggle } from '@/components/app/sidebar';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -80,50 +80,54 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             enableSystem
             disableTransitionOnChange
           >
-            <header className="fixed top-0 left-0 z-50 hidden w-full flex-row justify-between p-6 md:flex">
-              {/* Logo – non‑clickable, with hover animation */}
-              <div className="scale-100 transition-transform duration-300 hover:scale-110">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={logoDark ?? logo}
-                  alt={`${companyName} Logo`}
-                  className="hidden size-6 dark:block"
-                />
-              </div>
-              {/* Clerk authentication controls */}
-              <div className="flex items-center gap-4">
-                <Show when="signed-out">
-                  <SignInButton mode="modal">
-                    <button className="text-foreground font-mono text-xs font-bold tracking-wider uppercase underline underline-offset-4 hover:opacity-80">
-                      Sign In
-                    </button>
-                  </SignInButton>
-                </Show>
-                <Show when="signed-in">
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: 'h-6 w-6',
-                      },
-                    }}
-                  />
-                </Show>
-              </div>
-            </header>
+            <SidebarProvider>
+              {/* Sidebar (always mounted, slides in/out) */}
+              <Sidebar />
 
-            {/* SIDEBAR – common across all pages (visible when signed in) */}
-            <Sidebar />
+              <header className="fixed top-0 left-0 z-50 flex w-full items-center justify-between p-6">
+                <div className="flex items-center gap-3">
+                  {/* Sidebar toggle button (visible when signed in) */}
+                  <SidebarToggle />
 
-            {/* Main content area – add left margin when sidebar is shown */}
-            <div className="lg:ml-16 transition-all">
+                  {/* Logo */}
+                  <div className="scale-100 transition-transform duration-300 hover:scale-110">
+                    <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
+                    <img
+                      src={logoDark ?? logo}
+                      alt={`${companyName} Logo`}
+                      className="hidden size-6 dark:block"
+                    />
+                  </div>
+                </div>
+
+                {/* Clerk authentication controls */}
+                <div className="flex items-center gap-4">
+                  <Show when="signed-out">
+                    <SignInButton mode="modal">
+                      <button className="text-foreground font-mono text-xs font-bold tracking-wider uppercase underline underline-offset-4 hover:opacity-80">
+                        Sign In
+                      </button>
+                    </SignInButton>
+                  </Show>
+                  <Show when="signed-in">
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: 'h-6 w-6',
+                        },
+                      }}
+                    />
+                  </Show>
+                </div>
+              </header>
+
+              {/* Main content (no forced margin) */}
               {children}
-            </div>
 
-            <div className="group fixed bottom-0 left-1/2 z-50 mb-2 -translate-x-1/2">
-              <ThemeToggle className="translate-y-20 transition-transform delay-150 duration-300 group-hover:translate-y-0" />
-            </div>
+              <div className="group fixed bottom-0 left-1/2 z-50 mb-2 -translate-x-1/2">
+                <ThemeToggle className="translate-y-20 transition-transform delay-150 duration-300 group-hover:translate-y-0" />
+              </div>
+            </SidebarProvider>
           </ThemeProvider>
         </body>
       </html>
