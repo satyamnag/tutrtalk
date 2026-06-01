@@ -15,25 +15,50 @@ interface Answer {
 export default function ProgressPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isSignedIn) {
+      setLoading(false);
+      setFetched(true);
+      return;
+    }
     fetch('/api/answers')
       .then((res) => res.json())
-      .then(setAnswers)
-      .catch(console.error);
+      .then((data) => setAnswers(data))
+      .catch(console.error)
+      .finally(() => {
+        setLoading(false);
+        setFetched(true);
+      });
   }, [isSignedIn]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading…</div>;
+  // While Clerk is loading or we haven't fetched yet – show loading
+  if (!isLoaded || !fetched) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Please sign in.</div>;
   }
 
   return (
     <main className="container mx-auto max-w-3xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold">Your Progress</h1>
-      {answers.length === 0 ? (
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        </div>
+      )}
+      {!loading && answers.length === 0 && (
         <p className="text-muted-foreground">No answers recorded yet. Start a tutoring session!</p>
-      ) : (
+      )}
+      {!loading && answers.length > 0 && (
         <div className="space-y-6">
           {answers.map((ans) => (
             <div key={ans.id} className="rounded-xl border p-4">
