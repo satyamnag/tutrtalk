@@ -12,14 +12,14 @@ interface Answer {
   attempt_number: number;
   created_at: string;
   user_id: string;
+  correctness?: string;
 }
 
 export default function ReportPage() {
   const { isLoaded, isSignedIn } = useUser();
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Refs for SVG containers
+  
   const barChartRef = useRef<SVGSVGElement>(null);
   const struggleChartRef = useRef<SVGSVGElement>(null);
   const timeChartRef = useRef<SVGSVGElement>(null);
@@ -44,16 +44,12 @@ export default function ReportPage() {
       });
   }, [isSignedIn]);
 
-  // ----------------------------------------------------------------
-  // Helper functions for metrics
-  // ----------------------------------------------------------------
   const totalAnswers = answers.length;
   const uniqueChapters = new Set(answers.map(a => a.chapter)).size;
   const avgAttempts = answers.length
     ? (answers.reduce((sum, a) => sum + a.attempt_number, 0) / answers.length).toFixed(2)
     : '0';
 
-  // Compute streak (max consecutive days with at least one answer)
   const streak = (() => {
     const days = [...new Set(answers.map(a => d3.timeDay(new Date(a.created_at)).toISOString()))].sort();
     let maxStreak = 0, current = 1;
@@ -74,9 +70,14 @@ export default function ReportPage() {
     ? d3.max(answers, a => new Date(a.created_at))?.toLocaleDateString()
     : '';
 
-  // ----------------------------------------------------------------
-  // D3: Answers per Chapter (existing, unchanged)
-  // ----------------------------------------------------------------
+  const totalPoints = answers.reduce((sum, a) => {
+    if (a.correctness === 'correct') return sum + 3;
+    if (a.correctness === 'partial') return sum + 2;
+    if (a.correctness === 'wrong') return sum + 1;
+    return sum;
+  }, 0);
+
+  // D3 charts (unchanged)
   useEffect(() => {
     if (!answers.length || !barChartRef.current) return;
     const svg = d3.select(barChartRef.current);
@@ -104,9 +105,6 @@ export default function ReportPage() {
       .append('title').text(d => `${d.chapter}: ${d.count} answers`);
   }, [answers]);
 
-  // ----------------------------------------------------------------
-  // D3: Struggle Areas (existing, unchanged)
-  // ----------------------------------------------------------------
   useEffect(() => {
     if (!answers.length || !struggleChartRef.current) return;
     const svg = d3.select(struggleChartRef.current);
@@ -137,9 +135,6 @@ export default function ReportPage() {
       .append('title').text(d => `${d.chapter}: ${d.count} difficult questions`);
   }, [answers]);
 
-  // ----------------------------------------------------------------
-  // D3: Study Consistency (existing, unchanged)
-  // ----------------------------------------------------------------
   useEffect(() => {
     if (!answers.length || !timeChartRef.current) return;
     const svg = d3.select(timeChartRef.current);
@@ -163,11 +158,6 @@ export default function ReportPage() {
       .append('title').text(d => `${d.date.toLocaleDateString()}: ${d.count} answers`);
   }, [answers]);
 
-  // ----------------------------------------------------------------
-  // NEW VISUALIZATIONS
-  // ----------------------------------------------------------------
-
-  // 5. Chapter Share (Donut Chart)
   useEffect(() => {
     if (!answers.length || !donutChartRef.current) return;
     const svg = d3.select(donutChartRef.current);
@@ -191,7 +181,6 @@ export default function ReportPage() {
       .text(d => d.data.chapter.length > 8 ? d.data.chapter.slice(0,8)+'…' : d.data.chapter);
   }, [answers]);
 
-  // 6. Average Attempts per Chapter (Horizontal Bar)
   useEffect(() => {
     if (!answers.length || !avgAttemptsChartRef.current) return;
     const svg = d3.select(avgAttemptsChartRef.current);
@@ -214,7 +203,6 @@ export default function ReportPage() {
       .append('title').text(d => `${d.chapter}: avg ${d.avg} attempts`);
   }, [answers]);
 
-  // 7. Attempt Distribution (Histogram) – fixed bin generic
   useEffect(() => {
     if (!answers.length || !histogramChartRef.current) return;
     const svg = d3.select(histogramChartRef.current);
@@ -238,7 +226,6 @@ export default function ReportPage() {
       .append('title').text(d => `Attempt ${d.x0}–${d.x1}: ${d.length} questions`);
   }, [answers]);
 
-  // 8. Cumulative Answers Over Time (Line)
   useEffect(() => {
     if (!answers.length || !cumulativeChartRef.current) return;
     const svg = d3.select(cumulativeChartRef.current);
@@ -257,7 +244,6 @@ export default function ReportPage() {
     g.append('path').datum(cumData).attr('fill', 'none').attr('stroke', 'var(--chart-1)').attr('stroke-width', 2).attr('d', line);
   }, [answers]);
 
-  // 9. Answers by Day of Week (Bar)
   useEffect(() => {
     if (!answers.length || !dayOfWeekChartRef.current) return;
     const svg = d3.select(dayOfWeekChartRef.current);
@@ -281,7 +267,6 @@ export default function ReportPage() {
       .append('title').text(d => `${d.day}: ${d.count}`);
   }, [answers]);
 
-  // 10. Recent Activity (Last 7 Days Bar)
   useEffect(() => {
     if (!answers.length || !recentChartRef.current) return;
     const svg = d3.select(recentChartRef.current);
@@ -307,9 +292,6 @@ export default function ReportPage() {
       .append('title').text(d => `${d.date.toLocaleDateString()}: ${d.count}`);
   }, [answers]);
 
-  // ----------------------------------------------------------------
-  // UI
-  // ----------------------------------------------------------------
   if (!isLoaded || loading) {
     return <div className="flex h-screen items-center justify-center"><div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" /></div>;
   }
@@ -322,7 +304,7 @@ export default function ReportPage() {
       <h1 className="mb-8 text-3xl font-bold text-center">Your Performance Report</h1>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
         <div className="rounded-xl border p-4 text-center bg-card">
           <div className="text-2xl font-bold">{totalAnswers}</div>
           <div className="text-sm text-muted-foreground">Total Answers</div>
@@ -342,6 +324,10 @@ export default function ReportPage() {
         <div className="rounded-xl border p-4 text-center bg-card">
           <div className="text-lg font-bold">{lastSession}</div>
           <div className="text-sm text-muted-foreground">Last Session</div>
+        </div>
+        <div className="rounded-xl border p-4 text-center bg-card">
+          <div className="text-2xl font-bold">{totalPoints}</div>
+          <div className="text-sm text-muted-foreground">Total Points</div>
         </div>
       </div>
 
