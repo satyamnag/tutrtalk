@@ -10,7 +10,6 @@ import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
 import { Sidebar } from '@/components/app/sidebar';
 import { ChapterSelector } from '@/components/app/chapter-selector';
-import { ExamTypeSelector } from '@/components/app/exam-type-selector';
 import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
@@ -63,11 +62,6 @@ export function App({ appConfig }: AppProps) {
         visible={session.isConnected && !chapterSelected}
         onChapterSelected={() => setChapterSelected(true)}
       />
-
-      {/* Exam type selector */}
-      <div className="fixed top-20 right-4 z-50">
-        <ExamTypeSelector />
-      </div>
 
       <Toaster
         icons={{

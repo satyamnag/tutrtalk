@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { ExamTypeSelector } from '@/components/app/exam-type-selector';
 
 function WelcomeImage() {
   return (
@@ -44,6 +45,11 @@ export const WelcomeView = ({
         >
           {startButtonText}
         </Button>
+
+        {/* Study type selector – right below the Start button */}
+        <div className="mt-3">
+          <ExamTypeSelector />
+        </div>
       </section>
     </div>
   );
