@@ -15,6 +15,8 @@ interface TranscriptTurn {
   role: 'agent' | 'user';
   content: string;
   timestamp: string;
+  points?: number;
+  correctness?: string;
 }
 
 interface Session {
@@ -152,7 +154,7 @@ export default function ProgressPage() {
                     </div>
                   </div>
 
-                  {/* Points – NEW */}
+                  {/* Points */}
                   <div className="flex items-center gap-2">
                     <span className="text-yellow-500">⭐</span>
                     <div>
@@ -220,12 +222,29 @@ export default function ProgressPage() {
                         <span className="text-xs font-semibold opacity-80">
                           {turn.role === 'agent' ? 'TutrTalk' : 'You'}
                         </span>
-                        <span className="text-xs opacity-60">
-                          {new Date(turn.timestamp).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {turn.points !== undefined && (
+                            <span
+                              className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                                turn.correctness === 'correct'
+                                  ? 'bg-green-500/20 text-green-400'
+                                  : turn.correctness === 'partial'
+                                    ? 'bg-yellow-500/20 text-yellow-400'
+                                    : turn.correctness === 'wrong'
+                                      ? 'bg-red-500/20 text-red-400'
+                                      : 'bg-gray-500/20 text-gray-400'
+                              }`}
+                            >
+                              +{turn.points}
+                            </span>
+                          )}
+                          <span className="text-xs opacity-60">
+                            {new Date(turn.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
                       </div>
                       <div className="leading-relaxed whitespace-pre-wrap break-words">
                         {turn.content}

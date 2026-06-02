@@ -69,19 +69,29 @@ export async function GET() {
         }
       }
 
-      // Transcript
-      const transcript = items.map(item => [
-        {
-          role: 'agent',
-          content: item.question_text,
-          timestamp: item.created_at,
-        },
-        {
-          role: 'user',
-          content: item.answer_text,
-          timestamp: item.created_at,
-        },
-      ]).flat();
+      // Transcript – now includes points and correctness per turn
+      const transcript = items.map(item => {
+        const pts =
+          item.correctness === 'correct' ? 3 :
+          item.correctness === 'partial' ? 2 :
+          item.correctness === 'wrong' ? 1 : 0;
+        return [
+          {
+            role: 'agent' as const,
+            content: item.question_text,
+            timestamp: item.created_at,
+            points: undefined,
+            correctness: undefined,
+          },
+          {
+            role: 'user' as const,
+            content: item.answer_text,
+            timestamp: item.created_at,
+            points: pts,
+            correctness: item.correctness || 'skip',
+          },
+        ];
+      }).flat();
 
       return {
         sessionId,
