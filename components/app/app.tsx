@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { TokenSource } from 'livekit-client';
 import { useSession } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
@@ -9,6 +9,7 @@ import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provi
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
 import { Sidebar } from '@/components/app/sidebar';
+import { ChapterSelector } from '@/components/app/chapter-selector';
 import { ExamTypeSelector } from '@/components/app/exam-type-selector';
 import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
@@ -46,6 +47,7 @@ export function App({ appConfig }: AppProps) {
   }, [appConfig.agentName]);
 
   const session = useSession(tokenSource, sessionOptions);
+  const [chapterSelected, setChapterSelected] = useState(false);
 
   return (
     <AgentSessionProvider session={session}>
@@ -56,7 +58,13 @@ export function App({ appConfig }: AppProps) {
       </main>
       <StartAudioButton label="Start Audio" />
 
-      {/* Exam type selector – bottom‑right */}
+      {/* Chapter selector popup */}
+      <ChapterSelector
+        visible={session.isConnected && !chapterSelected}
+        onChapterSelected={() => setChapterSelected(true)}
+      />
+
+      {/* Exam type selector */}
       <div className="fixed top-20 right-4 z-50">
         <ExamTypeSelector />
       </div>
