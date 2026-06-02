@@ -8,7 +8,8 @@ import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
-import { Sidebar } from '@/components/app/sidebar'; // <-- new
+import { Sidebar } from '@/components/app/sidebar';
+import { ExamTypeSelector } from '@/components/app/exam-type-selector';
 import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
@@ -49,11 +50,17 @@ export function App({ appConfig }: AppProps) {
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
-      <Sidebar /> {/* new sidebar */}
+      <Sidebar />
       <main className="grid h-svh grid-cols-1 place-content-center">
         <ViewController appConfig={appConfig} />
       </main>
       <StartAudioButton label="Start Audio" />
+
+      {/* Exam type selector – bottom‑right */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <ExamTypeSelector />
+      </div>
+
       <Toaster
         icons={{
           warning: <WarningIcon weight="bold" />,
