@@ -223,21 +223,23 @@ export default function ProgressPage() {
                           {turn.role === 'agent' ? 'TutrTalk' : 'You'}
                         </span>
                         <div className="flex items-center gap-2">
-                          {turn.points !== undefined && (
-                            <span
-                              className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-                                turn.correctness === 'correct'
-                                  ? 'bg-green-500/20 text-green-400'
-                                  : turn.correctness === 'partial'
-                                    ? 'bg-yellow-500/20 text-yellow-400'
-                                    : turn.correctness === 'wrong'
-                                      ? 'bg-red-500/20 text-red-400'
-                                      : 'bg-gray-500/20 text-gray-400'
-                              }`}
-                            >
-                              +{turn.points}
-                            </span>
-                          )}
+                        // app/progress/page.tsx (only the points badge span changes)
+
+                        {turn.points !== undefined && (
+                          <span
+                            className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                              turn.correctness === 'correct'
+                                ? 'bg-green-500/30 text-green-300'
+                                : turn.correctness === 'partial'
+                                  ? 'bg-yellow-500/30 text-yellow-300'
+                                  : turn.correctness === 'wrong'
+                                    ? 'bg-red-500/30 text-red-300'
+                                    : 'bg-gray-500/30 text-gray-300'
+                            }`}
+                          >
+                            +{turn.points}
+                          </span>
+                        )}
                           <span className="text-xs opacity-60">
                             {new Date(turn.timestamp).toLocaleTimeString([], {
                               hour: '2-digit',
