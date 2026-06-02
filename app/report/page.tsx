@@ -1,3 +1,4 @@
+// app/report/page.tsx
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -29,6 +30,8 @@ export default function ReportPage() {
   const cumulativeChartRef = useRef<SVGSVGElement>(null);
   const dayOfWeekChartRef = useRef<SVGSVGElement>(null);
   const recentChartRef = useRef<SVGSVGElement>(null);
+  const correctnessDonutRef = useRef<SVGSVGElement>(null);
+  const pointsPerChapterRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -292,6 +295,59 @@ export default function ReportPage() {
       .append('title').text(d => `${d.date.toLocaleDateString()}: ${d.count}`);
   }, [answers]);
 
+  // 11. Correctness Distribution (Donut Chart)
+  useEffect(() => {
+    if (!answers.length || !correctnessDonutRef.current) return;
+    const svg = d3.select(correctnessDonutRef.current);
+    svg.selectAll('*').remove();
+    const data = [
+      { label: 'Correct (3 pts)', count: answers.filter(a => a.correctness === 'correct').length, color: '#22c55e' },
+      { label: 'Partial (2 pts)', count: answers.filter(a => a.correctness === 'partial').length, color: '#f59e0b' },
+      { label: 'Wrong (1 pt)', count: answers.filter(a => a.correctness === 'wrong').length, color: '#ef4444' },
+      { label: 'Skipped (0 pts)', count: answers.filter(a => a.correctness === 'skip' || !a.correctness).length, color: '#6b7280' },
+    ].filter(d => d.count > 0);
+
+    const radius = 100;
+    const arc = d3.arc<any>().innerRadius(50).outerRadius(radius);
+    const pie = d3.pie<{ label: string; count: number; color: string }>().value(d => d.count).sort(null);
+    const g = svg.append('g').attr('transform', `translate(250,125)`);
+    g.selectAll('path').data(pie(data)).join('path')
+      .attr('d', arc).attr('fill', d => d.data.color).attr('stroke', 'var(--background)').attr('stroke-width', 1)
+      .append('title').text(d => `${d.data.label}: ${d.data.count}`);
+    g.selectAll('text').data(pie(data)).join('text')
+      .attr('transform', d => `translate(${arc.centroid(d)})`)
+      .attr('text-anchor', 'middle').attr('dy', '0.35em').attr('font-size', '9px').attr('fill', 'var(--foreground)')
+      .text(d => d.data.count);
+  }, [answers]);
+
+  // 12. Points per Chapter (Bar Chart)
+  useEffect(() => {
+    if (!answers.length || !pointsPerChapterRef.current) return;
+    const svg = d3.select(pointsPerChapterRef.current);
+    svg.selectAll('*').remove();
+    const pointsData = d3.rollups(answers, v => v.reduce((sum, a) => {
+      if (a.correctness === 'correct') return sum + 3;
+      if (a.correctness === 'partial') return sum + 2;
+      if (a.correctness === 'wrong') return sum + 1;
+      return sum;
+    }, 0), d => d.chapter).map(([ch, pts]) => ({ chapter: ch, points: pts }))
+      .sort((a, b) => a.chapter.localeCompare(b.chapter));
+    const margin = { top: 20, right: 20, bottom: 50, left: 40 };
+    const width = 500 - margin.left - margin.right;
+    const height = 250 - margin.top - margin.bottom;
+    const x = d3.scaleBand().domain(pointsData.map(d => d.chapter)).range([0, width]).padding(0.2);
+    const y = d3.scaleLinear().domain([0, d3.max(pointsData, d => d.points) || 0]).nice().range([height, 0]);
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+    g.append('g').call(d3.axisLeft(y).ticks(5)).selectAll('text').attr('font-size', '10px');
+    g.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x)).selectAll('text')
+      .attr('transform', 'rotate(-30)').style('text-anchor', 'end').attr('font-size', '10px');
+    g.selectAll('.bar').data(pointsData).join('rect')
+      .attr('x', d => x(d.chapter)!).attr('y', d => y(d.points))
+      .attr('width', x.bandwidth()).attr('height', d => height - y(d.points))
+      .attr('fill', 'var(--chart-4)').attr('rx', 2)
+      .append('title').text(d => `${d.chapter}: ${d.points} pts`);
+  }, [answers]);
+
   if (!isLoaded || loading) {
     return <div className="flex h-screen items-center justify-center"><div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" /></div>;
   }
@@ -369,6 +425,14 @@ export default function ReportPage() {
           <div className="rounded-xl border p-4 bg-card">
             <h2 className="text-lg font-semibold mb-2">Last 7 Days Activity</h2>
             <svg ref={recentChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+          </div>
+          <div className="rounded-xl border p-4 bg-card">
+            <h2 className="text-lg font-semibold mb-2">Correctness Breakdown</h2>
+            <svg ref={correctnessDonutRef} width="100%" height="250" viewBox="0 0 500 250" />
+          </div>
+          <div className="rounded-xl border p-4 bg-card">
+            <h2 className="text-lg font-semibold mb-2">Points per Chapter</h2>
+            <svg ref={pointsPerChapterRef} width="100%" height="250" viewBox="0 0 500 250" />
           </div>
         </div>
       ) : (

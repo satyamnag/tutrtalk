@@ -36,6 +36,22 @@ export async function GET() {
       const durationMs = Math.max(...timestamps) - Math.min(...timestamps);
       const totalQuestions = items.length;
 
+      // Points calculation
+      const points = items.reduce((sum, item) => {
+        if (item.correctness === 'correct') return sum + 3;
+        if (item.correctness === 'partial') return sum + 2;
+        if (item.correctness === 'wrong') return sum + 1;
+        return sum;
+      }, 0);
+
+      // Correctness breakdown
+      const correctness = {
+        correct: items.filter(i => i.correctness === 'correct').length,
+        partial: items.filter(i => i.correctness === 'partial').length,
+        wrong: items.filter(i => i.correctness === 'wrong').length,
+        skip: items.filter(i => i.correctness === 'skip' || !i.correctness).length,
+      };
+
       // Unique chapter names
       const chapterNames = [...new Set(items.map(i => i.chapter))];
 
@@ -75,6 +91,8 @@ export async function GET() {
         chapters: chapterNames,
         books,
         totalQuestions,
+        points,
+        correctness,
         transcript,
       };
     })

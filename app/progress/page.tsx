@@ -1,3 +1,4 @@
+// app/progress/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -24,6 +25,13 @@ interface Session {
   chapters: string[];
   books: string[];
   totalQuestions: number;
+  points: number;
+  correctness?: {
+    correct: number;
+    partial: number;
+    wrong: number;
+    skip: number;
+  };
   transcript: TranscriptTurn[];
 }
 
@@ -103,7 +111,7 @@ export default function ProgressPage() {
               className="w-full flex items-center justify-between p-5 text-left group"
             >
               <div className="flex-1 space-y-3">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div className="flex items-center gap-2">
                     <ClockIcon size={16} className="text-muted-foreground" />
                     <div>
@@ -141,6 +149,15 @@ export default function ProgressPage() {
                     <div>
                       <div className="text-xs text-muted-foreground">Chapters</div>
                       <div className="text-sm font-medium">{session.chapters.length}</div>
+                    </div>
+                  </div>
+
+                  {/* Points – NEW */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-yellow-500">⭐</span>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Points</div>
+                      <div className="text-sm font-medium">{session.points}</div>
                     </div>
                   </div>
                 </div>
