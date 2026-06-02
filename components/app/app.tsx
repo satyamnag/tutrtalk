@@ -57,7 +57,7 @@ export function App({ appConfig }: AppProps) {
       <StartAudioButton label="Start Audio" />
 
       {/* Exam type selector – bottom‑right */}
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed top-20 right-4 z-50">
         <ExamTypeSelector />
       </div>
 
