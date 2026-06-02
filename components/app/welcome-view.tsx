@@ -33,9 +33,9 @@ export const WelcomeView = ({
       <section className="bg-background flex flex-col items-center justify-center text-center">
         <WelcomeImage />
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with TutrTalk: your daily chapter revision tutor.
-        </p>
+        <p className="text-foreground text-xl font-bold tracking-tight">TutrTalk</p>
+        <p className="text-muted-foreground text-lg font-medium">Your Daily Revision Tutor</p>
+        <p className="text-muted-foreground text-sm mt-1">Chat. Revise. Remember. Score.</p>
 
         <Button
           size="lg"
