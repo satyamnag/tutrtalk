@@ -223,7 +223,6 @@ export default function ProgressPage() {
                           {turn.role === 'agent' ? 'TutrTalk' : 'You'}
                         </span>
                         <div className="flex items-center gap-2">
-                        // app/progress/page.tsx (only the points badge span changes)
 
                         {turn.points !== undefined && (
                           <span
