@@ -13,6 +13,7 @@ import {
   SettingsIcon,
   PanelLeftCloseIcon,
   MenuIcon,
+  XIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 
@@ -107,8 +108,8 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        {/* Top bar: logo only */}
-        <div className="flex items-center px-4 py-3 mt-14">
+        {/* Top bar: logo (left) + X close button (right) */}
+        <div className="flex items-center justify-between px-4 py-3 mt-14">
           <div className="flex items-center gap-2">
             <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
             <img
@@ -117,6 +118,13 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
               className="hidden size-6 dark:block"
             />
           </div>
+          <button
+            onClick={() => setOpen(false)}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            aria-label="Close sidebar"
+          >
+            <XIcon size={20} />
+          </button>
         </div>
 
         {/* Navigation links */}
