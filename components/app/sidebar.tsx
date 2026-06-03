@@ -11,7 +11,6 @@ import {
   UserCircleIcon,
   ShieldCheckIcon,
   SettingsIcon,
-  PanelLeftCloseIcon,
   MenuIcon,
   XIcon,
 } from 'lucide-react';
@@ -40,7 +39,7 @@ function useSidebar() {
   return useContext(SidebarContext);
 }
 
-// ---- Header Logo (text only, always visible) ----
+// ---- Header Logo (hides when sidebar is open) ----
 export function HeaderLogo() {
   const { open } = useSidebar();
   if (open) return null;
@@ -49,23 +48,24 @@ export function HeaderLogo() {
   );
 }
 
-// ---- Toggle Button (placed in header) ----
+// ---- Toggle Button (only menu icon when closed; hidden when open) ----
 export function SidebarToggle() {
   const { open, setOpen } = useSidebar();
   const { isLoaded, isSignedIn } = useUser();
 
-  const Icon = open ? PanelLeftCloseIcon : MenuIcon;
+  // Only show the menu button when the sidebar is closed
+  if (open) return null;
 
   return (
     <div className="h-10 w-10 flex items-center justify-center">
       {isLoaded && isSignedIn && (
         <button
-          onClick={() => setOpen(!open)}
+          onClick={() => setOpen(true)}
           className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          title={open ? 'Close sidebar' : 'Open sidebar'}
-          aria-label={open ? 'Close sidebar' : 'Open sidebar'}
+          title="Open sidebar"
+          aria-label="Open sidebar"
         >
-          <Icon size={20} />
+          <MenuIcon size={20} />
         </button>
       )}
     </div>
