@@ -83,15 +83,15 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           >
             <SidebarProvider>
               {/* Sidebar (always mounted, slides in/out) */}
-              <Sidebar />
+              <Sidebar logo={logo} logoDark={logoDark} />
 
               <header className="fixed top-0 left-0 z-50 flex w-full items-center justify-between p-6">
                 <div className="flex items-center gap-3">
                   {/* Sidebar toggle button (visible when signed in) */}
                   <SidebarToggle />
 
-                  {/* Logo with conditional text (via HeaderLogo) */}
-                  <HeaderLogo logo={logo} logoDark={logoDark} />
+                  {/* Text-only logo */}
+                  <HeaderLogo />
                 </div>
 
                 {/* Clerk sign-in button (only when signed out) */}

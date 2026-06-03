@@ -14,6 +14,7 @@ import {
   SettingsIcon,
   PanelLeftCloseIcon,
   MenuIcon,
+  XIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 
@@ -40,24 +41,10 @@ function useSidebar() {
   return useContext(SidebarContext);
 }
 
-// ---- Header Logo (text always visible, logo only when sidebar is open) ----
-export function HeaderLogo({ logo, logoDark }: { logo: string; logoDark?: string }) {
-  const { open } = useSidebar();
-
+// ---- Header Logo (text only, always visible) ----
+export function HeaderLogo() {
   return (
-    <div className="flex items-center gap-2">
-      {open && (
-        <>
-          <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
-          <img
-            src={logoDark ?? logo}
-            alt="TutrTalk Logo"
-            className="hidden size-6 dark:block"
-          />
-        </>
-      )}
-      <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
-    </div>
+    <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
   );
 }
 
@@ -93,7 +80,12 @@ const navItems = [
   // { href: '/guardian', label: 'Guardian', icon: ShieldCheckIcon },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  logo: string;
+  logoDark?: string;
+}
+
+export function Sidebar({ logo, logoDark }: SidebarProps) {
   const { open, setOpen } = useSidebar();
   const { isLoaded, isSignedIn, user } = useUser();
   const pathname = usePathname();
@@ -117,9 +109,28 @@ export function Sidebar() {
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
+        {/* Top bar: logo (left) + X close button (right) */}
+        <div className="flex items-center justify-between px-4 py-3 mt-14">
+          <div className="flex items-center gap-2">
+            <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
+            <img
+              src={logoDark ?? logo}
+              alt="TutrTalk Logo"
+              className="hidden size-6 dark:block"
+            />
+          </div>
+          <button
+            onClick={() => setOpen(false)}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            aria-label="Close sidebar"
+          >
+            <XIcon size={20} />
+          </button>
+        </div>
+
         {/* Navigation links */}
         {isLoaded && isSignedIn ? (
-          <nav className="flex flex-col gap-1 px-3 mt-20">
+          <nav className="flex flex-col gap-1 px-3 mt-2">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -153,7 +164,7 @@ export function Sidebar() {
             )}
           </nav>
         ) : (
-          <nav className="flex flex-col gap-2 px-3 mt-20 animate-pulse">
+          <nav className="flex flex-col gap-2 px-3 mt-2 animate-pulse">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="h-8 w-full rounded-lg bg-muted" />
             ))}
