@@ -14,6 +14,7 @@ import {
   SettingsIcon,
   PanelLeftOpenIcon,
   PanelLeftCloseIcon,
+  MenuIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 
@@ -64,7 +65,7 @@ export function SidebarToggle() {
   const { open, setOpen } = useSidebar();
   const { isLoaded, isSignedIn } = useUser();
 
-  const Icon = open ? PanelLeftCloseIcon : PanelLeftOpenIcon;
+  const Icon = open ? PanelLeftCloseIcon : MenuIcon;
 
   return (
     <div className="h-10 w-10 flex items-center justify-center">
