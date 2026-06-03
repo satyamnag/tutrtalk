@@ -42,6 +42,8 @@ function useSidebar() {
 
 // ---- Header Logo (text only, always visible) ----
 export function HeaderLogo() {
+  const { open } = useSidebar();
+  if (open) return null;
   return (
     <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
   );
