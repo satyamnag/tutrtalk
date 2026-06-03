@@ -1,3 +1,4 @@
+// components/app/app.tsx
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -51,6 +52,7 @@ export function App({ appConfig }: AppProps) {
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
+      <Sidebar />
       <main className="grid h-svh grid-cols-1 place-content-center">
         <ViewController appConfig={appConfig} />
       </main>
