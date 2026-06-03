@@ -12,7 +12,6 @@ import {
   UserCircleIcon,
   ShieldCheckIcon,
   SettingsIcon,
-  PanelLeftOpenIcon,
   PanelLeftCloseIcon,
   MenuIcon,
 } from 'lucide-react';
@@ -41,21 +40,23 @@ function useSidebar() {
   return useContext(SidebarContext);
 }
 
-// ---- Header Logo (uses sidebar state to show/hide text) ----
+// ---- Header Logo (text always visible, logo only when sidebar is open) ----
 export function HeaderLogo({ logo, logoDark }: { logo: string; logoDark?: string }) {
   const { open } = useSidebar();
 
   return (
     <div className="flex items-center gap-2">
-      <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
-      <img
-        src={logoDark ?? logo}
-        alt="TutrTalk Logo"
-        className="hidden size-6 dark:block"
-      />
       {open && (
-        <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
+        <>
+          <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
+          <img
+            src={logoDark ?? logo}
+            alt="TutrTalk Logo"
+            className="hidden size-6 dark:block"
+          />
+        </>
       )}
+      <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
     </div>
   );
 }
