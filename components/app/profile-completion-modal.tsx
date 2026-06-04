@@ -1,53 +1,19 @@
 'use client';
 
-import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { UserCircleIcon, Loader2Icon } from 'lucide-react';
-import { ExamTypeSelector } from '@/components/app/exam-type-selector';
+import { UserCircleIcon } from 'lucide-react';
 
 interface ProfileCompletionModalProps {
   visible: boolean;
-  onComplete: () => void;
 }
 
-export function ProfileCompletionModal({ visible, onComplete }: ProfileCompletionModalProps) {
+export function ProfileCompletionModal({ visible }: ProfileCompletionModalProps) {
   const { isLoaded, isSignedIn } = useUser();
-  const [name, setName] = useState('');
-  const [className, setClassName] = useState('');
-  const [board, setBoard] = useState('');
-  const [studyType, setStudyType] = useState('general-studies');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const router = useRouter();
 
   if (!isLoaded || !isSignedIn || !visible) return null;
-
-  const handleSave = async () => {
-    if (!name.trim() || !className.trim() || !board.trim()) {
-      setError('Please fill in all required fields.');
-      return;
-    }
-    setSaving(true);
-    setError('');
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          class: className.trim(),
-          board: board.trim(),
-          study_type: studyType,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to save');
-      onComplete();
-    } catch (err) {
-      setError('Failed to save profile. Please try again.');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <AnimatePresence>
@@ -72,85 +38,30 @@ export function ProfileCompletionModal({ visible, onComplete }: ProfileCompletio
               <div>
                 <h2 className="text-lg font-bold">Complete Your Profile</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  Fill in the details below to start your first session
+                  Please set up your profile before starting your first session
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="px-6 py-4 space-y-4">
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Full Name <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                placeholder="Your academic name"
-                required
-              />
-            </div>
-
-            {/* Class */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Class <span className="text-destructive">*</span>
-              </label>
-              <select
-                value={className}
-                onChange={(e) => setClassName(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                required
-              >
-                <option value="" disabled>Select class</option>
-                <option value="10th">10th</option>
-              </select>
-            </div>
-
-            {/* Board */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Board <span className="text-destructive">*</span>
-              </label>
-              <select
-                value={board}
-                onChange={(e) => setBoard(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                required
-              >
-                <option value="" disabled>Select board</option>
-                <option value="CBSE">CBSE</option>
-              </select>
-            </div>
-
-            {/* Study Type */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Study Type <span className="text-destructive">*</span>
-              </label>
-              <ExamTypeSelector
-                value={studyType}
-                onValueChange={setStudyType}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              />
-            </div>
-
-            {error && (
-              <p className="text-sm text-destructive text-center">{error}</p>
-            )}
+          <div className="px-6 py-4">
+            <p className="text-sm text-muted-foreground mb-2">
+              The following details are required:
+            </p>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+              <li>Full Name</li>
+              <li>Class</li>
+              <li>Board</li>
+              <li>Study Type</li>
+            </ul>
           </div>
 
           <div className="px-6 py-4 border-t">
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              onClick={() => router.push('/profile')}
+              className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              {saving && <Loader2Icon size={16} className="animate-spin" />}
-              {saving ? 'Saving...' : 'Save & Start Learning'}
+              Go to Profile
             </button>
           </div>
         </motion.div>

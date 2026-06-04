@@ -124,7 +124,6 @@ export function App({ appConfig }: AppProps) {
       <AppSetup />
       <ProfileCompletionModal
         visible={profileChecked && !profileComplete}
-        onComplete={() => setProfileComplete(true)}
       />
 
       {!profileChecked ? (
