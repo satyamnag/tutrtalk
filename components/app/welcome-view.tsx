@@ -48,7 +48,7 @@ export const WelcomeView = ({
 
         {/* Study type selector – right below the Start button */}
         <div className="mt-3">
-          <ExamTypeSelector />
+        <ExamTypeSelector className="w-[180px] rounded-full bg-background/90 backdrop-blur-sm shadow-lg border text-sm font-medium" />
         </div>
       </section>
     </div>

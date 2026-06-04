@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/shadcn/utils';
 import {
   Select,
   SelectContent,
@@ -8,10 +9,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export function ExamTypeSelector() {
+interface ExamTypeSelectorProps {
+  className?: string;
+}
+
+export function ExamTypeSelector({ className }: ExamTypeSelectorProps) {
   return (
     <Select defaultValue="general-studies">
-      <SelectTrigger className="w-[180px] rounded-full bg-background/90 backdrop-blur-sm shadow-lg border text-sm font-medium">
+      <SelectTrigger
+        className={cn(
+          'w-[180px] rounded-full bg-background/90 backdrop-blur-sm shadow-lg border text-sm font-medium',
+          className
+        )}
+      >
         <SelectValue placeholder="Select type" />
       </SelectTrigger>
       <SelectContent className="rounded-xl">
