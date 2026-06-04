@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { ExamTypeSelector } from '@/components/app/exam-type-selector';
 
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -168,6 +169,14 @@ export default function ProfilePage() {
             <option value="CBSE">CBSE</option>
             <option value="ICSE" disabled>ICSE</option>
           </select>
+        </div>
+
+        {/* Study Type – same as homepage */}
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">
+            Study Type
+          </label>
+          <ExamTypeSelector />
         </div>
 
         {/* DOB */}
