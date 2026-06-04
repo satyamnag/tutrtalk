@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { TokenSource } from 'livekit-client';
-import { useSession, useRoomContext } from '@livekit/components-react';
+import { useSession, useSessionContext, useRoomContext } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
 import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
@@ -30,7 +30,7 @@ interface AppProps {
 
 // Inner component – lives inside AgentSessionProvider, can safely use LiveKit room hooks
 function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: boolean }) {
-  const session = useSession();
+  const session = useSessionContext();               // <-- fixed
   const room = useRoomContext();
   const [chapterSelected, setChapterSelected] = useState(false);
   const [greetingDone, setGreetingDone] = useState(false);
@@ -89,6 +89,7 @@ export function App({ appConfig }: AppProps) {
     return undefined;
   }, [appConfig.agentName]);
 
+  const session = useSession(tokenSource, sessionOptions);
   const [profileComplete, setProfileComplete] = useState(false);
   const [profileChecked, setProfileChecked] = useState(false);
 
@@ -106,7 +107,7 @@ export function App({ appConfig }: AppProps) {
   const canStart = profileComplete && profileChecked;
 
   return (
-    <AgentSessionProvider session={useSession(tokenSource, sessionOptions)}>
+    <AgentSessionProvider session={session}>
       <AppSetup />
       <ProfileCompletionModal
         visible={profileChecked && !profileComplete}
