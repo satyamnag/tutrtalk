@@ -21,12 +21,58 @@ const IN_DEVELOPMENT = process.env.NODE_ENV !== 'production';
 function AppSetup() {
   useDebugMode({ enabled: IN_DEVELOPMENT });
   useAgentErrors();
-
   return null;
 }
 
 interface AppProps {
   appConfig: AppConfig;
+}
+
+// Inner component – lives inside AgentSessionProvider, can safely use LiveKit room hooks
+function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: boolean }) {
+  const session = useSession();
+  const room = useRoomContext();
+  const [chapterSelected, setChapterSelected] = useState(false);
+  const [greetingDone, setGreetingDone] = useState(false);
+
+  // Reset greeting flag when a new session starts
+  useEffect(() => {
+    if (session.isConnected) {
+      setGreetingDone(false);
+      setChapterSelected(false);
+    }
+  }, [session.isConnected]);
+
+  // Listen for agent's greeting-done data signal
+  useEffect(() => {
+    if (!room) return;
+    const handleData = (payload: Uint8Array) => {
+      const text = new TextDecoder().decode(payload);
+      if (text === '__greeting_done__') {
+        setGreetingDone(true);
+      }
+    };
+    room.on('dataReceived', handleData);
+    return () => {
+      room.off('dataReceived', handleData);
+    };
+  }, [room]);
+
+  return (
+    <>
+      <Sidebar logo={appConfig.logo} logoDark={appConfig.logoDark} />
+      <main className="grid h-svh grid-cols-1 place-content-center">
+        <ViewController appConfig={appConfig} canStart={canStart} />
+      </main>
+      {canStart && <StartAudioButton label="Start Audio" />}
+
+      {/* Chapter selector popup – only after greeting completes */}
+      <ChapterSelector
+        visible={session.isConnected && greetingDone && !chapterSelected}
+        onChapterSelected={() => setChapterSelected(true)}
+      />
+    </>
+  );
 }
 
 export function App({ appConfig }: AppProps) {
@@ -43,14 +89,9 @@ export function App({ appConfig }: AppProps) {
     return undefined;
   }, [appConfig.agentName]);
 
-  const session = useSession(tokenSource, sessionOptions);
-  const room = useRoomContext();
-  const [chapterSelected, setChapterSelected] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
   const [profileChecked, setProfileChecked] = useState(false);
-  const [greetingDone, setGreetingDone] = useState(false);
 
-  // Profile check
   useEffect(() => {
     fetch('/api/profile')
       .then(res => res.json())
@@ -62,33 +103,10 @@ export function App({ appConfig }: AppProps) {
       .catch(() => setProfileChecked(true));
   }, []);
 
-  // Listen for agent's greeting-done signal
-  useEffect(() => {
-    if (!room) return;
-    const handleData = (payload: Uint8Array) => {
-      const text = new TextDecoder().decode(payload);
-      if (text === '__greeting_done__') {
-        setGreetingDone(true);
-      }
-    };
-    room.on('dataReceived', handleData);
-    return () => {
-      room.off('dataReceived', handleData);
-    };
-  }, [room]);
-
-  // Reset greeting flag when a new session starts
-  useEffect(() => {
-    if (session.isConnected) {
-      setGreetingDone(false);
-      setChapterSelected(false);
-    }
-  }, [session.isConnected]);
-
   const canStart = profileComplete && profileChecked;
 
   return (
-    <AgentSessionProvider session={session}>
+    <AgentSessionProvider session={useSession(tokenSource, sessionOptions)}>
       <AppSetup />
       <ProfileCompletionModal
         visible={profileChecked && !profileComplete}
@@ -100,19 +118,7 @@ export function App({ appConfig }: AppProps) {
           <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
         </div>
       ) : (
-        <>
-          <Sidebar logo={appConfig.logo} logoDark={appConfig.logoDark} />
-          <main className="grid h-svh grid-cols-1 place-content-center">
-            <ViewController appConfig={appConfig} canStart={canStart} />
-          </main>
-          {canStart && <StartAudioButton label="Start Audio" />}
-
-          {/* Chapter selector popup – only after greeting completes */}
-          <ChapterSelector
-            visible={session.isConnected && greetingDone && !chapterSelected}
-            onChapterSelected={() => setChapterSelected(true)}
-          />
-        </>
+        <AppContent appConfig={appConfig} canStart={canStart} />
       )}
 
       <Toaster
