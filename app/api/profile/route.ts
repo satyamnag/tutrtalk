@@ -1,4 +1,3 @@
-// File: app/api/profile/route.ts
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase/server';
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { name, class: studentClass, board, profile_photo_url, dob, study_language } = body;
+  const { name, class: studentClass, board, profile_photo_url, dob, study_language, study_type } = body;
 
   // Basic validation
   if (!name || !studentClass || !board) {
@@ -47,6 +46,7 @@ export async function POST(request: Request) {
     profile_photo_url: profile_photo_url || null,
     dob: dob || null,
     study_language: study_language || null,
+    study_type: study_type || null,
     updated_at: new Date().toISOString(),
   };
 

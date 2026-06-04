@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [className, setClassName] = useState('');
   const [board, setBoard] = useState('');
+  const [studyType, setStudyType] = useState('general-studies');
   const [dob, setDob] = useState('');
   const [studyLanguage, setStudyLanguage] = useState('');
   const [profilePhotoUrl, setProfilePhotoUrl] = useState('');
@@ -27,6 +28,7 @@ export default function ProfilePage() {
           setName(data.name || '');
           setClassName(data.class || '');
           setBoard(data.board || '');
+          setStudyType(data.study_type || 'general-studies');
           setDob(data.dob ? data.dob.slice(0, 10) : '');
           setStudyLanguage(data.study_language || '');
           setProfilePhotoUrl(data.profile_photo_url || '');
@@ -83,6 +85,7 @@ export default function ProfilePage() {
           name: name.trim(),
           class: className.trim(),
           board: board.trim(),
+          study_type: studyType,
           dob: dob || null,
           study_language: studyLanguage || null,
           profile_photo_url: finalPhotoUrl || null,
@@ -171,12 +174,16 @@ export default function ProfilePage() {
           </select>
         </div>
 
-        {/* Study Type – same as homepage */}
+        {/* Study Type */}
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-1">
-            Study Type
+            Study Type <span className="text-destructive">*</span>
           </label>
-          <ExamTypeSelector className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <ExamTypeSelector
+            value={studyType}
+            onValueChange={setStudyType}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
         </div>
 
         {/* DOB */}

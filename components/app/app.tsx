@@ -10,6 +10,7 @@ import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
 import { Sidebar } from '@/components/app/sidebar';
 import { ChapterSelector } from '@/components/app/chapter-selector';
+import { ProfileCompletionModal } from '@/components/app/profile-completion-modal';
 import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
@@ -51,6 +52,7 @@ export function App({ appConfig }: AppProps) {
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
+      <ProfileCompletionModal />
       <Sidebar logo={appConfig.logo} logoDark={appConfig.logoDark} />
       <main className="grid h-svh grid-cols-1 place-content-center">
         <ViewController appConfig={appConfig} />
