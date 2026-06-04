@@ -30,7 +30,7 @@ interface AppProps {
 
 // Inner component – lives inside AgentSessionProvider, can safely use LiveKit room hooks
 function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: boolean }) {
-  const session = useSessionContext();               // <-- fixed
+  const session = useSessionContext();
   const room = useRoomContext();
   const [chapterSelected, setChapterSelected] = useState(false);
   const [greetingDone, setGreetingDone] = useState(false);
@@ -57,6 +57,19 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
       room.off('dataReceived', handleData);
     };
   }, [room]);
+
+  // Prevent accidental browser refresh/close during a live session
+  useEffect(() => {
+    if (!session.isConnected) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [session.isConnected]);
 
   return (
     <>
