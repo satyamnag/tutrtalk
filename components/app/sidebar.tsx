@@ -110,8 +110,8 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        {/* Top bar: logo (left) + X close button (right) */}
-        <div className="flex items-center justify-between px-4 py-3 mt-14">
+        {/* Top bar: logo (left) + X close button (right) – at very top */}
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
             <img
