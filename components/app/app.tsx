@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { TokenSource } from 'livekit-client';
 import { useSession } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
@@ -38,26 +38,41 @@ export function App({ appConfig }: AppProps) {
 
   const sessionOptions = useMemo(() => {
     if (appConfig.agentName) {
-      return {
-        agentName: appConfig.agentName,
-        agentJoinTimeout: 300,
-      };
+      return { agentName: appConfig.agentName, agentJoinTimeout: 300 };
     }
     return undefined;
   }, [appConfig.agentName]);
 
   const session = useSession(tokenSource, sessionOptions);
   const [chapterSelected, setChapterSelected] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
+  const [profileChecked, setProfileChecked] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/profile')
+      .then(res => res.json())
+      .then(data => {
+        const complete = !!(data?.name && data?.class && data?.board && data?.study_type);
+        setProfileComplete(complete);
+        setProfileChecked(true);
+      })
+      .catch(() => setProfileChecked(true));
+  }, []);
+
+  const canStart = profileComplete && profileChecked;
 
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
-      <ProfileCompletionModal />
+      <ProfileCompletionModal
+        visible={profileChecked && !profileComplete}
+        onComplete={() => setProfileComplete(true)}
+      />
       <Sidebar logo={appConfig.logo} logoDark={appConfig.logoDark} />
       <main className="grid h-svh grid-cols-1 place-content-center">
-        <ViewController appConfig={appConfig} />
+        <ViewController appConfig={appConfig} canStart={canStart} />
       </main>
-      <StartAudioButton label="Start Audio" />
+      {canStart && <StartAudioButton label="Start Audio" />}
 
       {/* Chapter selector popup */}
       <ChapterSelector
@@ -66,9 +81,7 @@ export function App({ appConfig }: AppProps) {
       />
 
       <Toaster
-        icons={{
-          warning: <WarningIcon weight="bold" />,
-        }}
+        icons={{ warning: <WarningIcon weight="bold" /> }}
         position="top-center"
         className="toaster group"
         style={

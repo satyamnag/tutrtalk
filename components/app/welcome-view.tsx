@@ -21,11 +21,13 @@ function WelcomeImage() {
 interface WelcomeViewProps {
   startButtonText: string;
   onStartCall: () => void;
+  canStart?: boolean;
 }
 
 export const WelcomeView = ({
   startButtonText,
   onStartCall,
+  canStart = true,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
@@ -40,10 +42,15 @@ export const WelcomeView = ({
         <Button
           size="lg"
           onClick={onStartCall}
+          disabled={!canStart}
+          title={!canStart ? 'Please complete your profile first' : undefined}
           className="mt-6 w-64 cursor-pointer rounded-full font-mono text-xs font-bold tracking-wider uppercase"
         >
           {startButtonText}
         </Button>
+        {!canStart && (
+          <p className="text-xs text-muted-foreground mt-2">Complete your profile to start</p>
+        )}
       </section>
     </div>
   );
