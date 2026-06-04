@@ -68,17 +68,26 @@ export function App({ appConfig }: AppProps) {
         visible={profileChecked && !profileComplete}
         onComplete={() => setProfileComplete(true)}
       />
-      <Sidebar logo={appConfig.logo} logoDark={appConfig.logoDark} />
-      <main className="grid h-svh grid-cols-1 place-content-center">
-        <ViewController appConfig={appConfig} canStart={canStart} />
-      </main>
-      {canStart && <StartAudioButton label="Start Audio" />}
 
-      {/* Chapter selector popup */}
-      <ChapterSelector
-        visible={session.isConnected && !chapterSelected}
-        onChapterSelected={() => setChapterSelected(true)}
-      />
+      {!profileChecked ? (
+        <div className="flex h-screen items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        </div>
+      ) : (
+        <>
+          <Sidebar logo={appConfig.logo} logoDark={appConfig.logoDark} />
+          <main className="grid h-svh grid-cols-1 place-content-center">
+            <ViewController appConfig={appConfig} canStart={canStart} />
+          </main>
+          {canStart && <StartAudioButton label="Start Audio" />}
+
+          {/* Chapter selector popup */}
+          <ChapterSelector
+            visible={session.isConnected && !chapterSelected}
+            onChapterSelected={() => setChapterSelected(true)}
+          />
+        </>
+      )}
 
       <Toaster
         icons={{ warning: <WarningIcon weight="bold" /> }}
