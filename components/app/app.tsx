@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { TokenSource } from 'livekit-client';
-import { useSession } from '@livekit/components-react';
+import { useSession, useRoomContext } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
 import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
@@ -44,10 +44,13 @@ export function App({ appConfig }: AppProps) {
   }, [appConfig.agentName]);
 
   const session = useSession(tokenSource, sessionOptions);
+  const room = useRoomContext();
   const [chapterSelected, setChapterSelected] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
   const [profileChecked, setProfileChecked] = useState(false);
+  const [greetingDone, setGreetingDone] = useState(false);
 
+  // Profile check
   useEffect(() => {
     fetch('/api/profile')
       .then(res => res.json())
@@ -58,6 +61,29 @@ export function App({ appConfig }: AppProps) {
       })
       .catch(() => setProfileChecked(true));
   }, []);
+
+  // Listen for agent's greeting-done signal
+  useEffect(() => {
+    if (!room) return;
+    const handleData = (payload: Uint8Array) => {
+      const text = new TextDecoder().decode(payload);
+      if (text === '__greeting_done__') {
+        setGreetingDone(true);
+      }
+    };
+    room.on('dataReceived', handleData);
+    return () => {
+      room.off('dataReceived', handleData);
+    };
+  }, [room]);
+
+  // Reset greeting flag when a new session starts
+  useEffect(() => {
+    if (session.isConnected) {
+      setGreetingDone(false);
+      setChapterSelected(false);
+    }
+  }, [session.isConnected]);
 
   const canStart = profileComplete && profileChecked;
 
@@ -81,9 +107,9 @@ export function App({ appConfig }: AppProps) {
           </main>
           {canStart && <StartAudioButton label="Start Audio" />}
 
-          {/* Chapter selector popup */}
+          {/* Chapter selector popup – only after greeting completes */}
           <ChapterSelector
-            visible={session.isConnected && !chapterSelected}
+            visible={session.isConnected && greetingDone && !chapterSelected}
             onChapterSelected={() => setChapterSelected(true)}
           />
         </>
