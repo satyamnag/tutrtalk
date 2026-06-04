@@ -121,8 +121,11 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
             />
           </div>
           <button
-            onClick={() => setOpen(false)}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+            }}
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             aria-label="Close sidebar"
           >
             <XIcon size={20} />
