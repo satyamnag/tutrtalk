@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 interface TranscriptTurn {
-  role: 'agent' | 'user';
+  role: 'agent' | 'user' | 'assistant';
   content: string;
   timestamp: string;
   points?: number;
@@ -206,53 +206,55 @@ export default function ProgressPage() {
                   <span>Full Transcript</span>
                   <span className="flex-1 h-px bg-border" />
                 </div>
-                {session.transcript.map((turn, i) => (
-                  <div
-                    key={i}
-                    className={`flex gap-3 ${turn.role === 'agent' ? '' : 'flex-row-reverse'}`}
-                  >
+                {session.transcript.map((turn, i) => {
+                  const isAgent = turn.role === 'agent' || turn.role === 'assistant';
+                  return (
                     <div
-                      className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                        turn.role === 'agent'
-                          ? 'bg-background border text-foreground rounded-tl-sm'
-                          : 'bg-primary text-primary-foreground rounded-tr-sm'
-                      }`}
+                      key={i}
+                      className={`flex gap-3 ${isAgent ? '' : 'flex-row-reverse'}`}
                     >
-                      <div className="flex items-center justify-between mb-1 gap-2">
-                        <span className="text-xs font-semibold opacity-80">
-                          {turn.role === 'agent' ? 'TutrTalk' : 'You'}
-                        </span>
-                        <div className="flex items-center gap-2">
-
-                        {turn.points !== undefined && (
-                          <span
-                            className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-                              turn.correctness === 'correct'
-                                ? 'bg-green-500/30 text-green-300'
-                                : turn.correctness === 'partial'
-                                  ? 'bg-yellow-500/30 text-yellow-300'
-                                  : turn.correctness === 'wrong'
-                                    ? 'bg-red-500/30 text-red-300'
-                                    : 'bg-gray-500/30 text-gray-300'
-                            }`}
-                          >
-                            +{turn.points}
+                      <div
+                        className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                          isAgent
+                            ? 'bg-background border text-foreground rounded-tl-sm'
+                            : 'bg-primary text-primary-foreground rounded-tr-sm'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1 gap-2">
+                          <span className="text-xs font-semibold opacity-80">
+                            {isAgent ? 'TutrTalk' : 'You'}
                           </span>
-                        )}
-                          <span className="text-xs opacity-60">
-                            {new Date(turn.timestamp).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {turn.points !== undefined && (
+                              <span
+                                className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                                  turn.correctness === 'correct'
+                                    ? 'bg-green-500/30 text-green-300'
+                                    : turn.correctness === 'partial'
+                                      ? 'bg-yellow-500/30 text-yellow-300'
+                                      : turn.correctness === 'wrong'
+                                        ? 'bg-red-500/30 text-red-300'
+                                        : 'bg-gray-500/30 text-gray-300'
+                                }`}
+                              >
+                                +{turn.points}
+                              </span>
+                            )}
+                            <span className="text-xs opacity-60">
+                              {new Date(turn.timestamp).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="leading-relaxed whitespace-pre-wrap break-words">
+                          {turn.content}
                         </div>
                       </div>
-                      <div className="leading-relaxed whitespace-pre-wrap break-words">
-                        {turn.content}
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
