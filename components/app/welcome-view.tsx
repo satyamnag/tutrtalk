@@ -1,21 +1,25 @@
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 function WelcomeImage() {
   const rows = 5;
   const cols = 5;
   const total = rows * cols;
+  const centerIndex = Math.floor(total / 2);
   const dots = Array.from({ length: total }, (_, i) => i);
-  const [activeIndex, setActiveIndex] = useState(
-    Math.floor(Math.random() * total)
-  );
+  const [centerLit, setCenterLit] = useState(true);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveIndex(Math.floor(Math.random() * total));
+    intervalRef.current = setInterval(() => {
+      setCenterLit(true);
+      setTimeout(() => setCenterLit(false), 50);
     }, 1000);
-    return () => clearInterval(interval);
-  }, [total]);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   return (
     <div
@@ -28,9 +32,10 @@ function WelcomeImage() {
       {dots.map((i) => (
         <div
           key={i}
-          className={`h-3 w-3 rounded-full transition-colors duration-200 ${
-            i === activeIndex ? 'bg-current' : 'bg-current/10'
+          className={`h-3 w-3 rounded-full transition-opacity duration-1000 ${
+            i === centerIndex && centerLit ? 'bg-current opacity-100' : 'bg-current/10 opacity-10'
           }`}
+          style={i !== centerIndex ? { transition: 'none' } : undefined}
         />
       ))}
     </div>
