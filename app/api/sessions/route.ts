@@ -70,12 +70,13 @@ export async function GET() {
       }
 
       // ----------------------------------------------------------
-      //  Full transcript – from session_messages table
+      //  Full transcript – from session_messages table, filtered by user_id
       // ----------------------------------------------------------
       const { data: messages } = await supabase
         .from('session_messages')
         .select('*')
         .eq('session_id', sessionId)
+        .eq('user_id', userId)
         .order('created_at', { ascending: true });
 
       const transcript = (messages || []).map((msg: any) => ({
