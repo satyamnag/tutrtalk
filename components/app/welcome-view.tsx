@@ -1,9 +1,21 @@
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 
 function WelcomeImage() {
   const rows = 5;
   const cols = 5;
-  const dots = Array.from({ length: rows * cols }, (_, i) => i);
+  const total = rows * cols;
+  const dots = Array.from({ length: total }, (_, i) => i);
+  const [activeIndex, setActiveIndex] = useState(
+    Math.floor(Math.random() * total)
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex(Math.floor(Math.random() * total));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [total]);
 
   return (
     <div
@@ -16,7 +28,9 @@ function WelcomeImage() {
       {dots.map((i) => (
         <div
           key={i}
-          className="h-3 w-3 rounded-full bg-current/10"
+          className={`h-3 w-3 rounded-full transition-colors duration-200 ${
+            i === activeIndex ? 'bg-current' : 'bg-current/10'
+          }`}
         />
       ))}
     </div>
