@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 
 function WelcomeImage() {
-  const rows = 4;
-  const cols = 4;
+  const rows = 5;
+  const cols = 5;
   const dots = Array.from({ length: rows * cols }, (_, i) => i);
 
   return (
