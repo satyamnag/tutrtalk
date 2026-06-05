@@ -9,6 +9,7 @@ export async function GET() {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
+  // Fetch user answers (used for session grouping AND point matching)
   const { data: answers, error } = await supabase
     .from('user_answers')
     .select('*')
@@ -18,6 +19,22 @@ export async function GET() {
   if (error) {
     console.error(error);
     return new NextResponse('Internal Server Error', { status: 500 });
+  }
+
+  // Build a fast lookup: key = session_id + normalized answer_text + rounded timestamp
+  const pointsLookup = new Map<string, { points: number; correctness: string }>();
+  for (const a of answers || []) {
+    const pts =
+      a.correctness === 'correct' ? 3 :
+      a.correctness === 'partial' ? 2 :
+      a.correctness === 'wrong' ? 1 : 0;
+    const correctness =
+      a.correctness && ['correct', 'partial', 'wrong'].includes(a.correctness)
+        ? a.correctness
+        : 'skip';
+    const timeKey = new Date(a.created_at).toISOString().slice(0, 19); // seconds precision
+    const lookupKey = `${a.session_id}::${a.answer_text.trim().toLowerCase()}::${timeKey}`;
+    pointsLookup.set(lookupKey, { points: pts, correctness });
   }
 
   // Group by session_id
@@ -79,13 +96,31 @@ export async function GET() {
         .eq('user_id', userId)
         .order('created_at', { ascending: true });
 
-      const transcript = (messages || []).map((msg: any) => ({
-        role: msg.role,
-        content: msg.content,
-        timestamp: msg.created_at,
-        points: undefined,
-        correctness: undefined,
-      }));
+      const transcript = (messages || []).map((msg: any) => {
+        let points: number | undefined = undefined;
+        let correctness: string | undefined = undefined;
+
+        if (msg.role === 'user') {
+          const timeKey = new Date(msg.created_at).toISOString().slice(0, 19);
+          const lookupKey = `${sessionId}::${msg.content.trim().toLowerCase()}::${timeKey}`;
+          const match = pointsLookup.get(lookupKey);
+          if (match) {
+            points = match.points;
+            correctness = match.correctness;
+          } else {
+            points = 0;
+            correctness = 'skip';
+          }
+        }
+
+        return {
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.created_at,
+          points,
+          correctness,
+        };
+      });
 
       return {
         sessionId,

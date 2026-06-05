@@ -225,14 +225,15 @@ export default function ProgressPage() {
                             {isAgent ? 'TutrTalk' : 'You'}
                           </span>
                           <div className="flex items-center gap-2">
-                            {turn.points !== undefined && (
+                            {/* Show points for every user turn */}
+                            {!isAgent && turn.points !== undefined && (
                               <span
-                                className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-                                  turn.correctness === 'correct'
+                                className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
+                                  turn.points === 3
                                     ? 'bg-green-500/30 text-green-300'
-                                    : turn.correctness === 'partial'
+                                    : turn.points === 2
                                       ? 'bg-yellow-500/30 text-yellow-300'
-                                      : turn.correctness === 'wrong'
+                                      : turn.points === 1
                                         ? 'bg-red-500/30 text-red-300'
                                         : 'bg-gray-500/30 text-gray-300'
                                 }`}
