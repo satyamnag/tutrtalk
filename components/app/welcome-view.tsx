@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 function WelcomeImage() {
   const rows = 5;
@@ -7,18 +7,20 @@ function WelcomeImage() {
   const total = rows * cols;
   const centerIndex = Math.floor(total / 2);
   const dots = Array.from({ length: total }, (_, i) => i);
-  const [centerLit, setCenterLit] = useState(true);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [centerLit, setCenterLit] = useState(false);
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
+    const breathe = () => {
       setCenterLit(true);
-      setTimeout(() => setCenterLit(false), 50);
-    }, 1000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      // after a brief moment to let the transition start, begin fading out
+      setTimeout(() => setCenterLit(false), 1500);
     };
+
+    // Start immediately, then repeat every 2.5 seconds
+    breathe();
+    const interval = setInterval(breathe, 2500);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -32,10 +34,16 @@ function WelcomeImage() {
       {dots.map((i) => (
         <div
           key={i}
-          className={`h-3 w-3 rounded-full transition-opacity duration-1000 ${
-            i === centerIndex && centerLit ? 'bg-current opacity-100' : 'bg-current/10 opacity-10'
+          className={`h-3 w-3 rounded-full ${
+            i === centerIndex
+              ? 'bg-current transition-opacity duration-[1500ms]'
+              : 'bg-current/10'
           }`}
-          style={i !== centerIndex ? { transition: 'none' } : undefined}
+          style={
+            i === centerIndex
+              ? { opacity: centerLit ? 1 : 0.1 }
+              : undefined
+          }
         />
       ))}
     </div>
