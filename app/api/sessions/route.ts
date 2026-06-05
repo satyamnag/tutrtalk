@@ -69,47 +69,22 @@ export async function GET() {
         }
       }
 
-      // Build transcript: group attempts by question_id to avoid repeating the question text
-      const questionMap = new Map<number, typeof items>();
-      for (const item of items) {
-        const key = item.question_id;
-        if (!questionMap.has(key)) questionMap.set(key, []);
-        questionMap.get(key)!.push(item);
-      }
+      // ----------------------------------------------------------
+      //  Full transcript – from session_messages table
+      // ----------------------------------------------------------
+      const { data: messages } = await supabase
+        .from('session_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
 
-      const transcript: any[] = [];
-      for (const [questionId, attempts] of questionMap) {
-        // First attempt: show question and answer
-        const first = attempts[0];
-        transcript.push({
-          role: 'agent',
-          content: first.question_text,
-          timestamp: first.created_at,
-          points: undefined,
-          correctness: undefined,
-        });
-        transcript.push({
-          role: 'user',
-          content: first.answer_text,
-          timestamp: first.created_at,
-          points: first.correctness === 'correct' ? 3 : first.correctness === 'partial' ? 2 : first.correctness === 'wrong' ? 1 : 0,
-          correctness: first.correctness || 'skip',
-        });
-
-        // Subsequent retries: show only the answer, labeled as "Retry"
-        for (let i = 1; i < attempts.length; i++) {
-          transcript.push({
-            role: 'user',
-            content: `(Retry) ${attempts[i].answer_text}`,
-            timestamp: attempts[i].created_at,
-            points: attempts[i].correctness === 'correct' ? 3 : attempts[i].correctness === 'partial' ? 2 : attempts[i].correctness === 'wrong' ? 1 : 0,
-            correctness: attempts[i].correctness || 'skip',
-          });
-        }
-      }
-
-      // Sort transcript by timestamp to keep conversational order
-      transcript.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      const transcript = (messages || []).map((msg: any) => ({
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.created_at,
+        points: undefined,
+        correctness: undefined,
+      }));
 
       return {
         sessionId,
