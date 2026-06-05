@@ -1,25 +1,22 @@
 import { Button } from '@/components/ui/button';
 
 function WelcomeImage() {
-  const rows = 25;
-  const cols = 25;
+  const rows = 4;
+  const cols = 4;
   const dots = Array.from({ length: rows * cols }, (_, i) => i);
 
   return (
     <div
-      className="mb-4 grid size-16"
+      className="mb-4 grid gap-1.5"
       style={{
         gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gridTemplateRows: `repeat(${rows}, 1fr)`,
-        gap: '1px',
         color: 'var(--primary)',
       }}
     >
       {dots.map((i) => (
         <div
           key={i}
-          className="rounded-full bg-current/10"
-          style={{ width: '100%', height: '100%' }}
+          className="h-3 w-3 rounded-full bg-current/10"
         />
       ))}
     </div>
