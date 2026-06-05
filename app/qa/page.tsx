@@ -9,6 +9,7 @@ interface QAItem {
   answer_text: string;
   chapter_id: number;
   chapter_name: string;
+  image_url?: string | null;
 }
 
 interface FilterOptions {
@@ -53,6 +54,9 @@ export default function QAPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isAddMode, setIsAddMode] = useState(false);
+  // Diagram upload state
+  const [diagramFile, setDiagramFile] = useState<File | null>(null);
+  const [diagramPreview, setDiagramPreview] = useState<string | null>(null);
   // -------------------------------------------
 
   // Fetch classes on mount
@@ -152,6 +156,8 @@ export default function QAPage() {
     setIsAddMode(false);
     setEditQuestion(item.question_text);
     setEditAnswer(item.answer_text);
+    setDiagramFile(null);
+    setDiagramPreview(item.image_url || null);
     dialogRef.current?.showModal();
   };
 
@@ -160,18 +166,50 @@ export default function QAPage() {
     setIsAddMode(true);
     setEditQuestion('');
     setEditAnswer('');
+    setDiagramFile(null);
+    setDiagramPreview(null);
     dialogRef.current?.showModal();
   };
 
   const handleSave = async () => {
     if (isSaving) return;
+    setIsSaving(true);
+
+    // Upload diagram first if a new file was selected
+    let imageUrl = editingItem?.image_url || null;
+    if (diagramFile) {
+      try {
+        const formData = new FormData();
+        formData.append('file', diagramFile);
+        const uploadRes = await fetch('/api/qa/image', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!uploadRes.ok) {
+          alert('Failed to upload diagram');
+          setIsSaving(false);
+          return;
+        }
+        const uploadJson = await uploadRes.json();
+        imageUrl = uploadJson.url;
+      } catch (err) {
+        console.error(err);
+        alert('Failed to upload diagram');
+        setIsSaving(false);
+        return;
+      }
+    }
+
+    // If user explicitly removed the diagram (preview set to null but no new file), set imageUrl to null
+    if (diagramPreview === null && !diagramFile) {
+      imageUrl = null;
+    }
 
     if (isAddMode) {
-      // Add new question
       if (!selectedChapter) {
-        return; // shouldn't happen because button is disabled
+        setIsSaving(false);
+        return;
       }
-      setIsSaving(true);
       try {
         const res = await fetch('/api/qa', {
           method: 'POST',
@@ -180,12 +218,15 @@ export default function QAPage() {
             question_text: editQuestion,
             answer_text: editAnswer,
             chapter_id: selectedChapter,
+            image_url: imageUrl,
           }),
         });
         if (!res.ok) throw new Error('Failed to create question');
         dialogRef.current?.close();
         setEditQuestion('');
         setEditAnswer('');
+        setDiagramFile(null);
+        setDiagramPreview(null);
         fetchItems();
       } catch (err) {
         console.error(err);
@@ -193,18 +234,22 @@ export default function QAPage() {
         setIsSaving(false);
       }
     } else {
-      // Edit existing question
       if (!editingItem) return;
-      setIsSaving(true);
       try {
         const res = await fetch(`/api/qa/${editingItem.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question_text: editQuestion, answer_text: editAnswer }),
+          body: JSON.stringify({
+            question_text: editQuestion,
+            answer_text: editAnswer,
+            image_url: imageUrl,
+          }),
         });
         if (!res.ok) throw new Error('Failed to update');
         dialogRef.current?.close();
         setEditingItem(null);
+        setDiagramFile(null);
+        setDiagramPreview(null);
         fetchItems();
       } catch (err) {
         console.error(err);
@@ -423,6 +468,15 @@ export default function QAPage() {
                     <p className="mt-1 text-green-700 dark:text-green-400">
                       A: {item.answer_text}
                     </p>
+                    {item.image_url && (
+                      <div className="mt-2">
+                        <img
+                          src={item.image_url}
+                          alt="Diagram"
+                          className="max-h-32 rounded-lg border"
+                        />
+                      </div>
+                    )}
 
                     {/* Edit & Delete buttons */}
                     <div className="mt-3 flex gap-2">
@@ -545,6 +599,58 @@ export default function QAPage() {
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               rows={3}
             />
+          </div>
+          {/* Diagram upload */}
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
+              Supporting Diagram (optional)
+            </label>
+            {diagramPreview && (
+              <div className="mb-3 flex items-center gap-4">
+                <img
+                  src={diagramPreview}
+                  alt="Diagram preview"
+                  className="h-20 w-20 rounded-lg object-cover border"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {diagramFile ? 'New diagram selected' : 'Current diagram'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDiagramFile(null);
+                    setDiagramPreview(null);
+                  }}
+                  className="text-xs text-destructive hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setDiagramFile(file);
+                if (file) {
+                  const preview = URL.createObjectURL(file);
+                  setDiagramPreview(preview);
+                } else {
+                  setDiagramPreview(editingItem?.image_url || null);
+                }
+              }}
+              className="w-full text-sm text-muted-foreground
+                         file:mr-4 file:py-2 file:px-4
+                         file:rounded-md file:border-0
+                         file:text-sm file:font-medium
+                         file:bg-primary file:text-primary-foreground
+                         hover:file:bg-primary/90
+                         cursor-pointer"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Max 5 MB. Supported: JPG, PNG, WebP, GIF
+            </p>
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-3">

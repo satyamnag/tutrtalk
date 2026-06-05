@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
   let baseQuery = supabase
     .from('questions')
-    .select('id, question_text, answer_text, chapter_id, chapters(name)', { count: 'exact' })
+    .select('id, question_text, answer_text, chapter_id, image_url, chapters(name)', { count: 'exact' })
     .order(orderColumn, { ascending });
 
   if (chapterId) {
@@ -72,6 +72,7 @@ export async function GET(request: Request) {
     answer_text: q.answer_text,
     chapter_id: q.chapter_id,
     chapter_name: q.chapters?.name ?? 'Unknown',
+    image_url: q.image_url || null,
   })) ?? [];
 
   return NextResponse.json({
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { question_text, answer_text, chapter_id } = body;
+  const { question_text, answer_text, chapter_id, image_url } = body;
 
   if (!question_text || !answer_text || chapter_id === undefined) {
     return new NextResponse('Missing required fields', { status: 400 });
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
       question_text,
       answer_text,
       chapter_id: numericChapterId,
+      image_url: image_url || null,
     });
 
   if (error) {

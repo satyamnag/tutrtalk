@@ -18,7 +18,7 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const { question_text, answer_text } = body;
+  const { question_text, answer_text, image_url } = body;
 
   if (!question_text || !answer_text) {
     return new NextResponse('Missing question_text or answer_text', { status: 400 });
@@ -26,7 +26,12 @@ export async function PUT(
 
   const { error } = await supabase
     .from('questions')
-    .update({ question_text, answer_text, updated_at: new Date().toISOString() })
+    .update({
+      question_text,
+      answer_text,
+      image_url: image_url || null,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', numericId);
 
   if (error) {
