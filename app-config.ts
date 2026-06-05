@@ -34,7 +34,7 @@ export interface AppConfig {
 
 export const APP_CONFIG_DEFAULTS: AppConfig = {
   companyName: 'TutrTalk',
-  pageTitle: 'TutrTalk - Voice AI Tutor',
+  pageTitle: 'TutrTalk - Your Daily Revision Tutor',
   pageDescription: 'An Voice AI Tutor for Students',
 
   supportsChatInput: true,
@@ -52,8 +52,8 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   
   // optional: audio visualization configuration
   // audioVisualizerType: 'bar',
-  // audioVisualizerColor: '#002cf2',
-  // audioVisualizerColorDark: '#1fd5f9',
+  audioVisualizerColor: '#1fd5f9',
+  audioVisualizerColorDark: '#1fd5f9',
   // audioVisualizerColorShift: 0.3,
   // audioVisualizerBarCount: 5,
   // audioVisualizerType: 'radial',
