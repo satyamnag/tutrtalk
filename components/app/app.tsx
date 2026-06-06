@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { TokenSource } from 'livekit-client';
 import { useSession, useSessionContext, useRoomContext } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
-import { XIcon } from 'lucide-react';   // new import for close button
+import { XIcon } from 'lucide-react';
 import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
@@ -35,7 +35,7 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
   const room = useRoomContext();
   const [chapterSelected, setChapterSelected] = useState(false);
   const [greetingDone, setGreetingDone] = useState(false);
-  const [diagramUrl, setDiagramUrl] = useState<string | null>(null);   // new state
+  const [diagramUrl, setDiagramUrl] = useState<string | null>(null);
 
   // Reset greeting flag and clear diagram when a new session starts
   useEffect(() => {
@@ -83,7 +83,13 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
       <main className="grid h-svh grid-cols-1 place-content-center">
         <ViewController appConfig={appConfig} canStart={canStart} />
       </main>
-      {canStart && <StartAudioButton label="Start Audio" />}
+
+      {/* 👇 Only change: wrap StartAudioButton in a fixed, centered container */}
+      {canStart && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+          <StartAudioButton label="Start Audio" />
+        </div>
+      )}
 
       {/* Chapter selector popup – only after greeting completes */}
       <ChapterSelector
