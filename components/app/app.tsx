@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { TokenSource } from 'livekit-client';
 import { useSession, useSessionContext, useRoomContext } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
+import { XIcon } from 'lucide-react';   // new import for close button
 import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
@@ -34,22 +35,27 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
   const room = useRoomContext();
   const [chapterSelected, setChapterSelected] = useState(false);
   const [greetingDone, setGreetingDone] = useState(false);
+  const [diagramUrl, setDiagramUrl] = useState<string | null>(null);   // new state
 
-  // Reset greeting flag when a new session starts
+  // Reset greeting flag and clear diagram when a new session starts
   useEffect(() => {
     if (session.isConnected) {
       setGreetingDone(false);
       setChapterSelected(false);
+      setDiagramUrl(null);
     }
   }, [session.isConnected]);
 
-  // Listen for agent's greeting-done data signal
+  // Listen for agent's data signals (greeting done / diagram image)
   useEffect(() => {
     if (!room) return;
     const handleData = (payload: Uint8Array) => {
       const text = new TextDecoder().decode(payload);
       if (text === '__greeting_done__') {
         setGreetingDone(true);
+      } else if (text.startsWith('__image__:')) {
+        const url = text.slice('__image__:'.length);
+        setDiagramUrl(url);
       }
     };
     room.on('dataReceived', handleData);
@@ -84,6 +90,32 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
         visible={session.isConnected && greetingDone && !chapterSelected}
         onChapterSelected={() => setChapterSelected(true)}
       />
+
+      {/* Diagram overlay – shown when a question includes an image */}
+      {diagramUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setDiagramUrl(null)}
+        >
+          <div
+            className="relative max-h-[90vh] max-w-[90vw] rounded-2xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setDiagramUrl(null)}
+              className="absolute top-3 right-3 rounded-full bg-background/80 p-1.5 text-foreground hover:bg-background transition-colors"
+              aria-label="Close diagram"
+            >
+              <XIcon size={18} />
+            </button>
+            <img
+              src={diagramUrl}
+              alt="Diagram"
+              className="max-h-[85vh] max-w-full object-contain"
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
