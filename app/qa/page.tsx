@@ -1,3 +1,4 @@
+// FILE: app/qa/page.tsx
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -45,8 +46,10 @@ export default function QAPage() {
   const [searchText, setSearchText] = useState('');
   const [sort, setSort] = useState('asc');
   const [page, setPage] = useState(1);
+  // NEW: limit state
+  const [limit, setLimit] = useState(10);
 
-  // ---------------- CRUD state ----------------
+  // CRUD state
   const [editingItem, setEditingItem] = useState<QAItem | null>(null);
   const [editQuestion, setEditQuestion] = useState('');
   const [editAnswer, setEditAnswer] = useState('');
@@ -57,7 +60,6 @@ export default function QAPage() {
   // Diagram upload state
   const [diagramFile, setDiagramFile] = useState<File | null>(null);
   const [diagramPreview, setDiagramPreview] = useState<string | null>(null);
-  // -------------------------------------------
 
   // Fetch classes on mount
   useEffect(() => {
@@ -122,10 +124,10 @@ export default function QAPage() {
       .catch(console.error);
   }, [selectedBook]);
 
-  // Reset page to 1 whenever filters change
+  // Reset page to 1 whenever filters, search, sort, or limit change
   useEffect(() => {
     setPage(1);
-  }, [selectedChapter, searchText, sort]);
+  }, [selectedChapter, searchText, sort, limit]);
 
   // Fetch Q&A items
   const fetchItems = useCallback(() => {
@@ -138,19 +140,20 @@ export default function QAPage() {
     if (searchText.trim()) params.set('search', searchText.trim());
     params.set('sort', sort);
     params.set('page', page.toString());
+    params.set('limit', limit.toString());   // NEW: send limit
 
     fetch(`/api/qa?${params.toString()}`)
       .then((res) => res.json())
       .then((json: QAResponse) => setData(json))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [isSignedIn, selectedChapter, searchText, sort, page]);
+  }, [isSignedIn, selectedChapter, searchText, sort, page, limit]);
 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
 
-  // ---------------- CRUD handlers ----------------
+  // CRUD handlers
   const handleEdit = (item: QAItem) => {
     setEditingItem(item);
     setIsAddMode(false);
@@ -273,7 +276,6 @@ export default function QAPage() {
       setDeletingId(null);
     }
   };
-  // -----------------------------------------------
 
   if (!isLoaded) {
     return <div className="flex h-screen items-center justify-center">Loading…</div>;
@@ -283,7 +285,7 @@ export default function QAPage() {
     return <div className="flex h-screen items-center justify-center">Please sign in.</div>;
   }
 
-  // ----- ACCESS CONTROL: only famerelay@gmail.com -----
+  // ACCESS CONTROL: only famerelay@gmail.com
   if (user?.primaryEmailAddress?.emailAddress !== 'famerelay@gmail.com') {
     return (
       <div className="flex h-screen items-center justify-center text-center px-4">
@@ -296,7 +298,6 @@ export default function QAPage() {
       </div>
     );
   }
-  // ----------------------------------------------------
 
   const selectClasses =
     'w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50';
@@ -305,7 +306,7 @@ export default function QAPage() {
     <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold text-center">Questions &amp; Answers</h1>
 
-      {/* Search bar + sort + Add button */}
+      {/* Search bar + sort + limit + Add button */}
       <div className="mb-8 lg:flex lg:gap-8">
         <div className="hidden lg:block lg:w-56" />
         <div className="flex-1">
@@ -337,6 +338,21 @@ export default function QAPage() {
                 <option value="recent_updated">Recently updated</option>
               </select>
             </div>
+            {/* NEW: Limit dropdown */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                Per page
+              </label>
+              <select
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+                className={selectClasses}
+              >
+                <option value={10}>10</option>
+                <option value={100}>100</option>
+                <option value={1000}>1000</option>
+              </select>
+            </div>
             {/* Add New Question button */}
             <div>
               <label className="mb-1 block text-sm font-medium text-muted-foreground invisible">
@@ -345,11 +361,7 @@ export default function QAPage() {
               <button
                 onClick={handleAdd}
                 disabled={!selectedChapter}
-                title={
-                  !selectedChapter
-                    ? 'Select a chapter to add questions'
-                    : 'Add a new question'
-                }
+                title={!selectedChapter ? 'Select a chapter to add questions' : 'Add a new question'}
                 className="rounded-md border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add New Question
@@ -360,13 +372,11 @@ export default function QAPage() {
       </div>
 
       <div className="flex flex-col gap-8 lg:flex-row">
-        {/* Left sidebar filters */}
+        {/* Left sidebar filters – unchanged */}
         <aside className="w-full shrink-0 lg:w-56">
           <div className="space-y-4 rounded-xl border p-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
-                Class
-              </label>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Class</label>
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
@@ -375,17 +385,12 @@ export default function QAPage() {
               >
                 <option value="">All Classes</option>
                 {filterOptions.classes.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
-                Subject
-              </label>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Subject</label>
               <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
@@ -394,17 +399,12 @@ export default function QAPage() {
               >
                 <option value="">All Subjects</option>
                 {filterOptions.subjects.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
-                Book
-              </label>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Book</label>
               <select
                 value={selectedBook}
                 onChange={(e) => setSelectedBook(e.target.value)}
@@ -413,17 +413,12 @@ export default function QAPage() {
               >
                 <option value="">All Books</option>
                 {filterOptions.books.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
+                  <option key={b} value={b}>{b}</option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
-                Chapter
-              </label>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Chapter</label>
               <select
                 value={selectedChapter}
                 onChange={(e) => setSelectedChapter(e.target.value)}
@@ -432,9 +427,7 @@ export default function QAPage() {
               >
                 <option value="">All Chapters</option>
                 {filterOptions.chapters.map((ch) => (
-                  <option key={ch.id} value={ch.id}>
-                    {ch.name}
-                  </option>
+                  <option key={ch.id} value={ch.id}>{ch.name}</option>
                 ))}
               </select>
             </div>
@@ -448,37 +441,23 @@ export default function QAPage() {
               <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
             </div>
           )}
-
           {!loading && data.items.length === 0 && (
             <p className="text-muted-foreground">No questions found.</p>
           )}
-
           {!loading && data.items.length > 0 && (
             <>
               <div className="space-y-6">
                 {data.items.map((item) => (
                   <div key={item.id} className="rounded-xl border p-4">
-                    <p className="text-sm text-muted-foreground">
-                      Chapter: {item.chapter_name}
-                    </p>
-                    <p className="text-xs text-muted-foreground/70 mt-0.5">
-                      Question #{item.id}
-                    </p>
+                    <p className="text-sm text-muted-foreground">Chapter: {item.chapter_name}</p>
+                    <p className="text-xs text-muted-foreground/70 mt-0.5">Question #{item.id}</p>
                     <p className="mt-2 font-semibold">Q: {item.question_text}</p>
-                    <p className="mt-1 text-green-700 dark:text-green-400">
-                      A: {item.answer_text}
-                    </p>
+                    <p className="mt-1 text-green-700 dark:text-green-400">A: {item.answer_text}</p>
                     {item.image_url && (
                       <div className="mt-2">
-                        <img
-                          src={item.image_url}
-                          alt="Diagram"
-                          className="max-h-32 rounded-lg border"
-                        />
+                        <img src={item.image_url} alt="Diagram" className="max-h-32 rounded-lg border" />
                       </div>
                     )}
-
-                    {/* Edit & Delete buttons */}
                     <div className="mt-3 flex gap-2">
                       <button
                         onClick={() => handleEdit(item)}
@@ -513,24 +492,17 @@ export default function QAPage() {
                   let start = Math.max(1, current - 2);
                   let end = Math.min(totalPages, current + 2);
                   if (end - start + 1 < 5) {
-                    if (start === 1) {
-                      end = Math.min(totalPages, start + 4);
-                    } else if (end === totalPages) {
-                      start = Math.max(1, end - 4);
-                    }
+                    if (start === 1) end = Math.min(totalPages, start + 4);
+                    else if (end === totalPages) start = Math.max(1, end - 4);
                   }
                   const pages = [];
-                  for (let i = start; i <= end; i++) {
-                    pages.push(i);
-                  }
+                  for (let i = start; i <= end; i++) pages.push(i);
                   return pages.map((p) => (
                     <button
                       key={p}
                       onClick={() => setPage(p)}
                       className={`px-3 py-1.5 text-sm font-medium rounded-md border ${
-                        p === current
-                          ? 'bg-primary text-primary-foreground'
-                          : 'hover:bg-accent'
+                        p === current ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                       }`}
                     >
                       {p}
@@ -575,9 +547,7 @@ export default function QAPage() {
               <input
                 type="text"
                 readOnly
-                value={
-                  filterOptions.chapters.find(ch => ch.id === parseInt(selectedChapter))?.name ?? selectedChapter
-                }
+                value={filterOptions.chapters.find(ch => ch.id === parseInt(selectedChapter))?.name ?? selectedChapter}
                 className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
               />
             </div>

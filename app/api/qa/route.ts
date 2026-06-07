@@ -1,3 +1,4 @@
+// FILE: app/api/qa/route.ts
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase/server';
@@ -12,7 +13,12 @@ export async function GET(request: Request) {
   const chapterId = searchParams.get('chapter_id');
   const search = searchParams.get('search');
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-  const limit = 10;
+  
+  // NEW: limit parameter, default 10, max 1000 for safety
+  let limit = parseInt(searchParams.get('limit') || '10', 10);
+  if (isNaN(limit)) limit = 10;
+  limit = Math.min(1000, Math.max(1, limit));  // between 1 and 1000
+
   const sort = searchParams.get('sort') || 'asc';
 
   let orderColumn = 'id';
@@ -83,7 +89,7 @@ export async function GET(request: Request) {
   });
 }
 
-// Added: POST handler for creating a new question
+// POST handler for creating a new question
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
