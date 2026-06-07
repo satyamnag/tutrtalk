@@ -5,7 +5,7 @@ import { headers } from 'next/headers';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
-import { SidebarProvider, Sidebar, SidebarToggle } from '@/components/app/sidebar';
+import { SidebarProvider, Sidebar, SidebarToggle, HeaderLogo } from '@/components/app/sidebar';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -84,14 +84,10 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <SidebarProvider>
               <Sidebar logo={logo} logoDark={logoDark} />
 
-              {/* Menu button + TutrTalk text in round pill */}
+              {/* Menu button + TutrTalk text (hides when sidebar opens) */}
               <div className="fixed top-6 left-6 z-50 flex items-center gap-2">
                 <SidebarToggle />
-                <div className="rounded-full bg-background/80 backdrop-blur-sm px-4 py-1.5 shadow-sm border border-border/50">
-                  <span className="text-primary font-bold text-lg tracking-tight">
-                    TutrTalk
-                  </span>
-                </div>
+                <HeaderLogo />
               </div>
 
               {children}
