@@ -84,9 +84,12 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <SidebarProvider>
               <Sidebar logo={logo} logoDark={logoDark} />
 
-              {/* Menu button – top‑left corner */}
-              <div className="fixed top-6 left-6 z-50">
+              {/* Menu button + TutrTalk text – top‑left corner */}
+              <div className="fixed top-6 left-6 z-50 flex items-center gap-2">
                 <SidebarToggle />
+                <span className="text-primary font-bold text-lg tracking-tight">
+                  TutrTalk
+                </span>
               </div>
 
               {children}
