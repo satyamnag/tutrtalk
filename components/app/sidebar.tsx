@@ -44,7 +44,9 @@ export function HeaderLogo() {
   const { open } = useSidebar();
   if (open) return null;
   return (
-    <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
+    <div className="bg-background/80 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-sm border border-border/50">
+      <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
+    </div>
   );
 }
 
