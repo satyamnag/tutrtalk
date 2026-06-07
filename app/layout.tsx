@@ -1,11 +1,11 @@
-// app/layout.tsx
 import { Public_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
-import { ClerkProvider, SignInButton, Show } from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
 import { SidebarProvider, Sidebar } from '@/components/app/sidebar';
+import { FloatingSidebarToggle } from '@/components/app/floating-sidebar-toggle';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -84,22 +84,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <SidebarProvider>
               <Sidebar logo={logo} logoDark={logoDark} />
 
-              {/* Floating button to open sidebar – replaces the removed top nav bar */}
               <div className="fixed bottom-6 left-6 z-50">
-                <button
-                  onClick={() => {
-                    const event = new CustomEvent('sidebar-toggle');
-                    window.dispatchEvent(event);
-                  }}
-                  className="rounded-full bg-primary p-3 text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
-                  aria-label="Open sidebar"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                  </svg>
-                </button>
+                <FloatingSidebarToggle />
               </div>
 
               {children}
