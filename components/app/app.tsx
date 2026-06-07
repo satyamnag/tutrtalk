@@ -64,7 +64,8 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
     };
   }, [room]);
 
-  // Prevent accidental browser refresh/close during a live session
+  // ----- ENHANCED REFRESH / NAVIGATION PREVENTION -----
+  // (1) Standard beforeunload warning
   useEffect(() => {
     if (!session.isConnected) return;
 
@@ -77,6 +78,62 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
     return () => window.removeEventListener('beforeunload', handler);
   }, [session.isConnected]);
 
+  // (2) Block keyboard shortcuts for refresh (F5, Ctrl+R, Cmd+R)
+  useEffect(() => {
+    if (!session.isConnected) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isRefresh =
+        e.key === 'F5' ||
+        (e.ctrlKey && e.key === 'r') ||
+        (e.metaKey && e.key === 'r') ||
+        (e.ctrlKey && e.key === 'R') ||
+        (e.metaKey && e.key === 'R');
+
+      if (isRefresh) {
+        e.preventDefault();
+        const confirmRefresh = window.confirm(
+          'You are in an active tutoring session.\n\n' +
+          'Refreshing the page will end the session.\n\n' +
+          'Are you sure you want to refresh?'
+        );
+        if (confirmRefresh) {
+          window.location.reload();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [session.isConnected]);
+
+  // (3) Block back/forward navigation (popstate)
+  useEffect(() => {
+    if (!session.isConnected) return;
+
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      const confirmNav = window.confirm(
+        'You are in an active tutoring session.\n\n' +
+        'Navigating away will end the session.\n\n' +
+        'Are you sure you want to leave?'
+      );
+      if (!confirmNav) {
+        // Push a dummy state to cancel navigation
+        history.pushState(null, '', location.href);
+      }
+    };
+
+    // Push a dummy state so that back/forward triggers popstate
+    history.pushState(null, '', location.href);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      history.back();
+    };
+  }, [session.isConnected]);
+  // ----- END OF ENHANCED PREVENTION -----
+
   return (
     <>
       <Sidebar logo={appConfig.logo} logoDark={appConfig.logoDark} />
@@ -84,7 +141,6 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
         <ViewController appConfig={appConfig} canStart={canStart} />
       </main>
 
-      {/* 👇 Only change: wrap StartAudioButton in a fixed, centered container */}
       {canStart && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
           <StartAudioButton label="Start Audio" />
