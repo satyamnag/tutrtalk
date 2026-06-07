@@ -1,6 +1,7 @@
+// components/app/sidebar.tsx
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUser, UserButton } from '@clerk/nextjs';
@@ -28,6 +29,14 @@ const SidebarContext = createContext<SidebarContextValue>({
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+
+  // Listen for the custom event dispatched by the floating button
+  useEffect(() => {
+    const handleToggle = () => setOpen(true);
+    window.addEventListener('sidebar-toggle', handleToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleToggle);
+  }, []);
+
   return (
     <SidebarContext.Provider value={{ open, setOpen }}>
       {children}
