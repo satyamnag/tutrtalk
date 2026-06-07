@@ -84,8 +84,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <SidebarProvider>
               <Sidebar logo={logo} logoDark={logoDark} />
 
-              {/* Translucent header area (menu + logo) */}
-              <div className="fixed top-6 left-6 z-50 flex items-center gap-2 rounded-full bg-background/80 backdrop-blur-sm px-3 py-1.5 shadow-sm border border-border/50">
+              {/* Menu button + TutrTalk text (hides when sidebar opens) */}
+              <div className="fixed top-6 left-6 z-50 flex items-center gap-2">
                 <SidebarToggle />
                 <HeaderLogo />
               </div>
