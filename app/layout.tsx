@@ -84,12 +84,14 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <SidebarProvider>
               <Sidebar logo={logo} logoDark={logoDark} />
 
-              {/* Menu button + TutrTalk text – top‑left corner */}
+              {/* Menu button + TutrTalk text in round pill */}
               <div className="fixed top-6 left-6 z-50 flex items-center gap-2">
                 <SidebarToggle />
-                <span className="text-primary font-bold text-lg tracking-tight">
-                  TutrTalk
-                </span>
+                <div className="rounded-full bg-background/80 backdrop-blur-sm px-4 py-1.5 shadow-sm border border-border/50">
+                  <span className="text-primary font-bold text-lg tracking-tight">
+                    TutrTalk
+                  </span>
+                </div>
               </div>
 
               {children}
