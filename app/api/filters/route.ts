@@ -2,60 +2,92 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // Fetch chapters (id + name) for the dropdown
-  const chaptersPromise = supabase
-    .from('chapters')
-    .select('id, name')
-    .order('name');
+  const { searchParams } = new URL(request.url);
+  const className = searchParams.get('class_name');
+  const subjectName = searchParams.get('subject_name');
+  const bookName = searchParams.get('book_name');
 
-  // Fetch classes, subjects, books – each table has one row, but we fetch all anyway
-  const classesPromise = supabase
+  // 1. Always fetch all classes (first dropdown)
+  const { data: classes, error: classesError } = await supabase
     .from('classes')
     .select('name')
     .order('name');
-
-  const subjectsPromise = supabase
-    .from('subjects')
-    .select('name')
-    .order('name');
-
-  const booksPromise = supabase
-    .from('books')
-    .select('name')
-    .order('name');
-
-  const [
-    { data: chapters, error: chaptersError },
-    { data: classes, error: classesError },
-    { data: subjects, error: subjectsError },
-    { data: books, error: booksError },
-  ] = await Promise.all([chaptersPromise, classesPromise, subjectsPromise, booksPromise]);
-
-  if (chaptersError || classesError || subjectsError || booksError) {
-    console.error('Error fetching filter options:', {
-      chaptersError,
-      classesError,
-      subjectsError,
-      booksError,
-    });
+  if (classesError) {
+    console.error(classesError);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
+  const classNames = classes?.map((c: any) => c.name) ?? [];
 
-  // Extract name arrays; handle empty gracefully
-  const classNames = (classes ?? []).map((c: any) => c.name);
-  const subjectNames = (subjects ?? []).map((s: any) => s.name);
-  const bookNames = (books ?? []).map((b: any) => b.name);
+  // 2. Subjects – filter by class_name if provided
+  let subjectNames: string[] = [];
+  if (className) {
+    const { data: classData, error: classError } = await supabase
+      .from('classes')
+      .select('id')
+      .eq('name', className)
+      .single();
+    if (!classError && classData) {
+      const { data: subjects, error: subjectsError } = await supabase
+        .from('subjects')
+        .select('name')
+        .eq('class_id', classData.id)
+        .order('name');
+      if (!subjectsError) {
+        subjectNames = subjects?.map((s: any) => s.name) ?? [];
+      }
+    }
+  }
+
+  // 3. Books – filter by subject_name if provided
+  let bookNames: string[] = [];
+  if (subjectName) {
+    const { data: subjectData, error: subjectError } = await supabase
+      .from('subjects')
+      .select('id')
+      .eq('name', subjectName)
+      .single();
+    if (!subjectError && subjectData) {
+      const { data: books, error: booksError } = await supabase
+        .from('books')
+        .select('name')
+        .eq('subject_id', subjectData.id)
+        .order('name');
+      if (!booksError) {
+        bookNames = books?.map((b: any) => b.name) ?? [];
+      }
+    }
+  }
+
+  // 4. Chapters – filter by book_name if provided
+  let chapters: { id: number; name: string }[] = [];
+  if (bookName) {
+    const { data: bookData, error: bookError } = await supabase
+      .from('books')
+      .select('id')
+      .eq('name', bookName)
+      .single();
+    if (!bookError && bookData) {
+      const { data: chaptersData, error: chaptersError } = await supabase
+        .from('chapters')
+        .select('id, name')
+        .eq('book_id', bookData.id)
+        .order('name');
+      if (!chaptersError) {
+        chapters = chaptersData ?? [];
+      }
+    }
+  }
 
   return NextResponse.json({
     classes: classNames,
     subjects: subjectNames,
     books: bookNames,
-    chapters: chapters ?? [],
+    chapters,
   });
 }
