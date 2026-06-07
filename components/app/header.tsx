@@ -10,7 +10,8 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setAtTop(window.scrollY === 0);
+      // Use a small threshold to catch near‑zero scroll positions
+      setAtTop(window.scrollY <= 2);
     };
     handleScroll(); // initial check
     window.addEventListener('scroll', handleScroll);
@@ -20,7 +21,7 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 left-0 z-50 flex w-full items-center justify-between p-6 backdrop-blur-md border-b border-border/50 transition-colors duration-300 ${
-        atTop ? 'bg-background/0' : 'bg-background/85'
+        atTop ? 'bg-transparent' : 'bg-background/85'
       }`}
     >
       <div className="flex items-center gap-3">
