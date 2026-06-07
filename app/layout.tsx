@@ -1,11 +1,11 @@
+// app/layout.tsx
 import { Public_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
-import { SidebarProvider, Sidebar } from '@/components/app/sidebar';
-import { FloatingSidebarToggle } from '@/components/app/floating-sidebar-toggle';
+import { SidebarProvider, Sidebar, SidebarToggle } from '@/components/app/sidebar';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -84,8 +84,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <SidebarProvider>
               <Sidebar logo={logo} logoDark={logoDark} />
 
-              <div className="fixed bottom-6 left-6 z-50">
-                <FloatingSidebarToggle />
+              {/* Menu button – top‑left corner */}
+              <div className="fixed top-6 left-6 z-50">
+                <SidebarToggle />
               </div>
 
               {children}
