@@ -85,8 +85,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               {/* Sidebar (always mounted, slides in/out) */}
               <Sidebar logo={logo} logoDark={logoDark} />
 
-              {/* Improved header – translucent background with backdrop blur */}
-              <header className="fixed top-0 left-0 z-50 flex w-full items-center justify-between bg-background/70 p-6 backdrop-blur-md border-b border-border/50">
+              <header className="fixed top-0 left-0 z-50 flex w-full items-center justify-between p-6">
                 <div className="flex items-center gap-3">
                   {/* Sidebar toggle button (visible when signed in) */}
                   <SidebarToggle />
