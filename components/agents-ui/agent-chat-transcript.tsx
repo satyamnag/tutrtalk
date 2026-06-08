@@ -30,6 +30,13 @@ export interface AgentChatTranscriptProps extends ComponentProps<'div'> {
   className?: string;
 }
 
+// Helper: detect an image URL in a string and return the URL if found
+function extractImageUrl(text: string): string | null {
+  const regex = /https?:\/\/\S+\.(avif|webp|png|jpe?g|gif)/gi;
+  const match = text.match(regex);
+  return match ? match[0] : null;
+}
+
 /**
  * A chat transcript component that displays a conversation between the user and agent.
  * Shows messages with timestamps and origin indicators, plus a thinking indicator
@@ -61,10 +68,21 @@ export function AgentChatTranscript({
           const time = new Date(timestamp);
           const title = time.toLocaleTimeString(locale, { timeStyle: 'full' });
 
+          const imageUrl = extractImageUrl(message);
+
           return (
             <Message key={id} title={title} from={messageOrigin}>
               <MessageContent>
                 <MessageResponse>{message}</MessageResponse>
+                {imageUrl && (
+                  <div className="mt-2">
+                    <img
+                      src={imageUrl}
+                      alt="Reference diagram"
+                      className="max-h-48 rounded-lg border"
+                    />
+                  </div>
+                )}
               </MessageContent>
             </Message>
           );
