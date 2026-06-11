@@ -2,7 +2,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, type MotionProps, motion } from 'motion/react';
-import { useAgent, useSessionContext, useSessionMessages, useTranscriptions } from '@livekit/components-react';
+import { 
+  useAgent, 
+  useSessionContext, 
+  useSessionMessages, 
+  useTranscriptions,
+  useConnectionQualityIndicator,
+  ConnectionStateToast 
+} from '@livekit/components-react';
+import { ConnectionQuality } from 'livekit-client';
+import { Wifi, WifiOff } from 'lucide-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
 import {
   AgentControlBar,
@@ -124,6 +133,42 @@ function LiveCaptions() {
 }
 // ---------------------------------------------
 
+// --- NEW: Connection Quality Badge ---
+function ConnectionQualityBadge() {
+  const { quality } = useConnectionQualityIndicator();
+  
+  let icon = <Wifi className="size-4 text-green-500" />;
+  let label = 'Excellent';
+  let textColor = 'text-green-600 dark:text-green-400';
+
+  if (quality === ConnectionQuality.Poor) {
+    icon = <Wifi className="size-4 text-red-500" />;
+    label = 'Poor';
+    textColor = 'text-red-600 dark:text-red-400';
+  } else if (quality === ConnectionQuality.Good) {
+    icon = <Wifi className="size-4 text-yellow-500" />;
+    label = 'Good';
+    textColor = 'text-yellow-600 dark:text-yellow-400';
+  } else if (quality === ConnectionQuality.Unknown) {
+    icon = <WifiOff className="size-4 text-muted-foreground" />;
+    label = 'Unknown';
+    textColor = 'text-muted-foreground';
+  }
+
+  return (
+    <div 
+      className="absolute top-4 right-4 z-[60] flex items-center gap-2 rounded-full bg-background/80 backdrop-blur-md border px-3 py-1.5 shadow-sm transition-all"
+      title={`Network connection: ${label}`}
+    >
+      {icon}
+      <span className={`text-xs font-semibold ${textColor}`}>
+        {label}
+      </span>
+    </div>
+  );
+}
+// ---------------------------------------------
+
 export interface AgentSessionView_01Props {
   /**
    * Message shown above the controls before the first chat message is sent.
@@ -227,6 +272,12 @@ export function AgentSessionView_01({
       className={cn('bg-background relative z-10 h-full w-full overflow-hidden', className)}
       {...props}
     >
+      {/* NEW: LiveKit Connection State Toast (auto-handles "Reconnecting..." UI) */}
+      <ConnectionStateToast />
+
+      {/* NEW: Connection Quality Badge */}
+      <ConnectionQualityBadge />
+
       <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
       {/* transcript */}
 
@@ -261,7 +312,7 @@ export function AgentSessionView_01({
         audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
       />
 
-      {/* NEW: Live Captions Overlay */}
+      {/* Live Captions Overlay */}
       <LiveCaptions />
 
       {/* Bottom */}
