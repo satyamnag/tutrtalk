@@ -9,11 +9,10 @@ import {
   useTranscriptions,
   useConnectionQualityIndicator,
   useLocalParticipant,
-  useIsEncrypted,
   ConnectionStateToast 
 } from '@livekit/components-react';
 import { ConnectionQuality } from 'livekit-client';
-import { Wifi, WifiOff, Lock } from 'lucide-react';
+import { Wifi, WifiOff } from 'lucide-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
 import {
   AgentControlBar,
@@ -137,6 +136,7 @@ function LiveCaptions() {
 
 // --- NEW: Connection Quality Badge ---
 function ConnectionQualityBadge() {
+  // FIX: Explicitly fetch the local participant to satisfy the hook's requirement
   const { localParticipant } = useLocalParticipant();
   const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
   
@@ -166,30 +166,6 @@ function ConnectionQualityBadge() {
       {icon}
       <span className={`text-xs font-semibold ${textColor}`}>
         {label}
-      </span>
-    </div>
-  );
-}
-// ---------------------------------------------
-
-// --- NEW: E2EE Security Badge ---
-function E2EEBadge() {
-  // FIX: Ensure we have a participant before checking encryption to avoid "No participant provided" error
-  const { localParticipant } = useLocalParticipant();
-  if (!localParticipant) return null;
-
-  const isEncrypted = useIsEncrypted();
-  
-  if (!isEncrypted) return null;
-
-  return (
-    <div 
-      className="absolute top-4 left-4 z-[60] flex items-center gap-2 rounded-full bg-green-500/10 backdrop-blur-md border border-green-500/20 px-3 py-1.5 shadow-sm transition-all"
-      title="This session is end-to-end encrypted"
-    >
-      <Lock className="size-3.5 text-green-600 dark:text-green-400" />
-      <span className="text-xs font-semibold text-green-700 dark:text-green-300">
-        Encrypted Session
       </span>
     </div>
   );
@@ -301,9 +277,6 @@ export function AgentSessionView_01({
     >
       {/* NEW: LiveKit Connection State Toast (auto-handles "Reconnecting..." UI) */}
       <ConnectionStateToast />
-
-      {/* NEW: E2EE Security Badge */}
-      <E2EEBadge />
 
       {/* NEW: Connection Quality Badge */}
       <ConnectionQualityBadge />
