@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, type MotionProps, motion } from 'motion/react';
-import { useAgent, useSessionContext, useSessionMessages } from '@livekit/components-react';
+import { useAgent, useSessionContext, useSessionMessages, useTranscriptions } from '@livekit/components-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
 import {
   AgentControlBar,
@@ -100,6 +100,29 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
     />
   );
 }
+
+// --- NEW: Real-Time Live Captions Component ---
+function LiveCaptions() {
+  const transcriptions = useTranscriptions();
+  
+  // Safely get the latest non-empty transcription text
+  const latest = Array.isArray(transcriptions) 
+    ? transcriptions.filter((t: any) => t.text && t.text.trim().length > 0).pop() 
+    : null;
+
+  const text = latest ? latest.text : '';
+
+  if (!text) return null;
+
+  return (
+    <div className="absolute bottom-32 md:bottom-40 left-1/2 -translate-x-1/2 z-[55] max-w-2xl w-full px-4 pointer-events-none">
+      <div className="bg-black/70 backdrop-blur-md text-white text-center text-base md:text-lg font-medium px-5 py-2.5 rounded-xl shadow-2xl border border-white/10">
+        {text}
+      </div>
+    </div>
+  );
+}
+// ---------------------------------------------
 
 export interface AgentSessionView_01Props {
   /**
@@ -223,6 +246,7 @@ export function AgentSessionView_01({
           )}
         </AnimatePresence>
       </div>
+      
       {/* Tile layout */}
       <TileLayout
         chatOpen={chatOpen}
@@ -236,6 +260,10 @@ export function AgentSessionView_01({
         audioVisualizerGridColumnCount={audioVisualizerGridColumnCount}
         audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
       />
+
+      {/* NEW: Live Captions Overlay */}
+      <LiveCaptions />
+
       {/* Bottom */}
       <motion.div
         {...BOTTOM_VIEW_MOTION_PROPS}
