@@ -2,9 +2,9 @@
 
 import { type ComponentProps, useEffect, useRef, useState } from 'react';
 import { Track } from 'livekit-client';
-import { Loader, MessageSquareTextIcon, SendHorizontal, WandSparkles } from 'lucide-react';
+import { Loader, MessageSquareTextIcon, SendHorizontal } from 'lucide-react';
 import { type MotionProps, motion } from 'motion/react';
-import { useChat, useKrispNoiseFilter } from '@livekit/components-react';
+import { useChat } from '@livekit/components-react';
 import { AgentDisconnectButton } from '@/components/agents-ui/agent-disconnect-button';
 import { AgentTrackControl } from '@/components/agents-ui/agent-track-control';
 import {
@@ -166,12 +166,6 @@ export interface AgentControlBarControls {
    * @defaultValue true (if data publish permission is granted)
    */
   chat?: boolean;
-  /**
-   * Whether to show the noise cancellation toggle control.
-   *
-   * @defaultValue true
-   */
-  noiseCancellation?: boolean;
 }
 
 export interface AgentControlBarProps extends UseInputControlsProps {
@@ -183,8 +177,7 @@ export interface AgentControlBarProps extends UseInputControlsProps {
   variant?: 'default' | 'outline' | 'livekit';
   /**
    * This takes an object with the following keys: `leave`, `microphone`, `screenShare`, `camera`,
-   * `chat`, `noiseCancellation`. Each key maps to a boolean value that determines whether the 
-   * control is displayed.
+   * `chat`. Each key maps to a boolean value that determines whether the control is displayed.
    *
    * @default
    * {
@@ -193,7 +186,6 @@ export interface AgentControlBarProps extends UseInputControlsProps {
    *   screenShare: true,
    *   camera: true,
    *   chat: true,
-   *   noiseCancellation: true,
    * }
    */
   controls?: AgentControlBarControls;
@@ -225,8 +217,8 @@ export interface AgentControlBarProps extends UseInputControlsProps {
 
 /**
  * A control bar specifically designed for voice assistant interfaces. Provides controls for
- * microphone, camera, screen share, chat, noise cancellation, and disconnect. Includes an 
- * expandable chat input for text-based interaction with the agent.
+ * microphone, camera, screen share, chat, and disconnect. Includes an expandable chat input for
+ * text-based interaction with the agent.
  *
  * @example
  *
@@ -240,7 +232,6 @@ export interface AgentControlBarProps extends UseInputControlsProps {
  *     camera: true,
  *     screenShare: false,
  *     chat: true,
- *     noiseCancellation: true,
  *     leave: true,
  *   }}
  * />;
@@ -274,13 +265,6 @@ export function AgentControlBar({
     handleCameraDeviceSelectError,
   } = useInputControls({ onDeviceError, saveUserChoices });
 
-  // Krisp Noise Cancellation Hook
-  const { 
-    isNoiseFilterEnabled, 
-    setIsNoiseFilterEnabled, 
-    isNoiseFilterPending 
-  } = useKrispNoiseFilter();
-
   const handleSendMessage = async (message: string) => {
     await send(message);
   };
@@ -291,7 +275,6 @@ export function AgentControlBar({
     screenShare: controls?.screenShare ?? publishPermissions.screenShare,
     camera: controls?.camera ?? publishPermissions.camera,
     chat: controls?.chat ?? publishPermissions.data,
-    noiseCancellation: controls?.noiseCancellation ?? true,
   };
 
   const isEmpty = Object.values(visibleControls).every((value) => !value);
@@ -381,23 +364,6 @@ export function AgentControlBar({
               onPressedChange={screenShareToggle.toggle}
               className={cn(variant === 'livekit' && [LK_TOGGLE_VARIANT_2, 'rounded-full'])}
             />
-          )}
-
-          {/* Toggle Noise Cancellation */}
-          {visibleControls.noiseCancellation && (
-            <Toggle
-              variant={variant === 'outline' ? 'outline' : 'default'}
-              pressed={isNoiseFilterEnabled}
-              disabled={isNoiseFilterPending}
-              aria-label="Toggle noise cancellation"
-              onPressedChange={setIsNoiseFilterEnabled}
-              className={agentTrackToggleVariants({
-                variant: variant === 'outline' ? 'outline' : 'default',
-                className: cn(variant === 'livekit' && [LK_TOGGLE_VARIANT_2, 'rounded-full']),
-              })}
-            >
-              <WandSparkles className={cn(isNoiseFilterPending && 'animate-spin')} />
-            </Toggle>
           )}
 
           {/* Toggle Transcript */}
