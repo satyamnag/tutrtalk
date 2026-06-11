@@ -9,11 +9,11 @@ import {
   useTranscriptions,
   useConnectionQualityIndicator,
   useLocalParticipant,
-  useIsEncrypted, // NEW: Added for E2EE detection
+  useIsEncrypted,
   ConnectionStateToast 
 } from '@livekit/components-react';
 import { ConnectionQuality } from 'livekit-client';
-import { Wifi, WifiOff, Lock } from 'lucide-react'; // NEW: Added Lock icon
+import { Wifi, WifiOff, Lock } from 'lucide-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
 import {
   AgentControlBar,
@@ -137,7 +137,6 @@ function LiveCaptions() {
 
 // --- NEW: Connection Quality Badge ---
 function ConnectionQualityBadge() {
-  // FIX: Explicitly fetch the local participant to satisfy the hook's requirement
   const { localParticipant } = useLocalParticipant();
   const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
   
@@ -175,6 +174,10 @@ function ConnectionQualityBadge() {
 
 // --- NEW: E2EE Security Badge ---
 function E2EEBadge() {
+  // FIX: Ensure we have a participant before checking encryption to avoid "No participant provided" error
+  const { localParticipant } = useLocalParticipant();
+  if (!localParticipant) return null;
+
   const isEncrypted = useIsEncrypted();
   
   if (!isEncrypted) return null;
