@@ -8,6 +8,7 @@ import {
   useSessionMessages, 
   useTranscriptions,
   useConnectionQualityIndicator,
+  useLocalParticipant,
   ConnectionStateToast 
 } from '@livekit/components-react';
 import { ConnectionQuality } from 'livekit-client';
@@ -135,7 +136,9 @@ function LiveCaptions() {
 
 // --- NEW: Connection Quality Badge ---
 function ConnectionQualityBadge() {
-  const { quality } = useConnectionQualityIndicator();
+  // FIX: Explicitly fetch the local participant to satisfy the hook's requirement
+  const { localParticipant } = useLocalParticipant();
+  const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
   
   let icon = <Wifi className="size-4 text-green-500" />;
   let label = 'Excellent';
