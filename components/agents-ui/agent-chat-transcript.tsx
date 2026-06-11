@@ -2,7 +2,7 @@
 
 import { type ComponentProps, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { type AgentState, type ReceivedMessage } from '@livekit/components-react';
+import { type AgentState, type ReceivedMessage, usePagination } from '@livekit/components-react';
 import { AgentChatIndicator } from '@/components/agents-ui/agent-chat-indicator';
 import {
   Conversation,
@@ -10,6 +10,7 @@ import {
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
+import { Button } from '@/components/ui/button';
 
 /**
  * Props for the AgentChatTranscript component.
@@ -34,6 +35,12 @@ export function AgentChatTranscript({
 }: AgentChatTranscriptProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
+  // NEW: Implement Pagination for smooth performance in long sessions
+  const { items: paginatedMessages, loadMore, hasMore } = usePagination(messages, {
+    initialCount: 30, // Start by showing the latest 30 messages
+    increment: 20,    // Load 20 more each time "Load More" is clicked
+  });
+
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -49,7 +56,21 @@ export function AgentChatTranscript({
   return (
     <Conversation className={className} {...props}>
       <ConversationContent>
-        {messages.map((receivedMessage) => {
+        {/* NEW: Load More Button for older messages */}
+        {hasMore && (
+          <div className="flex justify-center py-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => loadMore()}
+              className="text-xs font-medium"
+            >
+              Load earlier messages
+            </Button>
+          </div>
+        )}
+
+        {paginatedMessages.map((receivedMessage) => {
           const { id, timestamp, from, message } = receivedMessage;
           const locale = navigator?.language ?? 'en-US';
           const messageOrigin = from?.isLocal ? 'user' : 'assistant';
