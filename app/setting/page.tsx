@@ -4,6 +4,77 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/app/theme-toggle';
+import { usePreviewTracks } from '@livekit/components-react';
+import { Track, type LocalAudioTrack } from 'livekit-client';
+import { AgentAudioVisualizerBar } from '@/components/agents-ui/agent-audio-visualizer-bar';
+import { MicIcon, Settings2Icon } from 'lucide-react';
+
+// --- Pre-Join Device Testing Component (Moved from WelcomeView) ---
+function PreviewTrackVisualizer({ deviceId, onDevicesFound }: { deviceId: string, onDevicesFound: (devices: MediaDeviceInfo[]) => void }) {
+  // If 'default' is selected, we pass true to let the browser choose. Otherwise, we force the exact deviceId.
+  const audioOptions = deviceId === 'default' ? true : { deviceId: { exact: deviceId } };
+  
+  const tracks = usePreviewTracks(
+    { audio: audioOptions },
+    (error) => { console.error('Error acquiring preview tracks:', error); }
+  );
+  
+  const audioTrack = tracks?.find(t => t.kind === Track.Kind.Audio) as LocalAudioTrack | undefined;
+
+  // Use native browser API to list devices
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
+      const audioInputs = deviceInfos.filter((d) => d.kind === 'audioinput');
+      onDevicesFound(audioInputs);
+    });
+  }, [onDevicesFound]);
+
+  return (
+    <div className="flex flex-col items-center gap-2 py-4">
+      <p className="text-xs text-muted-foreground text-center">Speak to test your mic</p>
+      <AgentAudioVisualizerBar
+        size="md"
+        state={audioTrack ? 'speaking' : 'disconnected'}
+        audioTrack={audioTrack}
+        barCount={5}
+        color="#1fd5f9" // Matches your app's primary accent color
+        className="h-16"
+      />
+    </div>
+  );
+}
+
+function MicTester() {
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [activeDeviceId, setActiveDeviceId] = useState<string>('default');
+
+  return (
+    <div className="w-full space-y-4 rounded-xl border p-6 bg-card shadow-sm text-left">
+      <div className="flex items-center gap-2">
+        <Settings2Icon size={16} className="text-muted-foreground" />
+        <h3 className="text-sm font-semibold">Select Microphone</h3>
+      </div>
+      
+      {/* Native select styled exactly like the rest of the app's dropdowns */}
+      <select
+        value={activeDeviceId}
+        onChange={(e) => setActiveDeviceId(e.target.value)}
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+      >
+        {devices.length === 0 && <option value="">Detecting microphones...</option>}
+        {devices.map((device) => (
+          <option key={device.deviceId} value={device.deviceId}>
+            {device.label || `Microphone ${device.deviceId.slice(0, 5)}`}
+          </option>
+        ))}
+      </select>
+
+      {/* Remount PreviewTrackVisualizer when device changes */}
+      <PreviewTrackVisualizer key={activeDeviceId} deviceId={activeDeviceId} onDevicesFound={setDevices} />
+    </div>
+  );
+}
+// ---------------------------------------------
 
 export default function SettingPage() {
   const { isLoaded, isSignedIn } = useUser();
@@ -142,6 +213,14 @@ export default function SettingPage() {
           <p className="mt-2 text-xs text-muted-foreground">
             Choose how TutrTalk looks on your device.
           </p>
+        </div>
+
+        {/* NEW: Test Microphone Section */}
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-3">
+            Audio Setup
+          </label>
+          <MicTester />
         </div>
 
         {/* Submit */}
