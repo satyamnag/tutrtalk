@@ -1,8 +1,8 @@
+// app/profile/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { ExamTypeSelector } from '@/components/app/exam-type-selector';
 
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -174,18 +174,6 @@ export default function ProfilePage() {
           </select>
         </div>
 
-        {/* Study Type */}
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
-            Study Type <span className="text-destructive">*</span>
-          </label>
-          <ExamTypeSelector
-            value={studyType}
-            onValueChange={setStudyType}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-        </div>
-
         {/* DOB */}
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-1">
@@ -197,31 +185,6 @@ export default function ProfilePage() {
             onChange={(e) => setDob(e.target.value)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
-        </div>
-
-        {/* Study Language - dropdown */}
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
-            Preferred Study Language
-          </label>
-          <select
-            value={studyLanguage}
-            onChange={(e) => setStudyLanguage(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          >
-            <option value="" disabled>Select language</option>
-            <option value="English">English</option>
-            <option value="Hindi" disabled>Hindi</option>
-            <option value="Bengali" disabled>Bengali</option>
-            <option value="Marathi" disabled>Marathi</option>
-            <option value="Telugu" disabled>Telugu</option>
-            <option value="Tamil" disabled>Tamil</option>
-            <option value="Gujarati" disabled>Gujarati</option>
-            <option value="Urdu" disabled>Urdu</option>
-            <option value="Kannada" disabled>Kannada</option>
-            <option value="Odia" disabled>Odia</option>
-            <option value="Malayalam" disabled>Malayalam</option>
-          </select>
         </div>
 
         {/* Profile Photo – file upload */}
