@@ -1,8 +1,9 @@
+// components/app/app.tsx
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
 import { TokenSource } from 'livekit-client';
-import { useSession, useSessionContext, useRoomContext } from '@livekit/components-react';
+import { useSession, useSessionContext, useDataChannel } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
 import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
@@ -31,7 +32,10 @@ interface AppProps {
 // Inner component – lives inside AgentSessionProvider, can safely use LiveKit room hooks
 function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: boolean }) {
   const session = useSessionContext();
-  const room = useRoomContext();
+  
+  // NEW: Standardized Data Channel for UI Events
+  const { message } = useDataChannel('ui_events');
+  
   const [chapterSelected, setChapterSelected] = useState(false);
   const [greetingDone, setGreetingDone] = useState(false);
 
@@ -43,20 +47,28 @@ function AppContent({ appConfig, canStart }: { appConfig: AppConfig; canStart: b
     }
   }, [session.isConnected]);
 
-  // Listen for agent's data signals (greeting done)
+  // NEW: Listen for structured JSON events from the Python agent
   useEffect(() => {
-    if (!room) return;
-    const handleData = (payload: Uint8Array) => {
-      const text = new TextDecoder().decode(payload);
-      if (text === '__greeting_done__') {
-        setGreetingDone(true);
+    if (message?.payload) {
+      const decoder = new TextDecoder();
+      const text = decoder.decode(message.payload);
+      try {
+        const data = JSON.parse(text);
+        
+        // Handle specific events
+        if (data.event === 'greeting_done') {
+          setGreetingDone(true);
+        }
+        
+        // Future events can be easily added here without touching LiveKit room listeners!
+        // e.g., if (data.event === 'level_up') { triggerConfetti(); }
+        // e.g., if (data.event === 'play_sound') { playAudio(data.sound); }
+        
+      } catch (e) {
+        console.warn('Received non-JSON data on ui_events channel:', text);
       }
-    };
-    room.on('dataReceived', handleData);
-    return () => {
-      room.off('dataReceived', handleData);
-    };
-  }, [room]);
+    }
+  }, [message]);
 
   // ----- ENHANCED REFRESH / NAVIGATION PREVENTION -----
   // (1) Standard beforeunload warning
