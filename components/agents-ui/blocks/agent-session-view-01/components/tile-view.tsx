@@ -7,6 +7,7 @@ import {
   useLocalParticipant,
   useTracks,
   useVoiceAssistant,
+  useIsSpeaking,
 } from '@livekit/components-react';
 import { cn } from '@/lib/shadcn/utils';
 import { AudioVisualizer } from './audio-visualizer';
@@ -95,6 +96,10 @@ export function TileLayout({
   const { videoTrack: agentVideoTrack } = useVoiceAssistant();
   const [screenShareTrack] = useTracks([Track.Source.ScreenShare]);
   const cameraTrack: TrackReference | undefined = useLocalTrackRef(Track.Source.Camera);
+
+  // NEW: Visual Speaking Feedback Hook
+  const { localParticipant } = useLocalParticipant();
+  const isUserSpeaking = useIsSpeaking(localParticipant);
 
   const isCameraEnabled = cameraTrack && !cameraTrack.publication.isMuted;
   const isScreenShareEnabled = screenShareTrack && !screenShareTrack.publication.isMuted;
@@ -225,6 +230,10 @@ export function TileLayout({
                   animate={{
                     opacity: 1,
                     scale: 1,
+                    // NEW: Add a glowing ring when the student is speaking
+                    boxShadow: isUserSpeaking 
+                      ? '0 0 0 4px rgba(34, 197, 94, 0.5)' // Green glow
+                      : '0 0 0 0px rgba(34, 197, 94, 0)',
                   }}
                   exit={{
                     opacity: 0,
@@ -233,8 +242,9 @@ export function TileLayout({
                   transition={{
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
+                    boxShadow: { duration: 0.2 }, // Fast transition for speaking feedback
                   }}
-                  className="aspect-square size-[90px] drop-shadow-lg/20"
+                  className="aspect-square size-[90px] drop-shadow-lg/20 rounded-md overflow-hidden bg-muted"
                 >
                   <VideoTrack
                     trackRef={cameraTrack || screenShareTrack}
