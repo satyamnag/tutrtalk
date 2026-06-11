@@ -3,7 +3,6 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { ExamTypeSelector } from '@/components/app/exam-type-selector';
 import { ThemeToggle } from '@/components/app/theme-toggle';
 
 export default function SettingPage() {
@@ -91,11 +90,20 @@ export default function SettingPage() {
           <label className="block text-sm font-medium text-muted-foreground mb-1">
             Study Type <span className="text-destructive">*</span>
           </label>
-          <ExamTypeSelector
+          <select
             value={studyType}
-            onValueChange={setStudyType}
+            onChange={(e) => setStudyType(e.target.value)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
+            required
+          >
+            <option value="competitive-exams" disabled>
+              Competitive Exams
+            </option>
+            <option value="general-studies">General Studies</option>
+            <option value="school-exams" disabled>
+              School Exams
+            </option>
+          </select>
         </div>
 
         {/* Study Language */}
