@@ -112,7 +112,10 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
 }
 
 // --- NEW: Real-Time Live Captions Component (Updated UI/UX) ---
-function LiveCaptions() {
+function LiveCaptions({ chatOpen }: { chatOpen: boolean }) {
+  // NEW: Only show captions when chat is CLOSED to avoid redundancy
+  if (chatOpen) return null;
+
   const transcriptions = useTranscriptions();
   
   // Safely get the latest non-empty transcription text
@@ -323,8 +326,8 @@ export function AgentSessionView_01({
         audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
       />
 
-      {/* Live Captions Overlay */}
-      <LiveCaptions />
+      {/* Live Captions Overlay - Now passes chatOpen state */}
+      <LiveCaptions chatOpen={chatOpen} />
 
       {/* Bottom */}
       <motion.div
