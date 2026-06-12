@@ -111,7 +111,7 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
   );
 }
 
-// --- NEW: Real-Time Live Captions Component ---
+// --- NEW: Real-Time Live Captions Component (Updated UI/UX) ---
 function LiveCaptions() {
   const transcriptions = useTranscriptions();
   
@@ -125,10 +125,18 @@ function LiveCaptions() {
   if (!text) return null;
 
   return (
-    <div className="absolute bottom-32 md:bottom-40 left-1/2 -translate-x-1/2 z-[55] max-w-2xl w-full px-4 pointer-events-none">
-      <div className="bg-black/70 backdrop-blur-md text-white text-center text-base md:text-lg font-medium px-5 py-2.5 rounded-xl shadow-2xl border border-white/10">
-        {text}
-      </div>
+    <div className="absolute bottom-36 md:bottom-44 left-1/2 -translate-x-1/2 z-[55] max-w-xl w-full px-4 pointer-events-none">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="bg-card/90 backdrop-blur-xl border border-border/50 shadow-lg rounded-2xl px-6 py-3 text-center"
+      >
+        <p className="text-foreground font-medium text-base md:text-lg leading-relaxed tracking-wide">
+          {text}
+        </p>
+      </motion.div>
     </div>
   );
 }
