@@ -84,9 +84,9 @@ export function ViewController({ appConfig, canStart = true }: ViewControllerPro
         )}
       </AnimatePresence>
 
-      {/* Visualizer selector – appears only during an active session */}
+      {/* Visualizer selector – bottom control bar area, only while connected */}
       {isConnected && (
-        <div className="fixed top-6 right-6 z-50">
+        <div className="fixed bottom-20 right-4 z-50">
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-border/50">
             <label className="text-xs font-medium text-muted-foreground">
               Visualizer
