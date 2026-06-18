@@ -26,11 +26,11 @@ const VIEW_MOTION_PROPS = {
 } as const;
 
 const VISUALIZER_OPTIONS = [
-  { value: 'bar', label: 'Bars' },
-  { value: 'grid', label: 'Grid' },
-  { value: 'radial', label: 'Radial' },
-  { value: 'wave', label: 'Wave' },
-  { value: 'aura', label: 'Aura' },
+  { value: 'bar', label: 'Bars', icon: 'B' },
+  { value: 'grid', label: 'Grid', icon: 'G' },
+  { value: 'radial', label: 'Radial', icon: 'R' },
+  { value: 'wave', label: 'Wave', icon: 'W' },
+  { value: 'aura', label: 'Aura', icon: 'A' },
 ] as const;
 
 interface ViewControllerProps {
@@ -84,25 +84,24 @@ export function ViewController({ appConfig, canStart = true }: ViewControllerPro
         )}
       </AnimatePresence>
 
-      {/* Visualizer selector – bottom control bar area, only while connected */}
+      {/* Visualizer selector – compact icon buttons, only while connected */}
       {isConnected && (
-        <div className="fixed bottom-20 right-4 z-50">
-          <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-border/50">
-            <label className="text-xs font-medium text-muted-foreground">
-              Visualizer
-            </label>
-            <select
-              value={selectedVisualizer}
-              onChange={(e) => setSelectedVisualizer(e.target.value)}
-              className="rounded-full border border-input bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        <div className="fixed bottom-20 right-4 z-50 flex items-center gap-1 bg-background/80 backdrop-blur-sm rounded-full p-1 shadow-sm border border-border/50">
+          {VISUALIZER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setSelectedVisualizer(opt.value)}
+              title={`Switch to ${opt.label} visualizer`}
+              aria-label={`${opt.label} visualizer`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
+                selectedVisualizer === opt.value
+                  ? 'bg-primary text-primary-foreground shadow'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              }`}
             >
-              {VISUALIZER_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              {opt.icon}
+            </button>
+          ))}
         </div>
       )}
     </>
