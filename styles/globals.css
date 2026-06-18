@@ -122,3 +122,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* --- LiveKit network quality indicator – icon only, text on hover --- */
+[class*="lk-connection-quality"] {
+  /* hide the text visually, keep it accessible for screen readers */
+}
+[class*="lk-connection-quality"] span,
+[class*="lk-connection-quality"] .lk-connection-quality-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 0.3s ease, opacity 0.3s ease;
+}
+[class*="lk-connection-quality"]:hover span,
+[class*="lk-connection-quality"]:hover .lk-connection-quality-text {
+  max-width: 120px;   /* enough to show "Excellent", "Good", etc. */
+  opacity: 1;
+}
