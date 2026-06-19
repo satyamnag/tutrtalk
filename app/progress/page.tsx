@@ -10,7 +10,10 @@ import {
   ClockIcon,
   MessageCircleIcon,
   HashIcon,
+  Search,
+  X,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TranscriptTurn {
   role: 'agent' | 'user' | 'assistant';
@@ -51,6 +54,12 @@ export default function ProgressPage() {
   const [dataReady, setDataReady] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
+  // ---- Search state ----
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+
   useEffect(() => {
     if (!isSignedIn) {
       setDataReady(true);
@@ -76,6 +85,21 @@ export default function ProgressPage() {
     });
   };
 
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/sessions/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const data = await res.json();
+      setSearchResults(data);
+      setIsSearchDialogOpen(true);
+    } catch (error) {
+      console.error('Search failed', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   if (!isLoaded || !dataReady) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -91,6 +115,22 @@ export default function ProgressPage() {
   return (
     <main className="container mx-auto max-w-3xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold text-center">Your Sessions</h1>
+
+      {/* ---- Search bar ---- */}
+      <div className="flex items-center gap-2 mb-6">
+        <input
+          type="text"
+          placeholder="Search transcripts..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        />
+        <Button onClick={handleSearch} disabled={isSearching} size="sm">
+          <Search className="h-4 w-4 mr-1" />
+          Search
+        </Button>
+      </div>
 
       {sessions.length === 0 && (
         <div className="text-center py-16">
@@ -275,6 +315,74 @@ export default function ProgressPage() {
           </motion.div>
         ))}
       </div>
+
+      {/* ---- Search results modal ---- */}
+      <AnimatePresence>
+        {isSearchDialogOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsSearchDialogOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="max-h-[80vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-background p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">
+                  Search Results for “{searchQuery}”
+                </h2>
+                <button
+                  onClick={() => setIsSearchDialogOpen(false)}
+                  className="rounded-full p-1 hover:bg-accent"
+                  aria-label="Close"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              {searchResults.length === 0 ? (
+                <p className="text-muted-foreground">No matching messages found.</p>
+              ) : (
+                <div className="space-y-6">
+                  {searchResults.map((result) => (
+                    <div key={result.sessionId} className="border-b pb-4">
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Session: {result.sessionId.slice(0, 8)}</span>
+                        <span>{result.matchCount} matches</span>
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        {result.messages.map((msg: any, idx: number) => (
+                          <div key={idx} className="text-sm">
+                            <span className="font-semibold">
+                              {msg.role === 'user' ? 'You' : 'TutrTalk'}:
+                            </span>
+                            <span
+                              className="ml-1"
+                              dangerouslySetInnerHTML={{
+                                __html: msg.content.replace(
+                                  new RegExp(searchQuery.trim(), 'gi'),
+                                  (match: string) =>
+                                    `<mark class="bg-yellow-200 dark:bg-yellow-800">${match}</mark>`
+                                ),
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

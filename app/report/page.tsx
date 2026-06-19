@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Button } from '@/components/ui/button';
-import { Search, FileDown, X, Settings } from 'lucide-react';
+import { FileDown, X, Settings } from 'lucide-react';
 
 interface Answer {
   id: number;
@@ -120,12 +120,6 @@ export default function ReportPage() {
   const sentimentChartRef = useRef<SVGSVGElement>(null);
   const weakChartRef = useRef<SVGSVGElement>(null);
   const reportRef = useRef<HTMLDivElement>(null);
-
-  // NEW state for search
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
 
   // ---- Dashboard Customization ----
   const [chartVisibility, setChartVisibility] = useState<Record<ChartKey, boolean>>(() => {
@@ -506,7 +500,7 @@ export default function ReportPage() {
       .append('title').text(d => `${d.chapter}: ${d.points} pts`);
   }, [answers, chartVisibility.pointsPerChapter]);
 
-  // --- NEW: Sentiment Over Time chart ---
+  // --- Sentiment Over Time chart ---
   useEffect(() => {
     if (!sessions.length || !sentimentChartRef.current) return;
     if (!chartVisibility.sentimentOverTime) return;
@@ -560,7 +554,7 @@ export default function ReportPage() {
       .text(d => `${d.date.toLocaleDateString()}: ${d.score} (${d.label})`);
   }, [sessions, chartVisibility.sentimentOverTime]);
 
-  // --- NEW: Weak Areas chart ---
+  // --- Weak Areas chart ---
   useEffect(() => {
     if (!answers.length || !weakChartRef.current) return;
     if (!chartVisibility.weakAreas) return;
@@ -612,22 +606,6 @@ export default function ReportPage() {
       .text(d => `${d.chapter}: ${(d.correctRate * 100).toFixed(1)}% correct`);
   }, [answers, chartVisibility.weakAreas]);
 
-  // --- Search handler ---
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setIsSearching(true);
-    try {
-      const res = await fetch(`/api/sessions/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      const data = await res.json();
-      setSearchResults(data);
-      setIsSearchDialogOpen(true);
-    } catch (error) {
-      console.error('Search failed', error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   // --- Export PDF handler ---
   const exportPDF = async () => {
     if (!reportRef.current) return;
@@ -659,22 +637,8 @@ export default function ReportPage() {
     <main className="container mx-auto max-w-6xl px-4 py-8 sm:py-12 md:py-16">
       <h1 className="mb-6 text-2xl font-bold text-center sm:text-3xl">Your Performance Report</h1>
 
-      {/* Search & Export & Customize Bar */}
+      {/* Export & Customize Bar (search removed) */}
       <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
-        <div className="flex flex-1 items-center gap-2">
-          <input
-            type="text"
-            placeholder="Search transcripts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch()}
-          />
-          <Button onClick={handleSearch} disabled={isSearching} size="sm" className="shrink-0">
-            <Search className="h-4 w-4 mr-1" />
-            Search
-          </Button>
-        </div>
         <Button onClick={exportPDF} variant="outline" size="sm" className="w-full sm:w-auto">
           <FileDown className="h-4 w-4 mr-1" />
           Export PDF
@@ -692,7 +656,7 @@ export default function ReportPage() {
 
       {/* Report Content (for PDF capture) */}
       <div ref={reportRef}>
-        {/* Summary Cards – improved responsiveness */}
+        {/* Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="rounded-xl border p-3 sm:p-4 text-center bg-card">
             <div className="text-xl sm:text-2xl font-bold">{totalAnswers}</div>
@@ -720,106 +684,82 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Charts Grid – conditionally rendered based on visibility */}
+        {/* Charts Grid */}
         {answers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {/* Answers per Chapter */}
+            {/* ... all chart divs unchanged ... */}
             {chartVisibility.answersPerChapter && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Answers per Chapter</h2>
                 <svg ref={barChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Struggle Areas */}
             {chartVisibility.struggleAreas && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Struggle Areas (≥2 attempts)</h2>
                 <svg ref={struggleChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Study Consistency */}
             {chartVisibility.studyConsistency && (
               <div className="rounded-xl border p-4 bg-card md:col-span-2">
                 <h2 className="text-lg font-semibold mb-2">Study Consistency (Answers per Day)</h2>
                 <svg ref={timeChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Chapter Share */}
             {chartVisibility.chapterShare && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Chapter Share</h2>
                 <svg ref={donutChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Avg Attempts per Chapter */}
             {chartVisibility.avgAttempts && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Avg Attempts per Chapter</h2>
                 <svg ref={avgAttemptsChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Attempt Distribution */}
             {chartVisibility.attemptDistribution && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Attempt Distribution</h2>
                 <svg ref={histogramChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Cumulative Progress */}
             {chartVisibility.cumulativeProgress && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Cumulative Progress</h2>
                 <svg ref={cumulativeChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Answers by Day of Week */}
             {chartVisibility.dayOfWeek && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Answers by Day of Week</h2>
                 <svg ref={dayOfWeekChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Last 7 Days Activity */}
             {chartVisibility.last7Days && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Last 7 Days Activity</h2>
                 <svg ref={recentChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Correctness Breakdown */}
             {chartVisibility.correctnessBreakdown && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Correctness Breakdown</h2>
                 <svg ref={correctnessDonutRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Points per Chapter */}
             {chartVisibility.pointsPerChapter && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Points per Chapter</h2>
                 <svg ref={pointsPerChapterRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Sentiment Over Time */}
             {chartVisibility.sentimentOverTime && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Sentiment Over Time</h2>
                 <svg ref={sentimentChartRef} width="100%" height="250" viewBox="0 0 500 250" />
               </div>
             )}
-
-            {/* Weak Areas */}
             {chartVisibility.weakAreas && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Weak Areas (Correctness &lt; 60%)</h2>
@@ -868,55 +808,6 @@ export default function ReportPage() {
                 Done
               </Button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Custom Search Modal – unchanged */}
-      {isSearchDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="max-h-[80vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-background p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Search Results for “{searchQuery}”</h2>
-              <button
-                onClick={() => setIsSearchDialogOpen(false)}
-                className="rounded-full p-1 hover:bg-accent"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            {searchResults.length === 0 ? (
-              <p className="text-muted-foreground">No matching messages found.</p>
-            ) : (
-              <div className="space-y-6">
-                {searchResults.map((result) => (
-                  <div key={result.sessionId} className="border-b pb-4">
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Session: {result.sessionId.slice(0,8)}</span>
-                      <span>{result.matchCount} matches</span>
-                    </div>
-                    <div className="mt-2 space-y-1">
-                      {result.messages.map((msg: any, idx: number) => (
-                        <div key={idx} className="text-sm">
-                          <span className="font-semibold">{msg.role === 'user' ? 'You' : 'TutrTalk'}:</span>
-                          <span
-                            className="ml-1"
-                            dangerouslySetInnerHTML={{
-                              __html: msg.content.replace(
-                                new RegExp(searchQuery.trim(), 'gi'),
-                                (match: string) =>
-                                  `<mark class="bg-yellow-200 dark:bg-yellow-800">${match}</mark>`
-                              ),
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       )}
