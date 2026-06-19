@@ -6,7 +6,7 @@ function WelcomeAnimation() {
   return (
     <div className="mb-4 flex items-center justify-center">
       <AgentAudioVisualizerWave
-        state="disconnected"
+        state="listening"
         size="sm"
         color="#1fd5f9"
         className="h-[72px] w-[72px]"
