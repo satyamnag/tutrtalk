@@ -111,7 +111,7 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
   );
 }
 
-// --- UPDATED: Polished Live Captions with smooth crossfade ---
+// --- FIXED: Restored working positioning & z-index, kept refined visual style ---
 function LiveCaptions({ chatOpen }: { chatOpen: boolean }) {
   if (chatOpen) return null;
 
@@ -122,7 +122,7 @@ function LiveCaptions({ chatOpen }: { chatOpen: boolean }) {
   const text = latest ? latest.text : '';
 
   return (
-    <div className="absolute bottom-32 md:bottom-36 left-1/2 -translate-x-1/2 z-[49] max-w-xl w-full px-4 pointer-events-none">
+    <div className="absolute bottom-36 md:bottom-44 left-1/2 -translate-x-1/2 z-[55] max-w-xl w-full px-4 pointer-events-none">
       <AnimatePresence mode="wait">
         {text && (
           <motion.div
