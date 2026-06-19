@@ -31,7 +31,16 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { name, class: studentClass, board, profile_photo_url, dob, study_language, study_type } = body;
+  const {
+    name,
+    class: studentClass,
+    board,
+    profile_photo_url,
+    dob,
+    study_language,
+    study_type,
+    preferred_subject,   // NEW field
+  } = body;
 
   // Basic validation
   if (!name || !studentClass || !board) {
@@ -47,6 +56,7 @@ export async function POST(request: Request) {
     dob: dob || null,
     study_language: study_language || null,
     study_type: study_type || null,
+    preferred_subject: preferred_subject || null,   // NEW
     updated_at: new Date().toISOString(),
   };
 
