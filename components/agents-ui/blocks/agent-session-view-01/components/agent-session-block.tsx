@@ -111,41 +111,43 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
   );
 }
 
-// --- FIXED: Restored working positioning & z-index, kept refined visual style ---
+// --- NEW: Real-Time Live Captions Component (Updated UI/UX) ---
 function LiveCaptions({ chatOpen }: { chatOpen: boolean }) {
+  // NEW: Only show captions when chat is CLOSED to avoid redundancy
   if (chatOpen) return null;
 
   const transcriptions = useTranscriptions();
+  
+  // Safely get the latest non-empty transcription text
   const latest = Array.isArray(transcriptions) 
     ? transcriptions.filter((t: any) => t.text && t.text.trim().length > 0).pop() 
     : null;
+
   const text = latest ? latest.text : '';
+
+  if (!text) return null;
 
   return (
     <div className="absolute bottom-36 md:bottom-44 left-1/2 -translate-x-1/2 z-[55] max-w-xl w-full px-4 pointer-events-none">
-      <AnimatePresence mode="wait">
-        {text && (
-          <motion.div
-            key={text}
-            initial={{ opacity: 0, y: 8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="bg-card/80 backdrop-blur-xl border border-border/40 shadow-lg rounded-2xl px-5 py-3 text-center"
-          >
-            <p className="text-foreground font-medium text-sm md:text-base leading-relaxed tracking-wide">
-              {text}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="bg-card/90 backdrop-blur-xl border border-border/50 shadow-lg rounded-2xl px-6 py-3 text-center"
+      >
+        <p className="text-foreground font-medium text-base md:text-lg leading-relaxed tracking-wide">
+          {text}
+        </p>
+      </motion.div>
     </div>
   );
 }
 // ---------------------------------------------
 
-// --- Connection Quality Badge (unchanged) ---
+// --- NEW: Connection Quality Badge ---
 function ConnectionQualityBadge() {
+  // FIX: Explicitly fetch the local participant to satisfy the hook's requirement
   const { localParticipant } = useLocalParticipant();
   const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
   
@@ -182,20 +184,56 @@ function ConnectionQualityBadge() {
 // ---------------------------------------------
 
 export interface AgentSessionView_01Props {
+  /**
+   * Message shown above the controls before the first chat message is sent.
+   *
+   * @default 'Agent is listening, ask it a question'
+   */
   preConnectMessage?: string;
+  /**
+   * Enables or disables the chat toggle and transcript input controls.
+   *
+   * @default true
+   */
   supportsChatInput?: boolean;
+  /**
+   * Enables or disables camera controls in the bottom control bar.
+   *
+   * @default true
+   */
   supportsVideoInput?: boolean;
+  /**
+   * Enables or disables screen sharing controls in the bottom control bar.
+   *
+   * @default true
+   */
   supportsScreenShare?: boolean;
+  /**
+   * Shows a pre-connect buffer state with a shimmer message before messages appear.
+   *
+   * @default true
+   */
   isPreConnectBufferEnabled?: boolean;
+
+  /** Selects the visualizer style rendered in the main tile area. */
   audioVisualizerType?: 'bar' | 'wave' | 'grid' | 'radial' | 'aura';
+  /** Primary hex color used by supported audio visualizer variants. */
   audioVisualizerColor?: `#${string}`;
+  /** Hue shift intensity used by certain visualizers. */
   audioVisualizerColorShift?: number;
+  /** Number of bars to render when `audioVisualizerType` is `bar`. */
   audioVisualizerBarCount?: number;
+  /** Number of rows in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridRowCount?: number;
+  /** Number of columns in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridColumnCount?: number;
+  /** Number of radial bars when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialBarCount?: number;
+  /** Base radius of the radial visualizer when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialRadius?: number;
+  /** Stroke width of the wave path when `audioVisualizerType` is `wave`. */
   audioVisualizerWaveLineWidth?: number;
+  /** Optional class name merged onto the outer `<section>` container. */
   className?: string;
 }
 
@@ -248,10 +286,14 @@ export function AgentSessionView_01({
       className={cn('bg-background relative z-10 h-full w-full overflow-hidden', className)}
       {...props}
     >
+      {/* NEW: LiveKit Connection State Toast (auto-handles "Reconnecting..." UI) */}
       <ConnectionStateToast />
+
+      {/* NEW: Connection Quality Badge */}
       <ConnectionQualityBadge />
 
       <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
+      {/* transcript */}
 
       <div className="absolute top-0 bottom-[135px] flex w-full flex-col md:bottom-[170px]">
         <AnimatePresence>
@@ -270,6 +312,7 @@ export function AgentSessionView_01({
         </AnimatePresence>
       </div>
       
+      {/* Tile layout */}
       <TileLayout
         chatOpen={chatOpen}
         audioVisualizerType={audioVisualizerType}
@@ -283,12 +326,15 @@ export function AgentSessionView_01({
         audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
       />
 
+      {/* Live Captions Overlay - Now passes chatOpen state */}
       <LiveCaptions chatOpen={chatOpen} />
 
+      {/* Bottom */}
       <motion.div
         {...BOTTOM_VIEW_MOTION_PROPS}
         className="absolute inset-x-3 bottom-0 z-50 md:inset-x-12"
       >
+        {/* Pre-connect message */}
         {isPreConnectBufferEnabled && (
           <AnimatePresence>
             {messages.length === 0 && (
