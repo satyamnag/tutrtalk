@@ -2,6 +2,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase/server';
+import Sentiment from 'sentiment';
+
+const sentimentAnalyzer = new Sentiment();
 
 export async function GET() {
   const { userId } = await auth();
@@ -122,6 +125,17 @@ export async function GET() {
         };
       });
 
+      // --- SENTIMENT ANALYSIS (NEW) ---
+      const userMessages = transcript
+        .filter(msg => msg.role === 'user')
+        .map(msg => msg.content)
+        .join(' ');
+      const sentimentResult = sentimentAnalyzer.analyze(userMessages);
+      const sentimentScore = sentimentResult.score;
+      const sentimentLabel = sentimentScore > 0 ? 'positive' : sentimentScore < 0 ? 'negative' : 'neutral';
+
+      // --- END SENTIMENT ---
+
       return {
         sessionId,
         startedAt,
@@ -133,6 +147,7 @@ export async function GET() {
         points,
         correctness,
         transcript,
+        sentiment: { score: sentimentScore, label: sentimentLabel }, // NEW
       };
     })
   );
