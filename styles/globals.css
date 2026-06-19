@@ -120,13 +120,21 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  [data-lk-theme],
+  [class*="lk-"] {
+    font-family: inherit;
   }
 }
 
 /* --- LiveKit network quality indicator – icon only, text on hover --- */
-[class*="lk-connection-quality"] {
-  /* hide the text visually, keep it accessible for screen readers */
-}
 [class*="lk-connection-quality"] span,
 [class*="lk-connection-quality"] .lk-connection-quality-text {
   display: inline-block;
@@ -138,7 +146,7 @@
 }
 [class*="lk-connection-quality"]:hover span,
 [class*="lk-connection-quality"]:hover .lk-connection-quality-text {
-  max-width: 120px;   /* enough to show "Excellent", "Good", etc. */
+  max-width: 120px;
   opacity: 1;
 }
 
