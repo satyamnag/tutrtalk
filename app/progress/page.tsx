@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -103,11 +104,14 @@ export default function ProgressPage() {
 
       <div className="space-y-5">
         {sessions.map((session, idx) => (
-          <div
+          <motion.div
             key={session.sessionId}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: idx * 0.05 }}
             className="rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow"
           >
-            {/* Session header – no session ID displayed */}
+            {/* Session header */}
             <button
               onClick={() => toggleExpanded(idx)}
               className="w-full flex items-center justify-between p-5 text-left group"
@@ -199,66 +203,76 @@ export default function ProgressPage() {
               </div>
             </button>
 
-            {/* Expanded transcript */}
-            {expanded.has(idx) && (
-              <div className="border-t px-5 py-4 space-y-4 max-h-96 overflow-y-auto bg-muted/20 rounded-b-xl">
-                <div className="text-xs text-muted-foreground flex items-center gap-2">
-                  <span>Full Transcript</span>
-                  <span className="flex-1 h-px bg-border" />
-                </div>
-                {session.transcript.map((turn, i) => {
-                  const isAgent = turn.role === 'agent' || turn.role === 'assistant';
-                  return (
-                    <div
-                      key={i}
-                      className={`flex gap-3 ${isAgent ? '' : 'flex-row-reverse'}`}
-                    >
-                      <div
-                        className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                          isAgent
-                            ? 'bg-background border text-foreground rounded-tl-sm'
-                            : 'bg-primary text-primary-foreground rounded-tr-sm'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1 gap-2">
-                          <span className="text-xs font-semibold opacity-80">
-                            {isAgent ? 'TutrTalk' : 'You'}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            {/* Show points for every user turn */}
-                            {!isAgent && turn.points !== undefined && (
-                              <span
-                                className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
-                                  turn.points === 3
-                                    ? 'bg-green-500/30 text-green-300'
-                                    : turn.points === 2
-                                      ? 'bg-yellow-500/30 text-yellow-300'
-                                      : turn.points === 1
-                                        ? 'bg-red-500/30 text-red-300'
-                                        : 'bg-gray-500/30 text-gray-300'
-                                }`}
-                              >
-                                +{turn.points}
+            {/* Expanded transcript with smooth animation */}
+            <AnimatePresence initial={false}>
+              {expanded.has(idx) && (
+                <motion.div
+                  key="transcript"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="border-t px-5 py-4 space-y-4 max-h-96 overflow-y-auto bg-muted/20 rounded-b-xl">
+                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                      <span>Full Transcript</span>
+                      <span className="flex-1 h-px bg-border" />
+                    </div>
+                    {session.transcript.map((turn, i) => {
+                      const isAgent = turn.role === 'agent' || turn.role === 'assistant';
+                      return (
+                        <div
+                          key={i}
+                          className={`flex gap-3 ${isAgent ? '' : 'flex-row-reverse'}`}
+                        >
+                          <div
+                            className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                              isAgent
+                                ? 'bg-background border text-foreground rounded-tl-sm'
+                                : 'bg-primary text-primary-foreground rounded-tr-sm'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1 gap-2">
+                              <span className="text-xs font-semibold opacity-80">
+                                {isAgent ? 'TutrTalk' : 'You'}
                               </span>
-                            )}
-                            <span className="text-xs opacity-60">
-                              {new Date(turn.timestamp).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
+                              <div className="flex items-center gap-2">
+                                {!isAgent && turn.points !== undefined && (
+                                  <span
+                                    className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
+                                      turn.points === 3
+                                        ? 'bg-green-500/30 text-green-300'
+                                        : turn.points === 2
+                                          ? 'bg-yellow-500/30 text-yellow-300'
+                                          : turn.points === 1
+                                            ? 'bg-red-500/30 text-red-300'
+                                            : 'bg-gray-500/30 text-gray-300'
+                                    }`}
+                                  >
+                                    +{turn.points}
+                                  </span>
+                                )}
+                                <span className="text-xs opacity-60">
+                                  {new Date(turn.timestamp).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="leading-relaxed whitespace-pre-wrap break-words">
+                              {turn.content}
+                            </div>
                           </div>
                         </div>
-                        <div className="leading-relaxed whitespace-pre-wrap break-words">
-                          {turn.content}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         ))}
       </div>
     </main>
