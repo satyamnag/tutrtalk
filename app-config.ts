@@ -43,15 +43,15 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   isPreConnectBufferEnabled: true,
 
   logo: '/tutrtalk-logo-light.png',
-  accent: '#1fd5f9',
+  accent: '#9147FF',
   logoDark: '/tutrtalk-logo-dark.png',
-  accentDark: '#1fd5f9',
+  accentDark: '#9147FF',
   startButtonText: 'Start Now',
 
   // audio visualization configuration – only wave
   audioVisualizerType: 'wave',
-  audioVisualizerColor: '#1fd5f9',
-  audioVisualizerColorDark: '#1fd5f9',
+  audioVisualizerColor: '#9147FF',
+  audioVisualizerColorDark: '#9147FF',
   audioVisualizerWaveLineWidth: 2,
 
   // agent dispatch configuration

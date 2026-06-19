@@ -1,4 +1,4 @@
-import { Public_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -9,8 +9,8 @@ import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
 
-const publicSans = Public_Sans({
-  variable: '--font-public-sans',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
 });
 
@@ -63,7 +63,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         lang="en"
         suppressHydrationWarning
         className={cn(
-          publicSans.variable,
+          inter.variable,
           commitMono.variable,
           'scroll-smooth font-sans antialiased'
         )}
