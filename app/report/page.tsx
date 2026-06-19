@@ -548,26 +548,26 @@ export default function ReportPage() {
   }
 
   return (
-    <main className="container mx-auto max-w-6xl px-4 py-16">
-      <h1 className="mb-8 text-3xl font-bold text-center">Your Performance Report</h1>
+    <main className="container mx-auto max-w-6xl px-4 py-8 sm:py-12 md:py-16">
+      <h1 className="mb-6 text-2xl font-bold text-center sm:text-3xl">Your Performance Report</h1>
 
       {/* Search & Export Bar */}
-      <div className="flex flex-wrap items-center gap-4 mb-8">
+      <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
         <div className="flex flex-1 items-center gap-2">
           <input
             type="text"
             placeholder="Search transcripts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch()}
           />
-          <Button onClick={handleSearch} disabled={isSearching} size="sm">
+          <Button onClick={handleSearch} disabled={isSearching} size="sm" className="shrink-0">
             <Search className="h-4 w-4 mr-1" />
             Search
           </Button>
         </div>
-        <Button onClick={exportPDF} variant="outline" size="sm">
+        <Button onClick={exportPDF} variant="outline" size="sm" className="w-full sm:w-auto">
           <FileDown className="h-4 w-4 mr-1" />
           Export PDF
         </Button>
@@ -575,37 +575,37 @@ export default function ReportPage() {
 
       {/* Report Content (for PDF capture) */}
       <div ref={reportRef}>
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-          <div className="rounded-xl border p-4 text-center bg-card">
-            <div className="text-2xl font-bold">{totalAnswers}</div>
-            <div className="text-sm text-muted-foreground">Total Answers</div>
+        {/* Summary Cards – improved responsiveness */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="rounded-xl border p-3 sm:p-4 text-center bg-card">
+            <div className="text-xl sm:text-2xl font-bold">{totalAnswers}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Total Answers</div>
           </div>
-          <div className="rounded-xl border p-4 text-center bg-card">
-            <div className="text-2xl font-bold">{uniqueChapters}</div>
-            <div className="text-sm text-muted-foreground">Chapters Covered</div>
+          <div className="rounded-xl border p-3 sm:p-4 text-center bg-card">
+            <div className="text-xl sm:text-2xl font-bold">{uniqueChapters}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Chapters Covered</div>
           </div>
-          <div className="rounded-xl border p-4 text-center bg-card">
-            <div className="text-2xl font-bold">{avgAttempts}</div>
-            <div className="text-sm text-muted-foreground">Avg Attempts/Q</div>
+          <div className="rounded-xl border p-3 sm:p-4 text-center bg-card">
+            <div className="text-xl sm:text-2xl font-bold">{avgAttempts}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Avg Attempts/Q</div>
           </div>
-          <div className="rounded-xl border p-4 text-center bg-card">
-            <div className="text-2xl font-bold">{streak}🔥</div>
-            <div className="text-sm text-muted-foreground">Longest Streak</div>
+          <div className="rounded-xl border p-3 sm:p-4 text-center bg-card">
+            <div className="text-xl sm:text-2xl font-bold">{streak}🔥</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Longest Streak</div>
           </div>
-          <div className="rounded-xl border p-4 text-center bg-card">
-            <div className="text-lg font-bold">{lastSession}</div>
-            <div className="text-sm text-muted-foreground">Last Session</div>
+          <div className="rounded-xl border p-3 sm:p-4 text-center bg-card">
+            <div className="text-base sm:text-lg font-bold">{lastSession}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Last Session</div>
           </div>
-          <div className="rounded-xl border p-4 text-center bg-card">
-            <div className="text-2xl font-bold">{totalPoints}</div>
-            <div className="text-sm text-muted-foreground">Total Points</div>
+          <div className="rounded-xl border p-3 sm:p-4 text-center bg-card">
+            <div className="text-xl sm:text-2xl font-bold">{totalPoints}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Total Points</div>
           </div>
         </div>
 
         {/* Charts Grid – existing + new */}
         {answers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             {/* Existing charts (all unchanged) */}
             <div className="rounded-xl border p-4 bg-card">
               <h2 className="text-lg font-semibold mb-2">Answers per Chapter</h2>
