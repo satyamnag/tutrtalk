@@ -4,12 +4,13 @@ import { AgentAudioVisualizerWave } from '@/components/agents-ui/agent-audio-vis
 
 function WelcomeAnimation() {
   return (
-    <div className="mb-4 flex items-center justify-center">
+    <div className="mb-6 flex items-center justify-center">
       <AgentAudioVisualizerWave
         state="listening"
         size="sm"
         color="#1fd5f9"
-        className="h-[72px] w-[72px]"
+        lineWidth={3}
+        className="h-24 w-24 drop-shadow-[0_0_12px_rgba(31,213,249,0.45)]"
       />
     </div>
   );
