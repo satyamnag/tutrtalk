@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ChevronDownIcon } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 
 interface SubjectSelectorProps {
@@ -48,22 +49,36 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
     }
   };
 
+  // Hide completely while loading or when no subjects exist (no distraction)
   if (loading || subjects.length === 0) return null;
 
   return (
-    <select
-      value={selected}
-      onChange={(e) => handleChange(e.target.value)}
-      className={cn(
-        'rounded-full bg-background/90 backdrop-blur-sm border px-4 py-1.5 text-sm font-medium shadow-sm',
-        'focus:outline-none focus:ring-2 focus:ring-primary',
-        className
-      )}
-    >
-      <option value="">All Subjects</option>
-      {subjects.map(sub => (
-        <option key={sub} value={sub}>{sub}</option>
-      ))}
-    </select>
+    <div className={cn('relative inline-flex items-center', className)}>
+      <select
+        value={selected}
+        onChange={(e) => handleChange(e.target.value)}
+        aria-label="Select subject"
+        className={cn(
+          'appearance-none w-full rounded-full pl-4 pr-10 py-2',
+          'bg-background/70 backdrop-blur-xl',
+          'border border-border/50 hover:border-border/80',
+          'text-sm font-medium text-foreground',
+          'shadow-sm hover:shadow-md',
+          'focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
+          'transition-all duration-200 ease-in-out',
+          'cursor-pointer'
+        )}
+      >
+        <option value="">All Subjects</option>
+        {subjects.map(sub => (
+          <option key={sub} value={sub}>{sub}</option>
+        ))}
+      </select>
+      <ChevronDownIcon
+        size={16}
+        className="pointer-events-none absolute right-3 text-muted-foreground group-hover:text-foreground transition-colors"
+        aria-hidden="true"
+      />
+    </div>
   );
 }
