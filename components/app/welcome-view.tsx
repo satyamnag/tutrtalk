@@ -1,52 +1,16 @@
 // components/app/welcome-view.tsx
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { AgentAudioVisualizerWave } from '@/components/agents-ui/agent-audio-visualizer-wave';
 
-function WelcomeImage() {
-  const rows = 5;
-  const cols = 5;
-  const total = rows * cols;
-  const centerIndex = Math.floor(total / 2);
-  const dots = Array.from({ length: total }, (_, i) => i);
-  const [centerLit, setCenterLit] = useState(false);
-
-  useEffect(() => {
-    const breathe = () => {
-      setCenterLit(true);
-      // after a brief moment to let the transition start, begin fading out
-      setTimeout(() => setCenterLit(false), 1500);
-    };
-
-    // Start immediately, then repeat every 2.5 seconds
-    breathe();
-    const interval = setInterval(breathe, 2500);
-
-    return () => clearInterval(interval);
-  }, []);
-
+function WelcomeAnimation() {
   return (
-    <div
-      className="mb-4 grid gap-1.5"
-      style={{
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        color: 'var(--primary)',
-      }}
-    >
-      {dots.map((i) => (
-        <div
-          key={i}
-          className={`h-3 w-3 rounded-full ${
-            i === centerIndex
-              ? 'bg-current transition-opacity duration-[1500ms]'
-              : 'bg-current/10'
-          }`}
-          style={
-            i === centerIndex
-              ? { opacity: centerLit ? 1 : 0.1 }
-              : undefined
-          }
-        />
-      ))}
+    <div className="mb-4 flex items-center justify-center">
+      <AgentAudioVisualizerWave
+        state="disconnected"
+        size="sm"
+        color="#1fd5f9"
+        className="h-[72px] w-[72px]"
+      />
     </div>
   );
 }
@@ -66,7 +30,7 @@ export const WelcomeView = ({
   return (
     <div ref={ref}>
       <section className="bg-background flex flex-col items-center justify-center text-center">
-        <WelcomeImage />
+        <WelcomeAnimation />
 
         <p className="text-foreground text-xl font-bold tracking-tight">TutrTalk</p>
         <p className="text-muted-foreground text-lg font-medium">Your Daily Revision Tutor</p>
