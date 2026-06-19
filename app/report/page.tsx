@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Button } from '@/components/ui/button';
-import { Search, FileDown, X } from 'lucide-react';
+import { Search, FileDown, X, Settings } from 'lucide-react';
 
 interface Answer {
   id: number;
@@ -32,6 +32,70 @@ interface Session {
   transcript: any[];
   sentiment: { score: number; label: string };
 }
+
+// Chart identifiers for localStorage
+type ChartKey =
+  | 'answersPerChapter'
+  | 'struggleAreas'
+  | 'studyConsistency'
+  | 'chapterShare'
+  | 'avgAttempts'
+  | 'attemptDistribution'
+  | 'cumulativeProgress'
+  | 'dayOfWeek'
+  | 'last7Days'
+  | 'correctnessBreakdown'
+  | 'pointsPerChapter'
+  | 'sentimentOverTime'
+  | 'weakAreas';
+
+const CHART_KEYS: ChartKey[] = [
+  'answersPerChapter',
+  'struggleAreas',
+  'studyConsistency',
+  'chapterShare',
+  'avgAttempts',
+  'attemptDistribution',
+  'cumulativeProgress',
+  'dayOfWeek',
+  'last7Days',
+  'correctnessBreakdown',
+  'pointsPerChapter',
+  'sentimentOverTime',
+  'weakAreas',
+];
+
+const CHART_LABELS: Record<ChartKey, string> = {
+  answersPerChapter: 'Answers per Chapter',
+  struggleAreas: 'Struggle Areas (≥2 attempts)',
+  studyConsistency: 'Study Consistency (Answers per Day)',
+  chapterShare: 'Chapter Share',
+  avgAttempts: 'Avg Attempts per Chapter',
+  attemptDistribution: 'Attempt Distribution',
+  cumulativeProgress: 'Cumulative Progress',
+  dayOfWeek: 'Answers by Day of Week',
+  last7Days: 'Last 7 Days Activity',
+  correctnessBreakdown: 'Correctness Breakdown',
+  pointsPerChapter: 'Points per Chapter',
+  sentimentOverTime: 'Sentiment Over Time',
+  weakAreas: 'Weak Areas (Correctness < 60%)',
+};
+
+const DEFAULT_VISIBILITY: Record<ChartKey, boolean> = {
+  answersPerChapter: true,
+  struggleAreas: true,
+  studyConsistency: true,
+  chapterShare: true,
+  avgAttempts: true,
+  attemptDistribution: true,
+  cumulativeProgress: true,
+  dayOfWeek: true,
+  last7Days: true,
+  correctnessBreakdown: true,
+  pointsPerChapter: true,
+  sentimentOverTime: true,
+  weakAreas: true,
+};
 
 export default function ReportPage() {
   const { isLoaded, isSignedIn } = useUser();
@@ -62,6 +126,37 @@ export default function ReportPage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+
+  // ---- Dashboard Customization ----
+  const [chartVisibility, setChartVisibility] = useState<Record<ChartKey, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('tutrtalk_chart_visibility');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          return { ...DEFAULT_VISIBILITY, ...parsed };
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return DEFAULT_VISIBILITY;
+  });
+
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('tutrtalk_chart_visibility', JSON.stringify(chartVisibility));
+  }, [chartVisibility]);
+
+  const toggleChart = (key: ChartKey) => {
+    setChartVisibility((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const resetToDefault = () => {
+    setChartVisibility(DEFAULT_VISIBILITY);
+  };
+  // ---- End Dashboard Customization ----
 
   // Fetch answers (existing)
   useEffect(() => {
@@ -127,6 +222,7 @@ export default function ReportPage() {
   // 1. Answers per Chapter
   useEffect(() => {
     if (!answers.length || !barChartRef.current) return;
+    if (!chartVisibility.answersPerChapter) return;
     const svg = d3.select(barChartRef.current);
     svg.selectAll('*').remove();
     const data = d3.rollups(answers, v => v.length, d => d.chapter)
@@ -150,11 +246,12 @@ export default function ReportPage() {
       .attr('fill', 'var(--primary)')
       .attr('rx', 2)
       .append('title').text(d => `${d.chapter}: ${d.count} answers`);
-  }, [answers]);
+  }, [answers, chartVisibility.answersPerChapter]);
 
   // 2. Struggle Areas
   useEffect(() => {
     if (!answers.length || !struggleChartRef.current) return;
+    if (!chartVisibility.struggleAreas) return;
     const svg = d3.select(struggleChartRef.current);
     svg.selectAll('*').remove();
     const struggle = d3.rollups(answers, v => {
@@ -181,11 +278,12 @@ export default function ReportPage() {
       .attr('opacity', 0.8)
       .attr('rx', 2)
       .append('title').text(d => `${d.chapter}: ${d.count} difficult questions`);
-  }, [answers]);
+  }, [answers, chartVisibility.struggleAreas]);
 
   // 3. Study Consistency
   useEffect(() => {
     if (!answers.length || !timeChartRef.current) return;
+    if (!chartVisibility.studyConsistency) return;
     const svg = d3.select(timeChartRef.current);
     svg.selectAll('*').remove();
     const daily = d3.rollups(answers, v => v.length, d => d3.timeDay(new Date(d.created_at)).toISOString().slice(0, 10));
@@ -205,11 +303,12 @@ export default function ReportPage() {
       .attr('cx', d => x(d.date)).attr('cy', d => y(d.count)).attr('r', 3)
       .attr('fill', 'var(--primary)').attr('stroke', 'var(--background)').attr('stroke-width', 1)
       .append('title').text(d => `${d.date.toLocaleDateString()}: ${d.count} answers`);
-  }, [answers]);
+  }, [answers, chartVisibility.studyConsistency]);
 
   // 4. Chapter Share
   useEffect(() => {
     if (!answers.length || !donutChartRef.current) return;
+    if (!chartVisibility.chapterShare) return;
     const svg = d3.select(donutChartRef.current);
     svg.selectAll('*').remove();
     const pieData = d3.rollups(answers, v => v.length, d => d.chapter)
@@ -229,11 +328,12 @@ export default function ReportPage() {
       .attr('font-size', '9px')
       .attr('fill', 'var(--foreground)')
       .text(d => d.data.chapter.length > 8 ? d.data.chapter.slice(0,8)+'…' : d.data.chapter);
-  }, [answers]);
+  }, [answers, chartVisibility.chapterShare]);
 
   // 5. Avg Attempts per Chapter
   useEffect(() => {
     if (!answers.length || !avgAttemptsChartRef.current) return;
+    if (!chartVisibility.avgAttempts) return;
     const svg = d3.select(avgAttemptsChartRef.current);
     svg.selectAll('*').remove();
     const avgData = d3.rollups(answers, v => d3.mean(v, a => a.attempt_number) ?? 0, d => d.chapter)
@@ -252,11 +352,12 @@ export default function ReportPage() {
       .attr('width', d => x(d.avg)).attr('height', y.bandwidth())
       .attr('fill', 'var(--chart-2)').attr('rx', 2)
       .append('title').text(d => `${d.chapter}: avg ${d.avg} attempts`);
-  }, [answers]);
+  }, [answers, chartVisibility.avgAttempts]);
 
   // 6. Attempt Distribution
   useEffect(() => {
     if (!answers.length || !histogramChartRef.current) return;
+    if (!chartVisibility.attemptDistribution) return;
     const svg = d3.select(histogramChartRef.current);
     svg.selectAll('*').remove();
     const maxAttempt = d3.max(answers, d => d.attempt_number) ?? 1;
@@ -276,11 +377,12 @@ export default function ReportPage() {
       .attr('height', d => height - y(d.length))
       .attr('fill', 'var(--chart-3)').attr('rx', 2)
       .append('title').text(d => `Attempt ${d.x0}–${d.x1}: ${d.length} questions`);
-  }, [answers]);
+  }, [answers, chartVisibility.attemptDistribution]);
 
   // 7. Cumulative Progress
   useEffect(() => {
     if (!answers.length || !cumulativeChartRef.current) return;
+    if (!chartVisibility.cumulativeProgress) return;
     const svg = d3.select(cumulativeChartRef.current);
     svg.selectAll('*').remove();
     const sorted = [...answers].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -295,11 +397,12 @@ export default function ReportPage() {
     g.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x).ticks(5)).selectAll('text').attr('font-size', '10px');
     const line = d3.line<{ date: Date; total: number }>().x(d => x(d.date)).y(d => y(d.total)).curve(d3.curveStepAfter);
     g.append('path').datum(cumData).attr('fill', 'none').attr('stroke', 'var(--chart-1)').attr('stroke-width', 2).attr('d', line);
-  }, [answers]);
+  }, [answers, chartVisibility.cumulativeProgress]);
 
   // 8. Answers by Day of Week
   useEffect(() => {
     if (!answers.length || !dayOfWeekChartRef.current) return;
+    if (!chartVisibility.dayOfWeek) return;
     const svg = d3.select(dayOfWeekChartRef.current);
     svg.selectAll('*').remove();
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -319,11 +422,12 @@ export default function ReportPage() {
       .attr('width', x.bandwidth()).attr('height', d => height - y(d.count))
       .attr('fill', 'var(--chart-4)').attr('rx', 2)
       .append('title').text(d => `${d.day}: ${d.count}`);
-  }, [answers]);
+  }, [answers, chartVisibility.dayOfWeek]);
 
   // 9. Last 7 Days Activity
   useEffect(() => {
     if (!answers.length || !recentChartRef.current) return;
+    if (!chartVisibility.last7Days) return;
     const svg = d3.select(recentChartRef.current);
     svg.selectAll('*').remove();
     const today = d3.timeDay.floor(new Date());
@@ -345,11 +449,12 @@ export default function ReportPage() {
       .attr('width', x.bandwidth()).attr('height', d => height - y(d.count))
       .attr('fill', 'var(--chart-5)').attr('rx', 2)
       .append('title').text(d => `${d.date.toLocaleDateString()}: ${d.count}`);
-  }, [answers]);
+  }, [answers, chartVisibility.last7Days]);
 
   // 10. Correctness Distribution
   useEffect(() => {
     if (!answers.length || !correctnessDonutRef.current) return;
+    if (!chartVisibility.correctnessBreakdown) return;
     const svg = d3.select(correctnessDonutRef.current);
     svg.selectAll('*').remove();
     const data = [
@@ -370,11 +475,12 @@ export default function ReportPage() {
       .attr('transform', d => `translate(${arc.centroid(d)})`)
       .attr('text-anchor', 'middle').attr('dy', '0.35em').attr('font-size', '9px').attr('fill', 'var(--foreground)')
       .text(d => d.data.count);
-  }, [answers]);
+  }, [answers, chartVisibility.correctnessBreakdown]);
 
   // 11. Points per Chapter
   useEffect(() => {
     if (!answers.length || !pointsPerChapterRef.current) return;
+    if (!chartVisibility.pointsPerChapter) return;
     const svg = d3.select(pointsPerChapterRef.current);
     svg.selectAll('*').remove();
     const pointsData = d3.rollups(answers, v => v.reduce((sum, a) => {
@@ -398,11 +504,12 @@ export default function ReportPage() {
       .attr('width', x.bandwidth()).attr('height', d => height - y(d.points))
       .attr('fill', 'var(--chart-4)').attr('rx', 2)
       .append('title').text(d => `${d.chapter}: ${d.points} pts`);
-  }, [answers]);
+  }, [answers, chartVisibility.pointsPerChapter]);
 
   // --- NEW: Sentiment Over Time chart ---
   useEffect(() => {
     if (!sessions.length || !sentimentChartRef.current) return;
+    if (!chartVisibility.sentimentOverTime) return;
     const svg = d3.select(sentimentChartRef.current);
     svg.selectAll('*').remove();
 
@@ -451,11 +558,12 @@ export default function ReportPage() {
       .attr('fill', d => d.label === 'positive' ? 'var(--success)' : d.label === 'negative' ? 'var(--destructive)' : 'var(--muted-foreground)')
       .append('title')
       .text(d => `${d.date.toLocaleDateString()}: ${d.score} (${d.label})`);
-  }, [sessions]);
+  }, [sessions, chartVisibility.sentimentOverTime]);
 
   // --- NEW: Weak Areas chart ---
   useEffect(() => {
     if (!answers.length || !weakChartRef.current) return;
+    if (!chartVisibility.weakAreas) return;
     const svg = d3.select(weakChartRef.current);
     svg.selectAll('*').remove();
 
@@ -502,7 +610,7 @@ export default function ReportPage() {
       .attr('rx', 2)
       .append('title')
       .text(d => `${d.chapter}: ${(d.correctRate * 100).toFixed(1)}% correct`);
-  }, [answers]);
+  }, [answers, chartVisibility.weakAreas]);
 
   // --- Search handler ---
   const handleSearch = async () => {
@@ -551,7 +659,7 @@ export default function ReportPage() {
     <main className="container mx-auto max-w-6xl px-4 py-8 sm:py-12 md:py-16">
       <h1 className="mb-6 text-2xl font-bold text-center sm:text-3xl">Your Performance Report</h1>
 
-      {/* Search & Export Bar */}
+      {/* Search & Export & Customize Bar */}
       <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
         <div className="flex flex-1 items-center gap-2">
           <input
@@ -570,6 +678,15 @@ export default function ReportPage() {
         <Button onClick={exportPDF} variant="outline" size="sm" className="w-full sm:w-auto">
           <FileDown className="h-4 w-4 mr-1" />
           Export PDF
+        </Button>
+        <Button
+          onClick={() => setIsCustomizeModalOpen(true)}
+          variant="outline"
+          size="sm"
+          className="w-full sm:w-auto"
+        >
+          <Settings className="h-4 w-4 mr-1" />
+          Customize
         </Button>
       </div>
 
@@ -603,73 +720,159 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Charts Grid – existing + new */}
+        {/* Charts Grid – conditionally rendered based on visibility */}
         {answers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {/* Existing charts (all unchanged) */}
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Answers per Chapter</h2>
-              <svg ref={barChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Struggle Areas (≥2 attempts)</h2>
-              <svg ref={struggleChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card md:col-span-2">
-              <h2 className="text-lg font-semibold mb-2">Study Consistency (Answers per Day)</h2>
-              <svg ref={timeChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Chapter Share</h2>
-              <svg ref={donutChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Avg Attempts per Chapter</h2>
-              <svg ref={avgAttemptsChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Attempt Distribution</h2>
-              <svg ref={histogramChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Cumulative Progress</h2>
-              <svg ref={cumulativeChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Answers by Day of Week</h2>
-              <svg ref={dayOfWeekChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Last 7 Days Activity</h2>
-              <svg ref={recentChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Correctness Breakdown</h2>
-              <svg ref={correctnessDonutRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Points per Chapter</h2>
-              <svg ref={pointsPerChapterRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
+            {/* Answers per Chapter */}
+            {chartVisibility.answersPerChapter && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Answers per Chapter</h2>
+                <svg ref={barChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
 
-            {/* NEW: Sentiment Over Time */}
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Sentiment Over Time</h2>
-              <svg ref={sentimentChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
+            {/* Struggle Areas */}
+            {chartVisibility.struggleAreas && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Struggle Areas (≥2 attempts)</h2>
+                <svg ref={struggleChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
 
-            {/* NEW: Weak Areas */}
-            <div className="rounded-xl border p-4 bg-card">
-              <h2 className="text-lg font-semibold mb-2">Weak Areas (Correctness &lt; 60%)</h2>
-              <svg ref={weakChartRef} width="100%" height="250" viewBox="0 0 500 250" />
-            </div>
+            {/* Study Consistency */}
+            {chartVisibility.studyConsistency && (
+              <div className="rounded-xl border p-4 bg-card md:col-span-2">
+                <h2 className="text-lg font-semibold mb-2">Study Consistency (Answers per Day)</h2>
+                <svg ref={timeChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Chapter Share */}
+            {chartVisibility.chapterShare && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Chapter Share</h2>
+                <svg ref={donutChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Avg Attempts per Chapter */}
+            {chartVisibility.avgAttempts && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Avg Attempts per Chapter</h2>
+                <svg ref={avgAttemptsChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Attempt Distribution */}
+            {chartVisibility.attemptDistribution && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Attempt Distribution</h2>
+                <svg ref={histogramChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Cumulative Progress */}
+            {chartVisibility.cumulativeProgress && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Cumulative Progress</h2>
+                <svg ref={cumulativeChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Answers by Day of Week */}
+            {chartVisibility.dayOfWeek && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Answers by Day of Week</h2>
+                <svg ref={dayOfWeekChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Last 7 Days Activity */}
+            {chartVisibility.last7Days && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Last 7 Days Activity</h2>
+                <svg ref={recentChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Correctness Breakdown */}
+            {chartVisibility.correctnessBreakdown && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Correctness Breakdown</h2>
+                <svg ref={correctnessDonutRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Points per Chapter */}
+            {chartVisibility.pointsPerChapter && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Points per Chapter</h2>
+                <svg ref={pointsPerChapterRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Sentiment Over Time */}
+            {chartVisibility.sentimentOverTime && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Sentiment Over Time</h2>
+                <svg ref={sentimentChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
+
+            {/* Weak Areas */}
+            {chartVisibility.weakAreas && (
+              <div className="rounded-xl border p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-2">Weak Areas (Correctness &lt; 60%)</h2>
+                <svg ref={weakChartRef} width="100%" height="250" viewBox="0 0 500 250" />
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-muted-foreground text-center">No answers recorded yet. Start a tutoring session!</p>
         )}
       </div>
 
-      {/* Custom Search Modal */}
+      {/* Customize Modal */}
+      {isCustomizeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-xl bg-background p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Customize Dashboard</h2>
+              <button
+                onClick={() => setIsCustomizeModalOpen(false)}
+                className="rounded-full p-1 hover:bg-accent"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">Show or hide charts on your report.</p>
+            <div className="space-y-3">
+              {CHART_KEYS.map((key) => (
+                <label key={key} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={chartVisibility[key]}
+                    onChange={() => toggleChart(key)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm">{CHART_LABELS[key]}</span>
+                </label>
+              ))}
+            </div>
+            <div className="mt-6 flex gap-3">
+              <Button onClick={resetToDefault} variant="outline" className="flex-1">
+                Reset to Default
+              </Button>
+              <Button onClick={() => setIsCustomizeModalOpen(false)} className="flex-1">
+                Done
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Search Modal – unchanged */}
       {isSearchDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="max-h-[80vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-background p-6 shadow-xl">
