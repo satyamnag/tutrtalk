@@ -48,23 +48,11 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   accentDark: '#1fd5f9',
   startButtonText: 'Start Now',
 
-
-  
-  // optional: audio visualization configuration
-  // audioVisualizerType: 'bar',
+  // audio visualization configuration – only wave
+  audioVisualizerType: 'wave',
   audioVisualizerColor: '#1fd5f9',
   audioVisualizerColorDark: '#1fd5f9',
-  // audioVisualizerColorShift: 0.3,
-  // audioVisualizerBarCount: 5,
-  // audioVisualizerType: 'radial',
-  // audioVisualizerRadialBarCount: 24,
-  // audioVisualizerRadialRadius: 100,
-  audioVisualizerType: 'grid',
-  audioVisualizerGridRowCount: 25,
-  audioVisualizerGridColumnCount: 25,
-  // audioVisualizerType: 'wave',
-  // audioVisualizerWaveLineWidth: 3,
-  // audioVisualizerType: 'aura',
+  audioVisualizerWaveLineWidth: 2,
 
   // agent dispatch configuration
   agentName: process.env.AGENT_NAME ?? undefined,
