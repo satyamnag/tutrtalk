@@ -8,9 +8,9 @@ function WelcomeAnimation() {
       <AgentAudioVisualizerWave
         state="listening"
         size="sm"
-        color="#1fd5f9"
-        lineWidth={3}
-        className="h-24 w-24 drop-shadow-[0_0_12px_rgba(31,213,249,0.45)]"
+        color="#9147FF"
+        lineWidth={2}
+        className="h-24 w-24 drop-shadow-[0_0_12px_rgba(145,71,255,0.45)]"
       />
     </div>
   );
