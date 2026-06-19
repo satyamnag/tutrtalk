@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import * as d3 from 'd3';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, FileDown } from 'lucide-react';
+import { Search, FileDown, X } from 'lucide-react';
 
 interface Answer {
   id: number;
@@ -553,16 +551,16 @@ export default function ReportPage() {
     <main className="container mx-auto max-w-6xl px-4 py-16">
       <h1 className="mb-8 text-3xl font-bold text-center">Your Performance Report</h1>
 
-      {/* Search & Export Bar (NEW) */}
+      {/* Search & Export Bar */}
       <div className="flex flex-wrap items-center gap-4 mb-8">
         <div className="flex flex-1 items-center gap-2">
-          <Input
+          <input
             type="text"
             placeholder="Search transcripts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-sm"
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch()}
           />
           <Button onClick={handleSearch} disabled={isSearching} size="sm">
             <Search className="h-4 w-4 mr-1" />
@@ -577,7 +575,7 @@ export default function ReportPage() {
 
       {/* Report Content (for PDF capture) */}
       <div ref={reportRef}>
-        {/* Summary Cards (unchanged) */}
+        {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           <div className="rounded-xl border p-4 text-center bg-card">
             <div className="text-2xl font-bold">{totalAnswers}</div>
@@ -605,7 +603,7 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Charts Grid – existing charts + two new ones */}
+        {/* Charts Grid – existing + new */}
         {answers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Existing charts (all unchanged) */}
@@ -671,41 +669,54 @@ export default function ReportPage() {
         )}
       </div>
 
-      {/* Search Results Dialog (NEW) */}
-      <Dialog open={isSearchDialogOpen} onOpenChange={setIsSearchDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Search Results for “{searchQuery}”</DialogTitle>
-          </DialogHeader>
-          {searchResults.length === 0 ? (
-            <p className="text-muted-foreground">No matching messages found.</p>
-          ) : (
-            <div className="space-y-6">
-              {searchResults.map((result) => (
-                <div key={result.sessionId} className="border-b pb-4">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Session: {result.sessionId.slice(0,8)}</span>
-                    <span>{result.matchCount} matches</span>
-                  </div>
-                  <div className="mt-2 space-y-1">
-                    {result.messages.map((msg: any, idx: number) => (
-                      <div key={idx} className="text-sm">
-                        <span className="font-semibold">{msg.role === 'user' ? 'You' : 'TutrTalk'}:</span>
-                        <span className="ml-1" dangerouslySetInnerHTML={{
-                          __html: msg.content.replace(
-                            new RegExp(searchQuery.trim(), 'gi'),
-                            (match: string) => `<mark class="bg-yellow-200 dark:bg-yellow-800">${match}</mark>`
-                          )
-                        }} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+      {/* Custom Search Modal */}
+      {isSearchDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="max-h-[80vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-background p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Search Results for “{searchQuery}”</h2>
+              <button
+                onClick={() => setIsSearchDialogOpen(false)}
+                className="rounded-full p-1 hover:bg-accent"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            {searchResults.length === 0 ? (
+              <p className="text-muted-foreground">No matching messages found.</p>
+            ) : (
+              <div className="space-y-6">
+                {searchResults.map((result) => (
+                  <div key={result.sessionId} className="border-b pb-4">
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Session: {result.sessionId.slice(0,8)}</span>
+                      <span>{result.matchCount} matches</span>
+                    </div>
+                    <div className="mt-2 space-y-1">
+                      {result.messages.map((msg: any, idx: number) => (
+                        <div key={idx} className="text-sm">
+                          <span className="font-semibold">{msg.role === 'user' ? 'You' : 'TutrTalk'}:</span>
+                          <span
+                            className="ml-1"
+                            dangerouslySetInnerHTML={{
+                              __html: msg.content.replace(
+                                new RegExp(searchQuery.trim(), 'gi'),
+                                (match: string) =>
+                                  `<mark class="bg-yellow-200 dark:bg-yellow-800">${match}</mark>`
+                              ),
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
