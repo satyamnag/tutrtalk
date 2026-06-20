@@ -18,6 +18,7 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
   const [subjects, setSubjects] = useState<string[]>([]);
   const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(true);
+  const [profileMissing, setProfileMissing] = useState(false);  // track if profile not yet created
 
   // Fetch available subjects for this student
   useEffect(() => {
@@ -40,9 +41,8 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
         if (data?.preferred_subject && subjects.includes(data.preferred_subject)) {
           setSelected(data.preferred_subject);
         } else {
-          // No valid saved subject – default to the first available subject
+          // No valid saved subject – try to set a default, but only if the profile exists
           const defaultSubject = subjects[0];
-          // Attempt to save the default; only set local state if successful
           const res = await fetch('/api/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -50,6 +50,11 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
           });
           if (res.ok) {
             setSelected(defaultSubject);
+            setProfileMissing(false);
+          } else if (res.status === 400) {
+            // Profile doesn't exist yet – just select the first subject locally
+            setSelected(defaultSubject);
+            setProfileMissing(true);
           } else {
             console.error('Failed to save default subject preference, server returned', res.status);
           }
@@ -71,10 +76,13 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
       });
       if (res.ok) {
         setSelected(value);
+        setProfileMissing(false);
+      } else if (res.status === 400) {
+        // Profile still missing – keep the selection locally but don't persist
+        setSelected(value);
+        setProfileMissing(true);
       } else {
-        const text = await res.text();
-        console.error(`Failed to save subject preference (${res.status}): ${text}`);
-        // Keep the previous selection visible, do not update state
+        console.error(`Failed to save subject preference (${res.status})`);
       }
     } catch (err) {
       console.error('Network error saving subject preference', err);

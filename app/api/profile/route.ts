@@ -23,7 +23,7 @@ export async function GET() {
   return NextResponse.json(data || {});
 }
 
-// POST – create or update profile (supports partial updates)
+// POST – create or update profile (supports partial updates without null violations)
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
@@ -32,12 +32,34 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  // Build profile object dynamically – only include fields that were sent
+  // 1. Fetch the existing row (if any)
+  const { data: existing, error: fetchError } = await supabase
+    .from('student_profiles')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error(fetchError);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+
+  // 2. If no existing row and the request doesn't contain all required fields → refuse
+  if (!existing && (!body.name || !body.class || !body.board)) {
+    return new NextResponse(
+      'Cannot update partial profile: no existing profile. Please complete the full profile first.',
+      { status: 400 }
+    );
+  }
+
+  // 3. Start from the existing row (or empty object if creating a new full profile)
   const profile: Record<string, any> = {
+    ...existing,                   // carry over all existing data
     user_id: userId,
     updated_at: new Date().toISOString(),
   };
 
+  // Overlay only the fields present in the request body
   if (body.name !== undefined) profile.name = body.name;
   if (body.class !== undefined) profile.class = body.class;
   if (body.board !== undefined) profile.board = body.board;
@@ -47,32 +69,13 @@ export async function POST(request: Request) {
   if (body.study_type !== undefined) profile.study_type = body.study_type || null;
   if (body.preferred_subject !== undefined) profile.preferred_subject = body.preferred_subject || null;
 
-  // If we are only updating a partial profile, ensure the user has a row already
-  const hasRequiredFields = body.name && body.class && body.board;
-
-  if (!hasRequiredFields) {
-    // Check if a profile row already exists for this user
-    const { data: existing } = await supabase
-      .from('student_profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (!existing) {
-      return new NextResponse(
-        'Cannot update partial profile: no existing profile. Please complete the full profile first.',
-        { status: 400 }
-      );
-    }
-  }
-
-  // Upsert: insert if not exists, update if exists
-  const { error } = await supabase
+  // 4. Upsert with the complete row – null values are never inserted because existing data is merged
+  const { error: upsertError } = await supabase
     .from('student_profiles')
     .upsert(profile, { onConflict: 'user_id' });
 
-  if (error) {
-    console.error(error);
+  if (upsertError) {
+    console.error(upsertError);
     return new NextResponse('Failed to save profile', { status: 500 });
   }
 
