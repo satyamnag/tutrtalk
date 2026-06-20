@@ -134,7 +134,7 @@ export function BookSelector({ className }: BookSelectorProps) {
         </SelectTrigger>
         <SelectContent
           className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[260px]"
-          align="end"
+          align="center"
         >
           {groups.map(group => {
             if (group.singleBookSameName) {
