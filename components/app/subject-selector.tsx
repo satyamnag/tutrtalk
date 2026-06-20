@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronDownIcon } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 import {
   Select,
@@ -31,17 +30,33 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
       .catch(() => setLoading(false));
   }, []);
 
-  // Load existing preference from profile
+  // Load existing preference and ensure a subject is always selected
   useEffect(() => {
+    if (subjects.length === 0) return;
+
     fetch('/api/profile')
       .then(res => res.json())
-      .then(data => {
-        if (data?.preferred_subject) {
+      .then(async data => {
+        if (data?.preferred_subject && subjects.includes(data.preferred_subject)) {
           setSelected(data.preferred_subject);
+        } else {
+          // No valid saved subject – default to the first available subject
+          const defaultSubject = subjects[0];
+          setSelected(defaultSubject);
+          // Persist the default immediately
+          await fetch('/api/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preferred_subject: defaultSubject }),
+          });
         }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {
+        if (subjects.length > 0) {
+          setSelected(subjects[0]);
+        }
+      });
+  }, [subjects]);
 
   const handleChange = async (value: string) => {
     setSelected(value);
@@ -75,15 +90,12 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
             'data-[placeholder]:text-muted-foreground'
           )}
         >
-          <SelectValue placeholder="All Subjects" />
+          <SelectValue />
         </SelectTrigger>
         <SelectContent
           className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[160px]"
           align="end"
         >
-          <SelectItem value="all" className="text-sm font-medium">
-            All Subjects
-          </SelectItem>
           {subjects.map(sub => (
             <SelectItem key={sub} value={sub} className="text-sm font-medium">
               {sub}
