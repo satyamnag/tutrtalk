@@ -23,7 +23,7 @@ export async function GET() {
   return NextResponse.json(data || {});
 }
 
-// POST – create or update profile
+// POST – create or update profile (supports partial updates)
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
@@ -31,34 +31,27 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const {
-    name,
-    class: studentClass,
-    board,
-    profile_photo_url,
-    dob,
-    study_language,
-    study_type,
-    preferred_subject,   // NEW field
-  } = body;
 
-  // Basic validation
-  if (!name || !studentClass || !board) {
-    return new NextResponse('Name, class, and board are required', { status: 400 });
-  }
-
-  const profile = {
+  // Build profile object dynamically – only include fields that were sent
+  const profile: Record<string, any> = {
     user_id: userId,
-    name,
-    class: studentClass,
-    board,
-    profile_photo_url: profile_photo_url || null,
-    dob: dob || null,
-    study_language: study_language || null,
-    study_type: study_type || null,
-    preferred_subject: preferred_subject || null,   // NEW
     updated_at: new Date().toISOString(),
   };
+
+  if (body.name !== undefined) profile.name = body.name;
+  if (body.class !== undefined) profile.class = body.class;
+  if (body.board !== undefined) profile.board = body.board;
+  if (body.profile_photo_url !== undefined) profile.profile_photo_url = body.profile_photo_url || null;
+  if (body.dob !== undefined) profile.dob = body.dob || null;
+  if (body.study_language !== undefined) profile.study_language = body.study_language || null;
+  if (body.study_type !== undefined) profile.study_type = body.study_type || null;
+  if (body.preferred_subject !== undefined) profile.preferred_subject = body.preferred_subject || null;
+
+  // Only validate required fields if they are being sent (full profile creation)
+  if ((body.name !== undefined || body.class !== undefined || body.board !== undefined) &&
+      (!body.name || !body.class || !body.board)) {
+    return new NextResponse('Name, class, and board are required when setting them.', { status: 400 });
+  }
 
   // Upsert: insert if not exists, update if exists
   const { error } = await supabase
