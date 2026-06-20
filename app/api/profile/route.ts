@@ -23,7 +23,7 @@ export async function GET() {
   return NextResponse.json(data || {});
 }
 
-// POST – create or update profile (supports partial updates without null violations)
+// POST – create or update profile (partial updates never cause NOT NULL violations)
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
@@ -32,10 +32,36 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  // 1. Fetch the existing row (if any)
+  // 1. Full profile creation/update → safe to upsert
+  const hasRequiredFields = body.name && body.class && body.board;
+
+  if (hasRequiredFields) {
+    const { error } = await supabase
+      .from('student_profiles')
+      .upsert({
+        user_id: userId,
+        name: body.name,
+        class: body.class,
+        board: body.board,
+        profile_photo_url: body.profile_photo_url || null,
+        dob: body.dob || null,
+        study_language: body.study_language || null,
+        study_type: body.study_type || null,
+        preferred_subject: body.preferred_subject || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+
+    if (error) {
+      console.error(error);
+      return new NextResponse('Failed to save profile', { status: 500 });
+    }
+    return new NextResponse(null, { status: 200 });
+  }
+
+  // 2. Partial update – must have an existing row
   const { data: existing, error: fetchError } = await supabase
     .from('student_profiles')
-    .select('*')
+    .select('id')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -44,39 +70,30 @@ export async function POST(request: Request) {
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 
-  // 2. If no existing row and the request doesn't contain all required fields → refuse
-  if (!existing && (!body.name || !body.class || !body.board)) {
+  if (!existing) {
     return new NextResponse(
       'Cannot update partial profile: no existing profile. Please complete the full profile first.',
       { status: 400 }
     );
   }
 
-  // 3. Start from the existing row (or empty object if creating a new full profile)
-  const profile: Record<string, any> = {
-    ...existing,                   // carry over all existing data
-    user_id: userId,
+  // 3. Build only the fields that were actually sent
+  const updates: Record<string, any> = {
     updated_at: new Date().toISOString(),
   };
 
-  // Overlay only the fields present in the request body
-  if (body.name !== undefined) profile.name = body.name;
-  if (body.class !== undefined) profile.class = body.class;
-  if (body.board !== undefined) profile.board = body.board;
-  if (body.profile_photo_url !== undefined) profile.profile_photo_url = body.profile_photo_url || null;
-  if (body.dob !== undefined) profile.dob = body.dob || null;
-  if (body.study_language !== undefined) profile.study_language = body.study_language || null;
-  if (body.study_type !== undefined) profile.study_type = body.study_type || null;
-  if (body.preferred_subject !== undefined) profile.preferred_subject = body.preferred_subject || null;
+  if (body.preferred_subject !== undefined) updates.preferred_subject = body.preferred_subject || null;
+  if (body.study_type !== undefined) updates.study_type = body.study_type || null;
+  if (body.study_language !== undefined) updates.study_language = body.study_language || null;
 
-  // 4. Upsert with the complete row – null values are never inserted because existing data is merged
-  const { error: upsertError } = await supabase
+  const { error: updateError } = await supabase
     .from('student_profiles')
-    .upsert(profile, { onConflict: 'user_id' });
+    .update(updates)
+    .eq('user_id', userId);
 
-  if (upsertError) {
-    console.error(upsertError);
-    return new NextResponse('Failed to save profile', { status: 500 });
+  if (updateError) {
+    console.error(updateError);
+    return new NextResponse('Failed to update profile', { status: 500 });
   }
 
   return new NextResponse(null, { status: 200 });

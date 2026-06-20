@@ -18,7 +18,7 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
   const [subjects, setSubjects] = useState<string[]>([]);
   const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(true);
-  const [profileMissing, setProfileMissing] = useState(false);  // track if profile not yet created
+  const [profileMissing, setProfileMissing] = useState(false);
 
   // Fetch available subjects for this student
   useEffect(() => {
@@ -37,27 +37,38 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
 
     fetch('/api/profile')
       .then(res => res.json())
-      .then(async data => {
+      .then(data => {
+        // Check if the profile has been created (name, class, board exist)
+        const hasProfile = !!(data?.name && data?.class && data?.board);
+
         if (data?.preferred_subject && subjects.includes(data.preferred_subject)) {
           setSelected(data.preferred_subject);
+          setProfileMissing(false);
+        } else if (!hasProfile) {
+          // Profile not yet completed – use first subject locally, do not call API
+          setProfileMissing(true);
+          setSelected(subjects[0]);
         } else {
-          // No valid saved subject – try to set a default, but only if the profile exists
+          // Profile exists but preferred_subject missing – save a default
           const defaultSubject = subjects[0];
-          const res = await fetch('/api/profile', {
+          fetch('/api/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ preferred_subject: defaultSubject }),
-          });
-          if (res.ok) {
-            setSelected(defaultSubject);
-            setProfileMissing(false);
-          } else if (res.status === 400) {
-            // Profile doesn't exist yet – just select the first subject locally
-            setSelected(defaultSubject);
-            setProfileMissing(true);
-          } else {
-            console.error('Failed to save default subject preference, server returned', res.status);
-          }
+          })
+            .then(res => {
+              if (res.ok) {
+                setSelected(defaultSubject);
+                setProfileMissing(false);
+              } else {
+                console.error('Failed to save default subject, status', res.status);
+                setSelected(defaultSubject);
+              }
+            })
+            .catch(err => {
+              console.error('Network error', err);
+              setSelected(defaultSubject);
+            });
         }
       })
       .catch(() => {
@@ -68,6 +79,12 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
   }, [subjects]);
 
   const handleChange = async (value: string) => {
+    // If profile is missing, just keep the selection locally – no API call
+    if (profileMissing) {
+      setSelected(value);
+      return;
+    }
+
     try {
       const res = await fetch('/api/profile', {
         method: 'POST',
@@ -76,16 +93,11 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
       });
       if (res.ok) {
         setSelected(value);
-        setProfileMissing(false);
-      } else if (res.status === 400) {
-        // Profile still missing – keep the selection locally but don't persist
-        setSelected(value);
-        setProfileMissing(true);
       } else {
         console.error(`Failed to save subject preference (${res.status})`);
       }
     } catch (err) {
-      console.error('Network error saving subject preference', err);
+      console.error('Network error', err);
     }
   };
 
