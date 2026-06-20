@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BookOpenCheckIcon } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 import {
   Select,
@@ -11,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface SubjectGroup {
   subject: string;
@@ -118,53 +125,77 @@ export function BookSelector({ className }: BookSelectorProps) {
 
   if (loading || groups.length === 0) return null;
 
+  const isTruncated = selected.length > 17;
+
   return (
     <div className={cn('relative inline-flex items-center', className)}>
-      <Select value={selected} onValueChange={handleChange}>
-        <SelectTrigger
-          aria-label="Select book"
-          className={cn(
-            'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2',
-            'bg-background/70 backdrop-blur-xl',
-            'border border-border/50 hover:border-border/80',
-            'text-sm font-medium text-foreground',
-            'shadow-sm hover:shadow-md',
-            'focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
-            'transition-all duration-200 ease-in-out',
-            'data-[placeholder]:text-muted-foreground'
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <Select value={selected} onValueChange={handleChange}>
+                <SelectTrigger
+                  aria-label="Select book"
+                  className={cn(
+                    'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2',
+                    'bg-background/70 backdrop-blur-xl',
+                    'border border-border/50 hover:border-border/80',
+                    'text-sm font-medium text-foreground',
+                    'shadow-sm hover:shadow-md',
+                    'focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
+                    'transition-all duration-200 ease-in-out',
+                    'data-[placeholder]:text-muted-foreground'
+                  )}
+                >
+                  <BookOpenCheckIcon className="mr-2 size-4 shrink-0" />
+                  <SelectValue>
+                    {selected && <span>{truncateText(selected)}</span>}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent
+                  className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[320px]"
+                  align="center"
+                >
+                  {groups.map(group => {
+                    if (group.singleBookSameName) {
+                      return (
+                        <SelectItem
+                          key={group.subject}
+                          value={group.subject}
+                          className="text-sm font-medium whitespace-normal text-wrap"
+                        >
+                          {group.subject}
+                        </SelectItem>
+                      );
+                    }
+                    return (
+                      <SelectGroup key={group.subject}>
+                        <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2 whitespace-normal text-wrap">
+                          {group.subject}
+                        </SelectLabel>
+                        {group.books.map(book => (
+                          <SelectItem
+                            key={book}
+                            value={book}
+                            className="pl-6 text-sm font-medium whitespace-normal text-wrap"
+                          >
+                            {book}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          </TooltipTrigger>
+          {isTruncated && (
+            <TooltipContent>
+              <p>{selected}</p>
+            </TooltipContent>
           )}
-        >
-          <SelectValue>
-            {selected && <span>{truncateText(selected)}</span>}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent
-          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[320px]"
-          align="center"
-        >
-          {groups.map(group => {
-            if (group.singleBookSameName) {
-              return (
-                <SelectItem key={group.subject} value={group.subject} className="text-sm font-medium whitespace-normal text-wrap">
-                  {group.subject}
-                </SelectItem>
-              );
-            }
-            return (
-              <SelectGroup key={group.subject}>
-                <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2 whitespace-normal text-wrap">
-                  {group.subject}
-                </SelectLabel>
-                {group.books.map(book => (
-                  <SelectItem key={book} value={book} className="pl-6 text-sm font-medium whitespace-normal text-wrap">
-                    {book}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            );
-          })}
-        </SelectContent>
-      </Select>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 }
