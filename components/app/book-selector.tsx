@@ -6,26 +6,33 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+interface SubjectGroup {
+  subject: string;
+  singleBookSameName: boolean;
+  books: string[];
+}
 
 interface BookSelectorProps {
   className?: string;
 }
 
 export function BookSelector({ className }: BookSelectorProps) {
-  const [books, setBooks] = useState<string[]>([]);
+  const [groups, setGroups] = useState<SubjectGroup[]>([]);
   const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(true);
   const [profileMissing, setProfileMissing] = useState(false);
 
-  // Fetch available books for this student
+  // Fetch grouped subjects & books
   useEffect(() => {
     fetch('/api/books')
       .then(res => res.json())
-      .then((data: string[]) => {
-        setBooks(data);
+      .then((data: SubjectGroup[]) => {
+        setGroups(data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -33,23 +40,28 @@ export function BookSelector({ className }: BookSelectorProps) {
 
   // Load existing preference and ensure a book is always selected
   useEffect(() => {
-    if (books.length === 0) return;
+    if (groups.length === 0) return;
+
+    // Flatten all selectable values (book names)
+    const allBooks = groups.flatMap(g =>
+      g.singleBookSameName ? [g.subject] : g.books
+    );
 
     fetch('/api/profile')
       .then(res => res.json())
       .then(data => {
         const hasProfile = !!(data?.name && data?.class && data?.board);
 
-        if (data?.preferred_book && books.includes(data.preferred_book)) {
+        if (data?.preferred_book && allBooks.includes(data.preferred_book)) {
           setSelected(data.preferred_book);
           setProfileMissing(false);
         } else if (!hasProfile) {
           // Profile not yet completed – use first book locally only
           setProfileMissing(true);
-          setSelected(books[0]);
+          setSelected(allBooks[0]);
         } else {
           // Profile exists but preferred_book missing – save default
-          const defaultBook = books[0];
+          const defaultBook = allBooks[0];
           fetch('/api/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -71,9 +83,13 @@ export function BookSelector({ className }: BookSelectorProps) {
         }
       })
       .catch(() => {
-        if (books.length > 0) setSelected(books[0]);
+        // Fallback – select first available book
+        const allBooks = groups.flatMap(g =>
+          g.singleBookSameName ? [g.subject] : g.books
+        );
+        if (allBooks.length > 0) setSelected(allBooks[0]);
       });
-  }, [books]);
+  }, [groups]);
 
   const handleChange = async (value: string) => {
     if (profileMissing) {
@@ -97,7 +113,7 @@ export function BookSelector({ className }: BookSelectorProps) {
     }
   };
 
-  if (loading || books.length === 0) return null;
+  if (loading || groups.length === 0) return null;
 
   return (
     <div className={cn('relative inline-flex items-center', className)}>
@@ -118,14 +134,32 @@ export function BookSelector({ className }: BookSelectorProps) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent
-          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[160px]"
+          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px]"
           align="end"
         >
-          {books.map(book => (
-            <SelectItem key={book} value={book} className="text-sm font-medium">
-              {book}
-            </SelectItem>
-          ))}
+          {groups.map(group => {
+            if (group.singleBookSameName) {
+              // Only one book, name equals subject – show as single item
+              return (
+                <SelectItem key={group.subject} value={group.subject} className="text-sm font-medium">
+                  {group.subject}
+                </SelectItem>
+              );
+            }
+            // Multiple books – show subject label and book items
+            return (
+              <div key={group.subject}>
+                <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2">
+                  {group.subject}
+                </SelectLabel>
+                {group.books.map(book => (
+                  <SelectItem key={book} value={book} className="pl-6 text-sm font-medium">
+                    {book}
+                  </SelectItem>
+                ))}
+              </div>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>

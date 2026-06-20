@@ -33,21 +33,36 @@ export async function GET() {
   // 3. Get subjects for that class
   const { data: subjects } = await supabase
     .from('subjects')
-    .select('id')
-    .eq('class_id', classData.id);
+    .select('id, name')
+    .eq('class_id', classData.id)
+    .order('name');
 
   if (!subjects?.length) {
     return NextResponse.json([]);
   }
 
-  const subjectIds = subjects.map(s => s.id);
+  // 4. For each subject, get its books
+  const result = await Promise.all(
+    subjects.map(async (subject: any) => {
+      const { data: books } = await supabase
+        .from('books')
+        .select('name')
+        .eq('subject_id', subject.id)
+        .order('name');
 
-  // 4. Get books linked to those subjects
-  const { data: books } = await supabase
-    .from('books')
-    .select('name')
-    .in('subject_id', subjectIds)
-    .order('name');
+      const bookNames = (books ?? []).map((b: any) => b.name);
 
-  return NextResponse.json((books ?? []).map((b: any) => b.name));
+      // Determine if this subject has a single book with the same name
+      const singleBookSameName =
+        bookNames.length === 1 && bookNames[0] === subject.name;
+
+      return {
+        subject: subject.name,
+        singleBookSameName,
+        books: bookNames,
+      };
+    })
+  );
+
+  return NextResponse.json(result);
 }
