@@ -133,26 +133,24 @@ export function BookSelector({ className }: BookSelectorProps) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent
-          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[260px]"
+          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[320px]"
           align="center"
         >
           {groups.map(group => {
             if (group.singleBookSameName) {
-              // Only one book, name equals subject – show as single item
               return (
-                <SelectItem key={group.subject} value={group.subject} className="text-sm font-medium truncate">
+                <SelectItem key={group.subject} value={group.subject} className="text-sm font-medium whitespace-normal text-wrap">
                   {group.subject}
                 </SelectItem>
               );
             }
-            // Multiple books – show subject label and book items inside a group
             return (
               <SelectGroup key={group.subject}>
-                <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2 truncate">
+                <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2 whitespace-normal text-wrap">
                   {group.subject}
                 </SelectLabel>
                 {group.books.map(book => (
-                  <SelectItem key={book} value={book} className="pl-6 text-sm font-medium truncate">
+                  <SelectItem key={book} value={book} className="pl-6 text-sm font-medium whitespace-normal text-wrap">
                     {book}
                   </SelectItem>
                 ))}
