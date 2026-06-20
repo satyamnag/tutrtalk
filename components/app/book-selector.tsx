@@ -5,6 +5,7 @@ import { cn } from '@/lib/shadcn/utils';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectLabel,
   SelectTrigger,
@@ -56,11 +57,9 @@ export function BookSelector({ className }: BookSelectorProps) {
           setSelected(data.preferred_book);
           setProfileMissing(false);
         } else if (!hasProfile) {
-          // Profile not yet completed – use first book locally only
           setProfileMissing(true);
           setSelected(allBooks[0]);
         } else {
-          // Profile exists but preferred_book missing – save default
           const defaultBook = allBooks[0];
           fetch('/api/profile', {
             method: 'POST',
@@ -83,7 +82,6 @@ export function BookSelector({ className }: BookSelectorProps) {
         }
       })
       .catch(() => {
-        // Fallback – select first available book
         const allBooks = groups.flatMap(g =>
           g.singleBookSameName ? [g.subject] : g.books
         );
@@ -146,9 +144,9 @@ export function BookSelector({ className }: BookSelectorProps) {
                 </SelectItem>
               );
             }
-            // Multiple books – show subject label and book items
+            // Multiple books – show subject label and book items inside a group
             return (
-              <div key={group.subject}>
+              <SelectGroup key={group.subject}>
                 <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2">
                   {group.subject}
                 </SelectLabel>
@@ -157,7 +155,7 @@ export function BookSelector({ className }: BookSelectorProps) {
                     {book}
                   </SelectItem>
                 ))}
-              </div>
+              </SelectGroup>
             );
           })}
         </SelectContent>
