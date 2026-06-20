@@ -119,27 +119,28 @@ export function BookSelector({ className }: BookSelectorProps) {
         <SelectTrigger
           aria-label="Select book"
           className={cn(
-            'w-auto rounded-full pl-4 pr-3 py-2',
+            'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2',
             'bg-background/70 backdrop-blur-xl',
             'border border-border/50 hover:border-border/80',
             'text-sm font-medium text-foreground',
             'shadow-sm hover:shadow-md',
             'focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
             'transition-all duration-200 ease-in-out',
-            'data-[placeholder]:text-muted-foreground'
+            'data-[placeholder]:text-muted-foreground',
+            '[&>span]:truncate'
           )}
         >
           <SelectValue />
         </SelectTrigger>
         <SelectContent
-          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px]"
+          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[260px]"
           align="end"
         >
           {groups.map(group => {
             if (group.singleBookSameName) {
               // Only one book, name equals subject – show as single item
               return (
-                <SelectItem key={group.subject} value={group.subject} className="text-sm font-medium">
+                <SelectItem key={group.subject} value={group.subject} className="text-sm font-medium truncate">
                   {group.subject}
                 </SelectItem>
               );
@@ -147,11 +148,11 @@ export function BookSelector({ className }: BookSelectorProps) {
             // Multiple books – show subject label and book items inside a group
             return (
               <SelectGroup key={group.subject}>
-                <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2">
+                <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2 truncate">
                   {group.subject}
                 </SelectLabel>
                 {group.books.map(book => (
-                  <SelectItem key={book} value={book} className="pl-6 text-sm font-medium">
+                  <SelectItem key={book} value={book} className="pl-6 text-sm font-medium truncate">
                     {book}
                   </SelectItem>
                 ))}
