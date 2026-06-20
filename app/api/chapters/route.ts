@@ -8,17 +8,17 @@ export async function GET() {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // 1. Get the student's preferred subject from their profile
+  // 1. Get the student's preferred book from their profile
   const { data: profile } = await supabase
     .from('student_profiles')
-    .select('preferred_subject')
+    .select('preferred_book')
     .eq('user_id', userId)
     .maybeSingle();
 
-  const preferredSubject = profile?.preferred_subject ?? null;
+  const preferredBook = profile?.preferred_book ?? null;
 
-  // 2. If no preferred subject, return all chapters (fallback)
-  if (!preferredSubject) {
+  // 2. If no preferred book, return all chapters (fallback)
+  if (!preferredBook) {
     const { data, error } = await supabase
       .from('chapters')
       .select('name')
@@ -32,40 +32,23 @@ export async function GET() {
     return NextResponse.json(data?.map((c: any) => c.name) || []);
   }
 
-  // 3. Find the subject_id
-  const { data: subjData, error: subjError } = await supabase
-    .from('subjects')
-    .select('id')
-    .eq('name', preferredSubject)
-    .single();
-
-  if (subjError || !subjData) {
-    console.error('Subject not found:', preferredSubject, subjError);
-    return NextResponse.json([]);
-  }
-
-  // 4. Get book_ids for that subject
-  const { data: books, error: booksError } = await supabase
+  // 3. Find the book_id
+  const { data: bookData, error: bookError } = await supabase
     .from('books')
     .select('id')
-    .eq('subject_id', subjData.id);
+    .eq('name', preferredBook)
+    .single();
 
-  if (booksError) {
-    console.error(booksError);
-    return new NextResponse('Internal Server Error', { status: 500 });
-  }
-
-  const bookIds = (books ?? []).map((b: any) => b.id);
-
-  if (bookIds.length === 0) {
+  if (bookError || !bookData) {
+    console.error('Book not found:', preferredBook, bookError);
     return NextResponse.json([]);
   }
 
-  // 5. Fetch chapters for those books, ordered
+  // 4. Fetch chapters for that book, ordered
   const { data: chapters, error: chaptersError } = await supabase
     .from('chapters')
     .select('name')
-    .in('book_id', bookIds)   // <-- fixed: use .in() instead of .in_()
+    .eq('book_id', bookData.id)
     .order('order_index');
 
   if (chaptersError) {

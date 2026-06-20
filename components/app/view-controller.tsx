@@ -6,7 +6,7 @@ import { useSessionContext } from '@livekit/components-react';
 import type { AppConfig } from '@/app-config';
 import { AgentSessionView_01 } from '@/components/agents-ui/blocks/agent-session-view-01';
 import { WelcomeView } from '@/components/app/welcome-view';
-import { SubjectSelector } from '@/components/app/subject-selector';
+import { BookSelector } from '@/components/app/book-selector';   // changed import
 
 const MotionWelcomeView = motion.create(WelcomeView);
 const MotionSessionView = motion.create(AgentSessionView_01);
@@ -39,10 +39,10 @@ export function ViewController({ appConfig, canStart = true }: ViewControllerPro
 
   return (
     <>
-      {/* Subject selector – only when NOT in a session */}
+      {/* Book selector – only when NOT in a session */}
       {!isConnected && (
         <div className="fixed top-4 right-4 z-50">
-          <SubjectSelector className="bg-background/80 backdrop-blur-md" />
+          <BookSelector className="bg-background/80 backdrop-blur-md" />
         </div>
       )}
 
@@ -77,7 +77,6 @@ export function ViewController({ appConfig, canStart = true }: ViewControllerPro
           />
         )}
       </AnimatePresence>
-      {/* Visualizer selection UI has been completely removed */}
     </>
   );
 }
