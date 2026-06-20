@@ -65,7 +65,7 @@ export async function GET() {
   const { data: chapters, error: chaptersError } = await supabase
     .from('chapters')
     .select('name')
-    .in_('book_id', bookIds)
+    .in('book_id', bookIds)   // <-- fixed: use .in() instead of .in_()
     .order('order_index');
 
   if (chaptersError) {
