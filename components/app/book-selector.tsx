@@ -22,6 +22,11 @@ interface BookSelectorProps {
   className?: string;
 }
 
+function truncateText(text: string, maxLen = 17) {
+  if (text.length <= maxLen) return text;
+  return text.slice(0, maxLen) + '…';
+}
+
 export function BookSelector({ className }: BookSelectorProps) {
   const [groups, setGroups] = useState<SubjectGroup[]>([]);
   const [selected, setSelected] = useState('');
@@ -119,18 +124,19 @@ export function BookSelector({ className }: BookSelectorProps) {
         <SelectTrigger
           aria-label="Select book"
           className={cn(
-            'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2 h-auto',
+            'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2',
             'bg-background/70 backdrop-blur-xl',
             'border border-border/50 hover:border-border/80',
             'text-sm font-medium text-foreground',
             'shadow-sm hover:shadow-md',
             'focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
             'transition-all duration-200 ease-in-out',
-            'data-[placeholder]:text-muted-foreground',
-            '[&>span]:whitespace-normal [&>span]:text-wrap'
+            'data-[placeholder]:text-muted-foreground'
           )}
         >
-          <SelectValue />
+          <SelectValue>
+            {selected && <span>{truncateText(selected)}</span>}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent
           className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[320px]"
