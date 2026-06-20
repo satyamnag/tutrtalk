@@ -41,7 +41,7 @@ export function ViewController({ appConfig, canStart = true }: ViewControllerPro
     <>
       {/* Book selector – only when NOT in a session */}
       {!isConnected && (
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed z-50 right-4 top-16 sm:top-4">
           <BookSelector className="bg-background/80 backdrop-blur-md" />
         </div>
       )}
