@@ -119,7 +119,7 @@ export function BookSelector({ className }: BookSelectorProps) {
         <SelectTrigger
           aria-label="Select book"
           className={cn(
-            'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2',
+            'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2 h-auto',
             'bg-background/70 backdrop-blur-xl',
             'border border-border/50 hover:border-border/80',
             'text-sm font-medium text-foreground',
@@ -127,7 +127,7 @@ export function BookSelector({ className }: BookSelectorProps) {
             'focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
             'transition-all duration-200 ease-in-out',
             'data-[placeholder]:text-muted-foreground',
-            '[&>span]:truncate'
+            '[&>span]:whitespace-normal [&>span]:text-wrap'
           )}
         >
           <SelectValue />
