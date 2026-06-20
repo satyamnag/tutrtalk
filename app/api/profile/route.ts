@@ -47,10 +47,23 @@ export async function POST(request: Request) {
   if (body.study_type !== undefined) profile.study_type = body.study_type || null;
   if (body.preferred_subject !== undefined) profile.preferred_subject = body.preferred_subject || null;
 
-  // Only validate required fields if they are being sent (full profile creation)
-  if ((body.name !== undefined || body.class !== undefined || body.board !== undefined) &&
-      (!body.name || !body.class || !body.board)) {
-    return new NextResponse('Name, class, and board are required when setting them.', { status: 400 });
+  // If we are only updating a partial profile, ensure the user has a row already
+  const hasRequiredFields = body.name && body.class && body.board;
+
+  if (!hasRequiredFields) {
+    // Check if a profile row already exists for this user
+    const { data: existing } = await supabase
+      .from('student_profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!existing) {
+      return new NextResponse(
+        'Cannot update partial profile: no existing profile. Please complete the full profile first.',
+        { status: 400 }
+      );
+    }
   }
 
   // Upsert: insert if not exists, update if exists

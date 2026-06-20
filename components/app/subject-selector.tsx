@@ -42,13 +42,17 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
         } else {
           // No valid saved subject – default to the first available subject
           const defaultSubject = subjects[0];
-          setSelected(defaultSubject);
-          // Persist the default immediately
-          await fetch('/api/profile', {
+          // Attempt to save the default; only set local state if successful
+          const res = await fetch('/api/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ preferred_subject: defaultSubject }),
           });
+          if (res.ok) {
+            setSelected(defaultSubject);
+          } else {
+            console.error('Failed to save default subject preference, server returned', res.status);
+          }
         }
       })
       .catch(() => {
@@ -59,19 +63,24 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
   }, [subjects]);
 
   const handleChange = async (value: string) => {
-    setSelected(value);
     try {
-      await fetch('/api/profile', {
+      const res = await fetch('/api/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preferred_subject: value }),
       });
+      if (res.ok) {
+        setSelected(value);
+      } else {
+        const text = await res.text();
+        console.error(`Failed to save subject preference (${res.status}): ${text}`);
+        // Keep the previous selection visible, do not update state
+      }
     } catch (err) {
-      console.error('Failed to save subject preference', err);
+      console.error('Network error saving subject preference', err);
     }
   };
 
-  // Hide completely while loading or when no subjects exist
   if (loading || subjects.length === 0) return null;
 
   return (
