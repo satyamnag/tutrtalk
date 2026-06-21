@@ -50,7 +50,7 @@ function formatDuration(seconds: number): string {
 
 export default function ProgressPage() {
   const { isLoaded, isSignedIn } = useUser();
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState<Session[] | null>(null);   // null = not yet loaded
   const [dataReady, setDataReady] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
@@ -62,6 +62,7 @@ export default function ProgressPage() {
 
   useEffect(() => {
     if (!isSignedIn) {
+      setSessions([]);
       setDataReady(true);
       return;
     }
@@ -101,7 +102,8 @@ export default function ProgressPage() {
     }
   };
 
-  if (!isLoaded || !dataReady) {
+  // Show spinner until everything is loaded (including transcripts)
+  if (!isLoaded || sessions === null) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
