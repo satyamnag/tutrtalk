@@ -72,7 +72,8 @@ export default function ProgressPage() {
         setDataReady(true);
       })
       .catch(() => {
-        setDataReady(true);
+        // Keep dataReady false → spinner persists until successful load
+        console.error('Failed to load sessions');
       });
   }, [isSignedIn]);
 
