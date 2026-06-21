@@ -606,10 +606,38 @@ export default function ReportPage() {
       .text(d => `${d.chapter}: ${(d.correctRate * 100).toFixed(1)}% correct`);
   }, [answers, chartVisibility.weakAreas]);
 
-  // --- Export PDF handler (bullet‑proof, replaces all color functions with rgb) ---
+  // --- Export PDF handler (bullet‑proof, strips oklch/oklab) ---
   const exportPDF = async () => {
     const element = reportRef.current;
     if (!element) return;
+
+    const isDark = document.documentElement.classList.contains('dark');
+
+    const lightColors: Record<string, string> = {
+      '--background': '#ffffff', '--foreground': '#1a1a1a',
+      '--card': '#ffffff', '--card-foreground': '#1a1a1a',
+      '--primary': '#9147FF', '--primary-foreground': '#ffffff',
+      '--secondary': '#f5f5f5', '--secondary-foreground': '#1a1a1a',
+      '--muted': '#f5f5f5', '--muted-foreground': '#737373',
+      '--destructive': '#ef4444', '--border': '#e5e5e5',
+      '--ring': '#9147FF', '--chart-1': '#f97316',
+      '--chart-2': '#0ea5e9', '--chart-3': '#8b5cf6',
+      '--chart-4': '#22c55e', '--chart-5': '#eab308',
+      '--success': '#22c55e',
+    };
+    const darkColors: Record<string, string> = {
+      '--background': '#1a1a1a', '--foreground': '#fafafa',
+      '--card': '#262626', '--card-foreground': '#fafafa',
+      '--primary': '#a78bfa', '--primary-foreground': '#1a1a1a',
+      '--secondary': '#262626', '--secondary-foreground': '#fafafa',
+      '--muted': '#262626', '--muted-foreground': '#a3a3a3',
+      '--destructive': '#f87171', '--border': '#404040',
+      '--ring': '#a78bfa', '--chart-1': '#f97316',
+      '--chart-2': '#0ea5e9', '--chart-3': '#8b5cf6',
+      '--chart-4': '#22c55e', '--chart-5': '#eab308',
+      '--success': '#22c55e',
+    };
+    const colors = isDark ? darkColors : lightColors;
 
     try {
       const canvas = await html2canvas(element, {
@@ -617,51 +645,10 @@ export default function ReportPage() {
         useCORS: true,
         logging: false,
         onclone: (clonedDoc) => {
-          // 1. Override CSS variables with theme hex values
-          const isDark = clonedDoc.documentElement.classList.contains('dark');
-          const lightColors: Record<string, string> = {
-            '--background': '#ffffff',
-            '--foreground': '#1a1a1a',
-            '--card': '#ffffff',
-            '--card-foreground': '#1a1a1a',
-            '--primary': '#9147FF',
-            '--primary-foreground': '#ffffff',
-            '--secondary': '#f5f5f5',
-            '--secondary-foreground': '#1a1a1a',
-            '--muted': '#f5f5f5',
-            '--muted-foreground': '#737373',
-            '--destructive': '#ef4444',
-            '--border': '#e5e5e5',
-            '--ring': '#9147FF',
-            '--chart-1': '#f97316',
-            '--chart-2': '#0ea5e9',
-            '--chart-3': '#8b5cf6',
-            '--chart-4': '#22c55e',
-            '--chart-5': '#eab308',
-            '--success': '#22c55e',
-          };
-          const darkColors: Record<string, string> = {
-            '--background': '#1a1a1a',
-            '--foreground': '#fafafa',
-            '--card': '#262626',
-            '--card-foreground': '#fafafa',
-            '--primary': '#a78bfa',
-            '--primary-foreground': '#1a1a1a',
-            '--secondary': '#262626',
-            '--secondary-foreground': '#fafafa',
-            '--muted': '#262626',
-            '--muted-foreground': '#a3a3a3',
-            '--destructive': '#f87171',
-            '--border': '#404040',
-            '--ring': '#a78bfa',
-            '--chart-1': '#f97316',
-            '--chart-2': '#0ea5e9',
-            '--chart-3': '#8b5cf6',
-            '--chart-4': '#22c55e',
-            '--chart-5': '#eab308',
-            '--success': '#22c55e',
-          };
-          const colors = isDark ? darkColors : lightColors;
+          // 1. Remove ALL original stylesheets (which contain oklch/oklab)
+          clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
+
+          // 2. Inject a single safe stylesheet with hex variables
           const style = clonedDoc.createElement('style');
           let css = ':root { ';
           for (const [name, value] of Object.entries(colors)) {
@@ -671,40 +658,33 @@ export default function ReportPage() {
           style.textContent = css;
           clonedDoc.head.appendChild(style);
 
-          // 2. Force every element's color-related styles to plain rgb()
+          // 3. Force every element's color properties to plain rgb()
           const allElements = clonedDoc.querySelectorAll('*');
-          const colorProps = ['color', 'backgroundColor', 'borderColor', 'borderTopColor',
-            'borderRightColor', 'borderBottomColor', 'borderLeftColor', 'outlineColor'];
-
+          const colorProps = [
+            'color', 'backgroundColor', 'borderColor', 'borderTopColor',
+            'borderRightColor', 'borderBottomColor', 'borderLeftColor', 'outlineColor',
+          ];
           allElements.forEach((el) => {
             const htmlEl = el as HTMLElement;
             const computed = clonedDoc.defaultView?.getComputedStyle(htmlEl);
             if (!computed) return;
             for (const prop of colorProps) {
-              const computedColor = computed.getPropertyValue(prop);
-              if (computedColor && computedColor !== 'rgba(0, 0, 0, 0)' && computedColor !== 'transparent') {
-                htmlEl.style.setProperty(prop, computedColor);
+              const val = computed.getPropertyValue(prop);
+              if (val && val !== 'rgba(0, 0, 0, 0)' && val !== 'transparent') {
+                htmlEl.style.setProperty(prop, val);
               }
             }
           });
 
-          // Also resolve fill/stroke on SVG elements
-          const svgElements = clonedDoc.querySelectorAll('svg');
-          svgElements.forEach((svg) => {
-            const elements = svg.querySelectorAll('*');
-            elements.forEach((el) => {
-              const svgEl = el as SVGElement;
-              const computed = clonedDoc.defaultView?.getComputedStyle(svgEl);
-              if (!computed) return;
-              const fillVar = svgEl.getAttribute('fill');
-              if (fillVar && fillVar.startsWith('var(')) {
-                svgEl.setAttribute('fill', computed.fill);
-              }
-              const strokeVar = svgEl.getAttribute('stroke');
-              if (strokeVar && strokeVar.startsWith('var(')) {
-                svgEl.setAttribute('stroke', computed.stroke);
-              }
-            });
+          // 4. Resolve SVG fill/stroke using computed colors
+          clonedDoc.querySelectorAll('svg *').forEach((el) => {
+            const svgEl = el as SVGElement;
+            const computed = clonedDoc.defaultView?.getComputedStyle(svgEl);
+            if (!computed) return;
+            const fillVar = svgEl.getAttribute('fill');
+            if (fillVar && fillVar.startsWith('var(')) svgEl.setAttribute('fill', computed.fill);
+            const strokeVar = svgEl.getAttribute('stroke');
+            if (strokeVar && strokeVar.startsWith('var(')) svgEl.setAttribute('stroke', computed.stroke);
           });
         },
       });
