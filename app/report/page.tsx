@@ -606,19 +606,37 @@ export default function ReportPage() {
       .text(d => `${d.chapter}: ${(d.correctRate * 100).toFixed(1)}% correct`);
   }, [answers, chartVisibility.weakAreas]);
 
-  // --- Export PDF handler (robust) ---
+  // --- Export PDF handler (rock-solid, resolves CSS variables) ---
   const exportPDF = async () => {
     const element = reportRef.current;
     if (!element) return;
+
     try {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        allowTaint: false,
         logging: false,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Resolve CSS variable colors in SVGs so html2canvas can render them
+          const svgElements = clonedDoc.querySelectorAll('svg');
+          svgElements.forEach((svg) => {
+            const elements = svg.querySelectorAll('*');
+            elements.forEach((el) => {
+              const computed = clonedDoc.defaultView?.getComputedStyle(el);
+              if (!computed) return;
+              const fillVar = el.style.fill || el.getAttribute('fill');
+              if (fillVar && fillVar.startsWith('var(')) {
+                el.setAttribute('fill', computed.fill);
+              }
+              const strokeVar = el.style.stroke || el.getAttribute('stroke');
+              if (strokeVar && strokeVar.startsWith('var(')) {
+                el.setAttribute('stroke', computed.stroke);
+              }
+            });
+          });
+        },
       });
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -642,7 +660,7 @@ export default function ReportPage() {
     <main className="container mx-auto max-w-6xl px-4 py-8 sm:py-12 md:py-16">
       <h1 className="mb-6 text-2xl font-bold text-center sm:text-3xl">Your Performance Report</h1>
 
-      {/* Export & Customize Bar (search removed) */}
+      {/* Export & Customize Bar */}
       <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
         <Button onClick={exportPDF} variant="outline" size="sm" className="w-full sm:w-auto">
           <FileDown className="h-4 w-4 mr-1" />
@@ -659,7 +677,7 @@ export default function ReportPage() {
         </Button>
       </div>
 
-      {/* Report Content (for PDF capture) */}
+      {/* Report Content */}
       <div ref={reportRef}>
         {/* Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
