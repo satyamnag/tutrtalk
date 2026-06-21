@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import * as d3 from 'd3';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';   // <-- use the Pro fork
 import jsPDF from 'jspdf';
 import { Button } from '@/components/ui/button';
 import { FileDown, X, Settings } from 'lucide-react';
@@ -606,89 +606,17 @@ export default function ReportPage() {
       .text(d => `${d.chapter}: ${(d.correctRate * 100).toFixed(1)}% correct`);
   }, [answers, chartVisibility.weakAreas]);
 
-  // --- Export PDF handler (bullet‑proof, strips oklch/oklab) ---
+  // --- Export PDF handler (uses html2canvas‑pro – supports oklch/oklab natively) ---
   const exportPDF = async () => {
     const element = reportRef.current;
     if (!element) return;
-
-    const isDark = document.documentElement.classList.contains('dark');
-
-    const lightColors: Record<string, string> = {
-      '--background': '#ffffff', '--foreground': '#1a1a1a',
-      '--card': '#ffffff', '--card-foreground': '#1a1a1a',
-      '--primary': '#9147FF', '--primary-foreground': '#ffffff',
-      '--secondary': '#f5f5f5', '--secondary-foreground': '#1a1a1a',
-      '--muted': '#f5f5f5', '--muted-foreground': '#737373',
-      '--destructive': '#ef4444', '--border': '#e5e5e5',
-      '--ring': '#9147FF', '--chart-1': '#f97316',
-      '--chart-2': '#0ea5e9', '--chart-3': '#8b5cf6',
-      '--chart-4': '#22c55e', '--chart-5': '#eab308',
-      '--success': '#22c55e',
-    };
-    const darkColors: Record<string, string> = {
-      '--background': '#1a1a1a', '--foreground': '#fafafa',
-      '--card': '#262626', '--card-foreground': '#fafafa',
-      '--primary': '#a78bfa', '--primary-foreground': '#1a1a1a',
-      '--secondary': '#262626', '--secondary-foreground': '#fafafa',
-      '--muted': '#262626', '--muted-foreground': '#a3a3a3',
-      '--destructive': '#f87171', '--border': '#404040',
-      '--ring': '#a78bfa', '--chart-1': '#f97316',
-      '--chart-2': '#0ea5e9', '--chart-3': '#8b5cf6',
-      '--chart-4': '#22c55e', '--chart-5': '#eab308',
-      '--success': '#22c55e',
-    };
-    const colors = isDark ? darkColors : lightColors;
 
     try {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         logging: false,
-        onclone: (clonedDoc) => {
-          // 1. Remove ALL original stylesheets (which contain oklch/oklab)
-          clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
-
-          // 2. Inject a single safe stylesheet with hex variables
-          const style = clonedDoc.createElement('style');
-          let css = ':root { ';
-          for (const [name, value] of Object.entries(colors)) {
-            css += `${name}: ${value} !important; `;
-          }
-          css += '}';
-          style.textContent = css;
-          clonedDoc.head.appendChild(style);
-
-          // 3. Force every element's color properties to plain rgb()
-          const allElements = clonedDoc.querySelectorAll('*');
-          const colorProps = [
-            'color', 'backgroundColor', 'borderColor', 'borderTopColor',
-            'borderRightColor', 'borderBottomColor', 'borderLeftColor', 'outlineColor',
-          ];
-          allElements.forEach((el) => {
-            const htmlEl = el as HTMLElement;
-            const computed = clonedDoc.defaultView?.getComputedStyle(htmlEl);
-            if (!computed) return;
-            for (const prop of colorProps) {
-              const val = computed.getPropertyValue(prop);
-              if (val && val !== 'rgba(0, 0, 0, 0)' && val !== 'transparent') {
-                htmlEl.style.setProperty(prop, val);
-              }
-            }
-          });
-
-          // 4. Resolve SVG fill/stroke using computed colors
-          clonedDoc.querySelectorAll('svg *').forEach((el) => {
-            const svgEl = el as SVGElement;
-            const computed = clonedDoc.defaultView?.getComputedStyle(svgEl);
-            if (!computed) return;
-            const fillVar = svgEl.getAttribute('fill');
-            if (fillVar && fillVar.startsWith('var(')) svgEl.setAttribute('fill', computed.fill);
-            const strokeVar = svgEl.getAttribute('stroke');
-            if (strokeVar && strokeVar.startsWith('var(')) svgEl.setAttribute('stroke', computed.stroke);
-          });
-        },
       });
-
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
