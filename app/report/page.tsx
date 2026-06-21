@@ -687,7 +687,6 @@ export default function ReportPage() {
         {/* Charts Grid */}
         {answers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {/* ... all chart divs unchanged ... */}
             {chartVisibility.answersPerChapter && (
               <div className="rounded-xl border p-4 bg-card">
                 <h2 className="text-lg font-semibold mb-2">Answers per Chapter</h2>
