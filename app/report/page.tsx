@@ -606,10 +606,59 @@ export default function ReportPage() {
       .text(d => `${d.chapter}: ${(d.correctRate * 100).toFixed(1)}% correct`);
   }, [answers, chartVisibility.weakAreas]);
 
-  // --- Export PDF handler (rock-solid, resolves CSS variables) ---
+  // --- Export PDF handler (bullet‑proof, replaces oklch with hex) ---
   const exportPDF = async () => {
     const element = reportRef.current;
     if (!element) return;
+
+    const isDark = document.documentElement.classList.contains('dark');
+
+    // Hex values that match the current light/dark theme
+    const lightColors = {
+      '--background': '#ffffff',
+      '--foreground': '#1a1a1a',
+      '--card': '#ffffff',
+      '--card-foreground': '#1a1a1a',
+      '--primary': '#9147FF',
+      '--primary-foreground': '#ffffff',
+      '--secondary': '#f5f5f5',
+      '--secondary-foreground': '#1a1a1a',
+      '--muted': '#f5f5f5',
+      '--muted-foreground': '#737373',
+      '--destructive': '#ef4444',
+      '--border': '#e5e5e5',
+      '--ring': '#9147FF',
+      '--chart-1': '#f97316',
+      '--chart-2': '#0ea5e9',
+      '--chart-3': '#8b5cf6',
+      '--chart-4': '#22c55e',
+      '--chart-5': '#eab308',
+      '--success': '#22c55e',
+    };
+
+    const darkColors = {
+      '--background': '#1a1a1a',
+      '--foreground': '#fafafa',
+      '--card': '#262626',
+      '--card-foreground': '#fafafa',
+      '--primary': '#a78bfa',
+      '--primary-foreground': '#1a1a1a',
+      '--secondary': '#262626',
+      '--secondary-foreground': '#fafafa',
+      '--muted': '#262626',
+      '--muted-foreground': '#a3a3a3',
+      '--destructive': '#f87171',
+      '--border': '#404040',
+      '--ring': '#a78bfa',
+      '--chart-1': '#f97316',
+      '--chart-2': '#0ea5e9',
+      '--chart-3': '#8b5cf6',
+      '--chart-4': '#22c55e',
+      '--chart-5': '#eab308',
+      '--success': '#22c55e',
+    };
+
+    const colors = isDark ? darkColors : lightColors;
 
     try {
       const canvas = await html2canvas(element, {
@@ -617,7 +666,17 @@ export default function ReportPage() {
         useCORS: true,
         logging: false,
         onclone: (clonedDoc) => {
-          // Resolve CSS variable colors in SVGs so html2canvas can render them
+          // 1. Inject a style block that overrides CSS variables with hex values
+          const style = clonedDoc.createElement('style');
+          let css = ':root { ';
+          for (const [name, value] of Object.entries(colors)) {
+            css += `${name}: ${value} !important; `;
+          }
+          css += '}';
+          style.textContent = css;
+          clonedDoc.head.appendChild(style);
+
+          // 2. Also resolve inline CSS variables on SVG elements (just in case)
           const svgElements = clonedDoc.querySelectorAll('svg');
           svgElements.forEach((svg) => {
             const elements = svg.querySelectorAll('*');
