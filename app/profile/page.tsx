@@ -2,7 +2,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import posthog from 'posthog-js';
 import { useUser } from '@clerk/nextjs';
+
+// app/profile/page.tsx
 
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -94,6 +97,11 @@ export default function ProfilePage() {
 
       if (res.ok) {
         setMessage('Profile saved successfully.');
+        posthog.capture('profile_saved', {
+          class: className.trim(),
+          board: board.trim(),
+          study_type: studyType,
+        });
         // Update the current displayed URL to the new one (so preview stays correct)
         if (finalPhotoUrl !== profilePhotoUrl) {
           setProfilePhotoUrl(finalPhotoUrl);
@@ -106,6 +114,7 @@ export default function ProfilePage() {
         setMessage(`Error: ${text}`);
       }
     } catch (err) {
+      posthog.captureException(err);
       setMessage('Failed to save profile.');
     } finally {
       setSaving(false);
@@ -120,19 +129,19 @@ export default function ProfilePage() {
 
   return (
     <main className="container mx-auto max-w-lg px-4 py-16">
-      <h1 className="mb-8 text-3xl font-bold text-center">My Profile</h1>
+      <h1 className="mb-8 text-center text-3xl font-bold">My Profile</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border p-6">
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
+          <label className="text-muted-foreground mb-1 block text-sm font-medium">
             Full Name <span className="text-destructive">*</span>
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
             placeholder="Your academic name"
             required
           />
@@ -140,56 +149,68 @@ export default function ProfilePage() {
 
         {/* Class */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
+          <label className="text-muted-foreground mb-1 block text-sm font-medium">
             Class <span className="text-destructive">*</span>
           </label>
           <select
             value={className}
             onChange={(e) => setClassName(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
             required
           >
-            <option value="" disabled>Select class</option>
+            <option value="" disabled>
+              Select class
+            </option>
             <option value="10th">10th</option>
-            <option value="9th" disabled>9th</option>
-            <option value="11th" disabled>11th</option>
-            <option value="12th" disabled>12th</option>
+            <option value="9th" disabled>
+              9th
+            </option>
+            <option value="11th" disabled>
+              11th
+            </option>
+            <option value="12th" disabled>
+              12th
+            </option>
           </select>
         </div>
 
         {/* Board */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
+          <label className="text-muted-foreground mb-1 block text-sm font-medium">
             Board <span className="text-destructive">*</span>
           </label>
           <select
             value={board}
             onChange={(e) => setBoard(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
             required
           >
-            <option value="" disabled>Select board</option>
+            <option value="" disabled>
+              Select board
+            </option>
             <option value="CBSE">CBSE</option>
-            <option value="ICSE" disabled>ICSE</option>
+            <option value="ICSE" disabled>
+              ICSE
+            </option>
           </select>
         </div>
 
         {/* DOB */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
+          <label className="text-muted-foreground mb-1 block text-sm font-medium">
             Date of Birth
           </label>
           <input
             type="date"
             value={dob}
             onChange={(e) => setDob(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
           />
         </div>
 
         {/* Profile Photo – file upload */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
+          <label className="text-muted-foreground mb-1 block text-sm font-medium">
             Profile Photo
           </label>
           {/* Show current or new preview */}
@@ -198,9 +219,9 @@ export default function ProfilePage() {
               <img
                 src={currentPhotoSrc}
                 alt="Profile preview"
-                className="h-16 w-16 rounded-full object-cover border"
+                className="h-16 w-16 rounded-full border object-cover"
               />
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 {photoPreview ? 'New photo selected' : 'Current photo'}
               </span>
             </div>
@@ -209,15 +230,9 @@ export default function ProfilePage() {
             type="file"
             accept="image/*"
             onChange={handleFileChange}
-            className="w-full text-sm text-muted-foreground
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded-md file:border-0
-                       file:text-sm file:font-medium
-                       file:bg-primary file:text-primary-foreground
-                       hover:file:bg-primary/90
-                       cursor-pointer"
+            className="text-muted-foreground file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 w-full cursor-pointer text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-medium"
           />
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-xs">
             Recommended: Max 1 MB. (.jpg / .jpeg / .png)
           </p>
         </div>
@@ -226,13 +241,15 @@ export default function ProfilePage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save Profile'}
         </button>
 
         {message && (
-          <p className={`text-sm text-center ${message.startsWith('Error') || message.startsWith('Photo upload failed') ? 'text-destructive' : 'text-green-600'}`}>
+          <p
+            className={`text-center text-sm ${message.startsWith('Error') || message.startsWith('Photo upload failed') ? 'text-destructive' : 'text-green-600'}`}
+          >
             {message}
           </p>
         )}

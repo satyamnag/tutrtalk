@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { AccessToken, type AccessTokenOptions, type VideoGrant } from 'livekit-server-sdk';
+import { auth } from '@clerk/nextjs/server';
 import { RoomConfiguration } from '@livekit/protocol';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 type ConnectionDetails = {
   serverUrl: string;
@@ -62,6 +63,14 @@ export async function POST(req: Request) {
       roomName,
       roomConfig
     );
+
+    // Track session token request server-side
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: participantIdentity,
+      event: 'session_token_requested',
+      properties: { room_name: roomName },
+    });
 
     // Return connection details
     const data: ConnectionDetails = {

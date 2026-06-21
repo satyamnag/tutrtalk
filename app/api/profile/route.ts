@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { getPostHogClient } from '@/lib/posthog-server';
 import { supabase } from '@/lib/supabase/server';
 
 // GET – fetch profile for current user
@@ -36,9 +37,8 @@ export async function POST(request: Request) {
   const hasRequiredFields = body.name && body.class && body.board;
 
   if (hasRequiredFields) {
-    const { error } = await supabase
-      .from('student_profiles')
-      .upsert({
+    const { error } = await supabase.from('student_profiles').upsert(
+      {
         user_id: userId,
         name: body.name,
         class: body.class,
@@ -48,14 +48,28 @@ export async function POST(request: Request) {
         study_language: body.study_language || null,
         study_type: body.study_type || null,
         preferred_subject: body.preferred_subject || null,
-        preferred_book: body.preferred_book || null,           // NEW
+        preferred_book: body.preferred_book || null, // NEW
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
+      },
+      { onConflict: 'user_id' }
+    );
 
     if (error) {
       console.error(error);
       return new NextResponse('Failed to save profile', { status: 500 });
     }
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: userId,
+      event: 'profile_updated',
+      properties: {
+        class: body.class,
+        board: body.board,
+        study_type: body.study_type || null,
+      },
+    });
+
     return new NextResponse(null, { status: 200 });
   }
 
@@ -83,8 +97,9 @@ export async function POST(request: Request) {
     updated_at: new Date().toISOString(),
   };
 
-  if (body.preferred_subject !== undefined) updates.preferred_subject = body.preferred_subject || null;
-  if (body.preferred_book !== undefined) updates.preferred_book = body.preferred_book || null;   // NEW
+  if (body.preferred_subject !== undefined)
+    updates.preferred_subject = body.preferred_subject || null;
+  if (body.preferred_book !== undefined) updates.preferred_book = body.preferred_book || null; // NEW
   if (body.study_type !== undefined) updates.study_type = body.study_type || null;
   if (body.study_language !== undefined) updates.study_language = body.study_language || null;
 

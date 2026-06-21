@@ -1,6 +1,7 @@
 // components/app/welcome-view.tsx
-import { Button } from '@/components/ui/button';
+import posthog from 'posthog-js';
 import { AgentAudioVisualizerWave } from '@/components/agents-ui/agent-audio-visualizer-wave';
+import { Button } from '@/components/ui/button';
 
 function WelcomeAnimation() {
   return (
@@ -35,11 +36,14 @@ export const WelcomeView = ({
 
         <p className="text-foreground text-xl font-bold tracking-tight">TutrTalk</p>
         <p className="text-muted-foreground text-lg font-medium">Your Daily Revision Tutor</p>
-        <p className="text-muted-foreground text-sm mt-1">Chat. Revise. Remember. Score.</p>
+        <p className="text-muted-foreground mt-1 text-sm">Chat. Revise. Remember. Score.</p>
 
         <Button
           size="lg"
-          onClick={onStartCall}
+          onClick={() => {
+            posthog.capture('session_started');
+            onStartCall();
+          }}
           disabled={!canStart}
           title={!canStart ? 'Please complete your profile first' : undefined}
           className="mt-6 w-64 cursor-pointer rounded-full font-mono text-xs font-bold tracking-wider uppercase"
@@ -47,7 +51,7 @@ export const WelcomeView = ({
           {startButtonText}
         </Button>
         {!canStart && (
-          <p className="text-xs text-muted-foreground mt-2">Complete your profile to start</p>
+          <p className="text-muted-foreground mt-2 text-xs">Complete your profile to start</p>
         )}
       </section>
     </div>

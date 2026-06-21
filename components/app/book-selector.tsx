@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { BookOpenCheckIcon } from 'lucide-react';
-import { cn } from '@/lib/shadcn/utils';
+import posthog from 'posthog-js';
 import {
   Select,
   SelectContent,
@@ -12,12 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/shadcn/utils';
 
 interface SubjectGroup {
   subject: string;
@@ -43,7 +39,7 @@ export function BookSelector({ className }: BookSelectorProps) {
   // Fetch grouped subjects & books
   useEffect(() => {
     fetch('/api/books')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then((data: SubjectGroup[]) => {
         setGroups(data);
         setLoading(false);
@@ -56,13 +52,11 @@ export function BookSelector({ className }: BookSelectorProps) {
     if (groups.length === 0) return;
 
     // Flatten all selectable values (book names)
-    const allBooks = groups.flatMap(g =>
-      g.singleBookSameName ? [g.subject] : g.books
-    );
+    const allBooks = groups.flatMap((g) => (g.singleBookSameName ? [g.subject] : g.books));
 
     fetch('/api/profile')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         const hasProfile = !!(data?.name && data?.class && data?.board);
 
         if (data?.preferred_book && allBooks.includes(data.preferred_book)) {
@@ -78,7 +72,7 @@ export function BookSelector({ className }: BookSelectorProps) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ preferred_book: defaultBook }),
           })
-            .then(res => {
+            .then((res) => {
               if (res.ok) {
                 setSelected(defaultBook);
                 setProfileMissing(false);
@@ -87,16 +81,14 @@ export function BookSelector({ className }: BookSelectorProps) {
                 setSelected(defaultBook);
               }
             })
-            .catch(err => {
+            .catch((err) => {
               console.error('Network error', err);
               setSelected(defaultBook);
             });
         }
       })
       .catch(() => {
-        const allBooks = groups.flatMap(g =>
-          g.singleBookSameName ? [g.subject] : g.books
-        );
+        const allBooks = groups.flatMap((g) => (g.singleBookSameName ? [g.subject] : g.books));
         if (allBooks.length > 0) setSelected(allBooks[0]);
       });
   }, [groups]);
@@ -115,6 +107,7 @@ export function BookSelector({ className }: BookSelectorProps) {
       });
       if (res.ok) {
         setSelected(value);
+        posthog.capture('book_changed', { book: value });
       } else {
         console.error(`Failed to save book preference (${res.status})`);
       }
@@ -137,32 +130,30 @@ export function BookSelector({ className }: BookSelectorProps) {
                 <SelectTrigger
                   aria-label="Select book"
                   className={cn(
-                    'w-auto max-w-[200px] rounded-full pl-4 pr-3 py-2',
+                    'w-auto max-w-[200px] rounded-full py-2 pr-3 pl-4',
                     'bg-background/70 backdrop-blur-xl',
-                    'border border-border/50 hover:border-border/80',
-                    'text-sm font-medium text-foreground',
+                    'border-border/50 hover:border-border/80 border',
+                    'text-foreground text-sm font-medium',
                     'shadow-sm hover:shadow-md',
-                    'focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
+                    'focus:ring-primary/40 focus:border-primary/60 focus:ring-2',
                     'transition-all duration-200 ease-in-out',
                     'data-[placeholder]:text-muted-foreground'
                   )}
                 >
                   <BookOpenCheckIcon className="mr-2 size-4 shrink-0" />
-                  <SelectValue>
-                    {selected && <span>{truncateText(selected)}</span>}
-                  </SelectValue>
+                  <SelectValue>{selected && <span>{truncateText(selected)}</span>}</SelectValue>
                 </SelectTrigger>
                 <SelectContent
-                  className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[200px] max-w-[320px]"
+                  className="border-border/50 bg-background/80 max-w-[320px] min-w-[200px] rounded-xl border shadow-lg backdrop-blur-xl"
                   align="center"
                 >
-                  {groups.map(group => {
+                  {groups.map((group) => {
                     if (group.singleBookSameName) {
                       return (
                         <SelectItem
                           key={group.subject}
                           value={group.subject}
-                          className="text-sm font-medium whitespace-normal text-wrap"
+                          className="text-sm font-medium text-wrap whitespace-normal"
                         >
                           {group.subject}
                         </SelectItem>
@@ -170,14 +161,14 @@ export function BookSelector({ className }: BookSelectorProps) {
                     }
                     return (
                       <SelectGroup key={group.subject}>
-                        <SelectLabel className="text-xs text-muted-foreground font-semibold pt-2 whitespace-normal text-wrap">
+                        <SelectLabel className="text-muted-foreground pt-2 text-xs font-semibold text-wrap whitespace-normal">
                           {group.subject}
                         </SelectLabel>
-                        {group.books.map(book => (
+                        {group.books.map((book) => (
                           <SelectItem
                             key={book}
                             value={book}
-                            className="pl-6 text-sm font-medium whitespace-normal text-wrap"
+                            className="pl-6 text-sm font-medium text-wrap whitespace-normal"
                           >
                             {book}
                           </SelectItem>
