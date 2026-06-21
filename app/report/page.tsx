@@ -606,14 +606,18 @@ export default function ReportPage() {
       .text(d => `${d.chapter}: ${(d.correctRate * 100).toFixed(1)}% correct`);
   }, [answers, chartVisibility.weakAreas]);
 
-  // --- Export PDF handler ---
+  // --- Export PDF handler (robust) ---
   const exportPDF = async () => {
-    if (!reportRef.current) return;
+    const element = reportRef.current;
+    if (!element) return;
     try {
-      const canvas = await html2canvas(reportRef.current, {
+      const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
+        allowTaint: false,
         logging: false,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -622,7 +626,8 @@ export default function ReportPage() {
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save('TutrTalk_Report.pdf');
     } catch (error) {
-      console.error('PDF export failed', error);
+      console.error('PDF export failed:', error);
+      alert('Failed to export PDF. Please try again.');
     }
   };
 
