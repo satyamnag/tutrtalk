@@ -624,11 +624,12 @@ export default function ReportPage() {
             elements.forEach((el) => {
               const computed = clonedDoc.defaultView?.getComputedStyle(el);
               if (!computed) return;
-              const fillVar = el.style.fill || el.getAttribute('fill');
+              const htmlEl = el as HTMLElement;
+              const fillVar = htmlEl.style.fill || el.getAttribute('fill');
               if (fillVar && fillVar.startsWith('var(')) {
                 el.setAttribute('fill', computed.fill);
               }
-              const strokeVar = el.style.stroke || el.getAttribute('stroke');
+              const strokeVar = htmlEl.style.stroke || el.getAttribute('stroke');
               if (strokeVar && strokeVar.startsWith('var(')) {
                 el.setAttribute('stroke', computed.stroke);
               }
