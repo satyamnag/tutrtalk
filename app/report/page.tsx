@@ -936,7 +936,7 @@ export default function ReportPage() {
   }
 
   return (
-    <main className="container mx-auto max-w-6xl px-4 py-8 sm:py-12 md:py-16">
+    <main className="container mx-auto max-w-6xl px-4 pt-20 pb-8 sm:py-12 md:py-16">
       <h1 className="mb-6 text-center text-2xl font-bold sm:text-3xl">Your Performance Report</h1>
 
       {/* Export & Customize Bar */}
