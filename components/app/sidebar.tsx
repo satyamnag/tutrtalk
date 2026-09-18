@@ -93,6 +93,16 @@ const navItems = [
   // { href: '/guardian', label: 'Guardian', icon: ShieldCheckIcon },
 ];
 
+const supportItems = [
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/faq', label: 'FAQ' },
+  { href: '/terms', label: 'Terms' },
+  { href: '/privacy', label: 'Privacy' },
+  { href: '/account-deletion', label: 'Delete account' },
+  { href: '/data-deletion', label: 'Delete data' },
+];
+
 interface SidebarProps {
   logo: string;
   logoDark?: string;
@@ -186,6 +196,32 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
             ))}
           </nav>
         )}
+
+        {/* Legal & support links */}
+        <div className="mt-4 px-3">
+          <div className="border-t pt-3">
+            <p className="text-muted-foreground px-3 pb-1 text-xs font-medium">
+              About &amp; support
+            </p>
+            <div className="flex flex-wrap gap-x-3 gap-y-1 px-3">
+              {supportItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'text-xs transition-colors',
+                    pathname === item.href
+                      ? 'text-foreground font-medium'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => setOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* User section at bottom – Clerk UserButton replaces manual avatar */}
         {isLoaded && isSignedIn && (

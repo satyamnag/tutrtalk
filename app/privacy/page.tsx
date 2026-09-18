@@ -12,10 +12,10 @@ export default function PrivacyPolicyPage() {
       <div className="mt-10 space-y-10 text-sm leading-7">
         <section>
           <p>
-            TutrTalk (&quot;TutrTalk&quot;, &quot;we&quot;, &quot;us&quot;) is a voice-based revision
-            tutor for school students. This policy explains what personal data we collect, why we
-            collect it, who we share it with, and the choices you have. It applies to the TutrTalk
-            web app, the TutrTalk Android app, and our voice tutoring service.
+            TutrTalk (&quot;TutrTalk&quot;, &quot;we&quot;, &quot;us&quot;) is a voice-based
+            revision tutor for school students. This policy explains what personal data we collect,
+            why we collect it, who we share it with, and the choices you have. It applies to the
+            TutrTalk web app, the TutrTalk Android app, and our voice tutoring service.
           </p>
           <p className="mt-3">
             We do not sell your personal data. We do not show advertising in TutrTalk.
@@ -41,10 +41,10 @@ export default function PrivacyPolicyPage() {
           <h3 className="mt-5 font-semibold">Voice and audio</h3>
           <p>
             TutrTalk is a voice tutor. When you start a session, your device&apos;s microphone audio
-            is streamed in real time to LiveKit and to Amazon Web Services, where Amazon Nova 2 Sonic
-            processes it to understand your speech and generate the tutor&apos;s spoken replies. The
-            audio is processed to run the conversation. We also store a text transcript of what was
-            said so you can review the session later.
+            is streamed in real time to LiveKit and to Amazon Web Services, where Amazon Nova 2
+            Sonic processes it to understand your speech and generate the tutor&apos;s spoken
+            replies. The audio is processed to run the conversation. We also store a text transcript
+            of what was said so you can review the session later.
           </p>
           <p className="mt-3">
             Please do not share sensitive personal information (such as health, financial, or
@@ -61,19 +61,19 @@ export default function PrivacyPolicyPage() {
 
           <h3 className="mt-5 font-semibold">Guardian links</h3>
           <p>
-            A parent or guardian can link their own account to a student&apos;s account. Once linked,
-            the guardian can view that student&apos;s name, email address, number of answers,
-            chapters covered, and last active date. This is intended so a guardian can supervise a
-            minor&apos;s use of TutrTalk.
+            A parent or guardian can link their own account to a student&apos;s account. Once
+            linked, the guardian can view that student&apos;s name, email address, number of
+            answers, chapters covered, and last active date. This is intended so a guardian can
+            supervise a minor&apos;s use of TutrTalk.
           </p>
 
           <h3 className="mt-5 font-semibold">Usage analytics and technical data</h3>
           <p>
             We use PostHog to understand how the product is used, which collects product usage
             events and device and browser information. Our hosting and infrastructure providers
-            automatically receive technical data such as your IP address and user agent when you
-            use the service. We use cookies and similar storage to keep you signed in and to
-            remember your preferences.
+            automatically receive technical data such as your IP address and user agent when you use
+            the service. We use cookies and similar storage to keep you signed in and to remember
+            your preferences.
           </p>
         </section>
 
@@ -138,8 +138,8 @@ export default function PrivacyPolicyPage() {
               or guardian, and we rely on the parent or guardian to provide consent.
             </li>
             <li>
-              The guardian-linking feature exists so a parent or guardian can review a
-              minor&apos;s activity.
+              The guardian-linking feature exists so a parent or guardian can review a minor&apos;s
+              activity.
             </li>
             <li>We do not show advertising to students and we do not sell their data.</li>
             <li>
@@ -157,8 +157,8 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-xl font-semibold">5. International transfers</h2>
           <p>
             Our providers operate globally, so your data may be processed in countries other than
-            your own, including the United States, the European Union, and Japan. Where required,
-            we rely on appropriate safeguards for these transfers.
+            your own, including the United States, the European Union, and Japan. Where required, we
+            rely on appropriate safeguards for these transfers.
           </p>
         </section>
 
@@ -166,10 +166,10 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-xl font-semibold">6. How long we keep data</h2>
           <p>
             We keep your profile and learning activity for as long as your account is active. Voice
-            audio is processed to run the session and is not retained as a recording by us; the
-            text transcript is kept with your session history. When you ask us to delete your
-            account we delete or anonymise your personal data, except where we are required to keep
-            it for legal reasons.
+            audio is processed to run the session and is not retained as a recording by us; the text
+            transcript is kept with your session history. When you ask us to delete your account we
+            delete or anonymise your personal data, except where we are required to keep it for
+            legal reasons.
           </p>
         </section>
 
