@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
-const LAST_UPDATED = '18 September 2026';
-const CONTACT_EMAIL = 'famerelay@gmail.com';
+const LAST_UPDATED = '19 September 2026';
+const CONTACT_EMAIL = 'karthik@famerelay.com';
 
 export default function PrivacyPolicyPage() {
   return (
