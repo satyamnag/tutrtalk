@@ -2,9 +2,6 @@ import Link from 'next/link';
 
 const APP_NAME = 'TutrTalk';
 const OPERATOR = 'FAMERELAY';
-const LEGAL_NAME = 'PALEPU KARTHIK CHANDAN';
-const ADDRESS =
-  'G01, Mathrushree Orchid Homes, Kempapura Road, Yemalur Street, Bengaluru - 560037, India';
 const EMAIL = 'karthik@famerelay.com';
 const LAST_UPDATED = '19 September 2026';
 
@@ -172,9 +169,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold">13. Contact</h2>
           <p className="mt-3">
-            {LEGAL_NAME}, trading as {OPERATOR}
-            <br />
-            {ADDRESS}
+            {OPERATOR}
             <br />
             Email:{' '}
             <a className="underline" href={`mailto:${EMAIL}`}>

@@ -2,9 +2,6 @@ import Link from 'next/link';
 
 const APP_NAME = 'TutrTalk';
 const OPERATOR = 'FAMERELAY';
-const LEGAL_NAME = 'PALEPU KARTHIK CHANDAN';
-const ADDRESS =
-  'G01, Mathrushree Orchid Homes, Kempapura Road, Yemalur Street, Bengaluru - 560037, India';
 const EMAIL = 'karthik@famerelay.com';
 const WEBSITE = 'https://famerelay.com';
 
@@ -31,11 +28,6 @@ export default function AboutPage() {
             {APP_NAME} is operated by <strong>{OPERATOR}</strong>, under which {APP_NAME} is
             published. {OPERATOR} is the developer name shown on the Google Play store listing for
             the {APP_NAME} Android app.
-          </p>
-          <p className="mt-3">
-            Legal name: {LEGAL_NAME}
-            <br />
-            {ADDRESS}
           </p>
         </section>
 

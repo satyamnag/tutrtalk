@@ -2,11 +2,7 @@ import Link from 'next/link';
 
 const APP_NAME = 'TutrTalk';
 const OPERATOR = 'FAMERELAY';
-const LEGAL_NAME = 'PALEPU KARTHIK CHANDAN';
-const ADDRESS =
-  'G01, Mathrushree Orchid Homes, Kempapura Road, Yemalur Street, Bengaluru - 560037, India';
 const EMAIL = 'karthik@famerelay.com';
-const PHONE = '+91 98861 16123';
 const WEBSITE = 'https://famerelay.com';
 
 export default function ContactPage() {
@@ -36,22 +32,6 @@ export default function ContactPage() {
               Account deletion
             </Link>
             .
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold">Phone</h2>
-          <p className="mt-3">{PHONE}</p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold">Postal address</h2>
-          <p className="mt-3">
-            {LEGAL_NAME}
-            <br />
-            {OPERATOR}
-            <br />
-            {ADDRESS}
           </p>
         </section>
 
