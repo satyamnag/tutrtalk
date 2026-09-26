@@ -113,8 +113,6 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
   const { isLoaded, isSignedIn, user } = useUser();
   const pathname = usePathname();
 
-  const isAdmin = user?.primaryEmailAddress?.emailAddress === 'famerelay@gmail.com';
-
   return (
     <>
       {/* Invisible overlay – closes sidebar when clicking outside, no blur */}
@@ -173,21 +171,20 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
                 <span>{item.label}</span>
               </Link>
             ))}
-            {isAdmin && (
-              <Link
-                href="/qa"
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                  pathname === '/qa'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                )}
-                onClick={() => setOpen(false)}
-              >
-                <SettingsIcon size={18} />
-                <span>Manage Questions</span>
-              </Link>
-            )}
+            {/* Q&A admin – available to every signed-in account */}
+            <Link
+              href="/qa"
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                pathname === '/qa'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+              onClick={() => setOpen(false)}
+            >
+              <SettingsIcon size={18} />
+              <span>Manage Questions</span>
+            </Link>
           </nav>
         ) : (
           <nav className="flex flex-col gap-2 px-3 mt-2 animate-pulse">

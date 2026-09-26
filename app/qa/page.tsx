@@ -28,7 +28,7 @@ interface QAResponse {
 }
 
 export default function QAPage() {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
   const [data, setData] = useState<QAResponse>({ items: [], page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -70,6 +70,11 @@ export default function QAPage() {
       .catch(console.error);
   }, [isSignedIn]);
 
+  // ----- Cascade filters -----
+  // Every cascade fetch is guarded by an AbortController: when the user
+  // changes a selection before an older fetch resolves, the stale response is
+  // aborted so it can never overwrite the dropdown with out-of-date options.
+
   // When class changes, fetch subjects and clear lower selections
   useEffect(() => {
     if (!selectedClass) {
@@ -79,7 +84,10 @@ export default function QAPage() {
       setSelectedChapter('');
       return;
     }
-    fetch(`/api/filters?class_name=${encodeURIComponent(selectedClass)}`)
+    const controller = new AbortController();
+    fetch(`/api/filters?class_name=${encodeURIComponent(selectedClass)}`, {
+      signal: controller.signal,
+    })
       .then((res) => res.json())
       .then((data: FilterOptions) => {
         setFilterOptions((prev) => ({ ...prev, subjects: data.subjects }));
@@ -87,10 +95,15 @@ export default function QAPage() {
         setSelectedBook('');
         setSelectedChapter('');
       })
-      .catch(console.error);
+      .catch((err) => {
+        if (err?.name !== 'AbortError') console.error(err);
+      });
+    return () => controller.abort();
   }, [selectedClass]);
 
-  // When subject changes, fetch books and clear lower selections
+  // When subject changes, fetch books and clear lower selections.
+  // The full ancestor chain (class -> subject) is sent so the server scopes
+  // the lookup uniquely: subject names repeat across classes in the dataset.
   useEffect(() => {
     if (!selectedSubject) {
       setFilterOptions((prev) => ({ ...prev, books: [] }));
@@ -98,31 +111,48 @@ export default function QAPage() {
       setSelectedChapter('');
       return;
     }
-    fetch(`/api/filters?subject_name=${encodeURIComponent(selectedSubject)}`)
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    if (selectedClass) params.set('class_name', selectedClass);
+    params.set('subject_name', selectedSubject);
+    fetch(`/api/filters?${params.toString()}`, { signal: controller.signal })
       .then((res) => res.json())
       .then((data: FilterOptions) => {
         setFilterOptions((prev) => ({ ...prev, books: data.books }));
         setSelectedBook('');
         setSelectedChapter('');
       })
-      .catch(console.error);
-  }, [selectedSubject]);
+      .catch((err) => {
+        if (err?.name !== 'AbortError') console.error(err);
+      });
+    return () => controller.abort();
+  }, [selectedClass, selectedSubject]);
 
-  // When book changes, fetch chapters and clear chapter selection
+  // When book changes, fetch chapters and clear chapter selection.
+  // The full ancestor chain (class -> subject -> book) is sent so the server
+  // scopes the lookup uniquely: book names repeat across subjects in the dataset.
   useEffect(() => {
     if (!selectedBook) {
       setFilterOptions((prev) => ({ ...prev, chapters: [] }));
       setSelectedChapter('');
       return;
     }
-    fetch(`/api/filters?book_name=${encodeURIComponent(selectedBook)}`)
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    if (selectedClass) params.set('class_name', selectedClass);
+    if (selectedSubject) params.set('subject_name', selectedSubject);
+    params.set('book_name', selectedBook);
+    fetch(`/api/filters?${params.toString()}`, { signal: controller.signal })
       .then((res) => res.json())
       .then((data: FilterOptions) => {
         setFilterOptions((prev) => ({ ...prev, chapters: data.chapters }));
         setSelectedChapter('');
       })
-      .catch(console.error);
-  }, [selectedBook]);
+      .catch((err) => {
+        if (err?.name !== 'AbortError') console.error(err);
+      });
+    return () => controller.abort();
+  }, [selectedClass, selectedSubject, selectedBook]);
 
   // Reset page to 1 whenever filters, search, sort, or limit change
   useEffect(() => {
@@ -130,27 +160,36 @@ export default function QAPage() {
   }, [selectedChapter, searchText, sort, limit]);
 
   // Fetch Q&A items
-  const fetchItems = useCallback(() => {
-    if (!isSignedIn) return;
+  const fetchItems = useCallback(
+    (signal?: AbortSignal) => {
+      if (!isSignedIn) return;
 
-    setLoading(true);
+      setLoading(true);
 
-    const params = new URLSearchParams();
-    if (selectedChapter) params.set('chapter_id', selectedChapter);
-    if (searchText.trim()) params.set('search', searchText.trim());
-    params.set('sort', sort);
-    params.set('page', page.toString());
-    params.set('limit', limit.toString());   // NEW: send limit
+      const params = new URLSearchParams();
+      if (selectedChapter) params.set('chapter_id', selectedChapter);
+      if (searchText.trim()) params.set('search', searchText.trim());
+      params.set('sort', sort);
+      params.set('page', page.toString());
+      params.set('limit', limit.toString());
 
-    fetch(`/api/qa?${params.toString()}`)
-      .then((res) => res.json())
-      .then((json: QAResponse) => setData(json))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [isSignedIn, selectedChapter, searchText, sort, page, limit]);
+      return fetch(`/api/qa?${params.toString()}`, { signal })
+        .then((res) => res.json())
+        .then((json: QAResponse) => setData(json))
+        .catch((err) => {
+          if (err?.name !== 'AbortError') console.error(err);
+        })
+        .finally(() => setLoading(false));
+    },
+    [isSignedIn, selectedChapter, searchText, sort, page, limit]
+  );
 
   useEffect(() => {
-    fetchItems();
+    // Abort any in-flight Q&A fetch when filters/search/page change, so a
+    // slow response can never paint results for an outdated selection.
+    const controller = new AbortController();
+    fetchItems(controller.signal);
+    return () => controller.abort();
   }, [fetchItems]);
 
   // CRUD handlers
@@ -283,20 +322,6 @@ export default function QAPage() {
 
   if (!isSignedIn) {
     return <div className="flex h-screen items-center justify-center">Please sign in.</div>;
-  }
-
-  // ACCESS CONTROL: only famerelay@gmail.com
-  if (user?.primaryEmailAddress?.emailAddress !== 'famerelay@gmail.com') {
-    return (
-      <div className="flex h-screen items-center justify-center text-center px-4">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-muted-foreground">
-            Only the admin can access this page. Please contact support.
-          </p>
-        </div>
-      </div>
-    );
   }
 
   const selectClasses =
