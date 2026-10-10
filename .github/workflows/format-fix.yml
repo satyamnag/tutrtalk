@@ -11,6 +11,9 @@ on:
 
 permissions:
   contents: write
+  # Required so the normalization commit (which may touch files under
+  # .github/workflows) can be pushed with the GITHUB_TOKEN.
+  workflows: write
 
 jobs:
   format:
