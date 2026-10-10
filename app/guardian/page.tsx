@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 interface StudentLink {
@@ -92,46 +92,46 @@ export default function GuardianPage() {
 
   return (
     <main className="container mx-auto max-w-4xl px-4 py-16">
-      <h1 className="mb-8 text-3xl font-bold text-center">Guardian Dashboard</h1>
+      <h1 className="mb-8 text-center text-3xl font-bold">Guardian Dashboard</h1>
 
       {/* Add Student */}
       <div className="mb-8 rounded-xl border p-4">
-        <h2 className="text-lg font-semibold mb-3">Link a Student</h2>
-        <form onSubmit={handleAddStudent} className="flex flex-col sm:flex-row gap-3">
+        <h2 className="mb-3 text-lg font-semibold">Link a Student</h2>
+        <form onSubmit={handleAddStudent} className="flex flex-col gap-3 sm:flex-row">
           <input
             type="email"
             value={emailInput}
             onChange={(e) => setEmailInput(e.target.value)}
             placeholder="Student email address"
-            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background flex-1 rounded-md border px-3 py-2 text-sm"
             required
           />
           <button
             type="submit"
             disabled={adding}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {adding ? 'Linking...' : 'Link Student'}
           </button>
         </form>
-        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive mt-2 text-sm">{error}</p>}
       </div>
 
       {/* Linked Students */}
       {students.length === 0 ? (
         <p className="text-muted-foreground text-center">No students linked yet. Add one above.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {students.map((student) => (
             <div key={student.id} className="rounded-xl border p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-lg">{student.studentName}</h3>
-                  <p className="text-sm text-muted-foreground">{student.studentEmail}</p>
+                  <h3 className="text-lg font-semibold">{student.studentName}</h3>
+                  <p className="text-muted-foreground text-sm">{student.studentEmail}</p>
                 </div>
                 <button
                   onClick={() => handleUnlink(student.id)}
-                  className="text-xs text-destructive hover:underline"
+                  className="text-destructive text-xs hover:underline"
                 >
                   Unlink
                 </button>
@@ -153,7 +153,9 @@ export default function GuardianPage() {
                 <div>
                   <span className="text-muted-foreground">Last Active:</span>
                   <span className="ml-1 font-medium">
-                    {student.lastActive ? new Date(student.lastActive).toLocaleDateString() : 'Never'}
+                    {student.lastActive
+                      ? new Date(student.lastActive).toLocaleDateString()
+                      : 'Never'}
                   </span>
                 </div>
               </div>

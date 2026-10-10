@@ -39,9 +39,7 @@ export async function GET(request: Request) {
 
   // Resolve the class id scoped by exact name (limits the lookup to one row).
   const classId = className
-    ? (
-        classes?.filter((c: any) => c.name === className).slice(0, 1) ?? []
-      )[0]?.id
+    ? (classes?.filter((c: any) => c.name === className).slice(0, 1) ?? [])[0]?.id
     : undefined;
 
   // 2. Subjects for the selected class (scoped by class id; no bare-name lookup).
@@ -60,9 +58,7 @@ export async function GET(request: Request) {
     subjectNames = subjects?.map((s: any) => s.name) ?? [];
     if (subjectName && subjects) {
       // Scoped by class -> subject, so the name is unique within the class.
-      const match = subjects
-        .filter((s: any) => s.name === subjectName)
-        .slice(0, 1)[0];
+      const match = subjects.filter((s: any) => s.name === subjectName).slice(0, 1)[0];
       subjectId = match?.id;
     }
   }
@@ -83,9 +79,7 @@ export async function GET(request: Request) {
     bookNames = books?.map((b: any) => b.name) ?? [];
     if (bookName && books) {
       // Scoped by subject -> book, so the name is unique within the subject.
-      const match = books
-        .filter((b: any) => b.name === bookName)
-        .slice(0, 1)[0];
+      const match = books.filter((b: any) => b.name === bookName).slice(0, 1)[0];
       bookId = match?.id;
     }
   }

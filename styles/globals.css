@@ -47,7 +47,7 @@
   --popover: oklch(0.269 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.7 0.25 285);
-  --primary-foreground: oklch(0.985 0 0);   /* ← now white in dark mode */
+  --primary-foreground: oklch(0.985 0 0); /* ← now white in dark mode */
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -66,7 +66,7 @@
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.7 0.25 285);
-  --sidebar-primary-foreground: oklch(0.985 0 0);  /* ← also white in dark mode */
+  --sidebar-primary-foreground: oklch(0.985 0 0); /* ← also white in dark mode */
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
@@ -75,8 +75,8 @@
 
 @theme inline {
   --font-sans:
-    var(--font-inter), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    var(--font-inter), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono:
     var(--font-commit-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
@@ -129,37 +129,41 @@
     text-rendering: optimizeLegibility;
   }
   [data-lk-theme],
-  [class*="lk-"] {
+  [class*='lk-'] {
     font-family: inherit;
   }
 }
 
 /* --- LiveKit network quality indicator – icon only, text on hover --- */
-[class*="lk-connection-quality"] span,
-[class*="lk-connection-quality"] .lk-connection-quality-text {
+[class*='lk-connection-quality'] span,
+[class*='lk-connection-quality'] .lk-connection-quality-text {
   display: inline-block;
   overflow: hidden;
   white-space: nowrap;
   max-width: 0;
   opacity: 0;
-  transition: max-width 0.3s ease, opacity 0.3s ease;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease;
 }
-[class*="lk-connection-quality"]:hover span,
-[class*="lk-connection-quality"]:hover .lk-connection-quality-text {
+[class*='lk-connection-quality']:hover span,
+[class*='lk-connection-quality']:hover .lk-connection-quality-text {
   max-width: 120px;
   opacity: 1;
 }
 
 /* --- LiveKit live transcriptions – compact, unobtrusive --- */
-[class*="lk-transcription"] {
+[class*='lk-transcription'] {
   font-size: 0.75rem;
   line-height: 1.2;
   opacity: 0.7;
-  transition: opacity 0.3s ease, font-size 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    font-size 0.3s ease;
   max-height: 1.5em;
   overflow: hidden;
 }
-[class*="lk-transcription"]:hover {
+[class*='lk-transcription']:hover {
   opacity: 1;
   max-height: none;
   overflow: visible;

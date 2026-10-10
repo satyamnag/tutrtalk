@@ -134,8 +134,8 @@ export default function PrivacyPolicyPage() {
               messages.
             </li>
             <li>
-              <strong>Amazon Polly</strong> &mdash; converts the tutor&apos;s reply text into
-              speech for voice messages.
+              <strong>Amazon Polly</strong> &mdash; converts the tutor&apos;s reply text into speech
+              for voice messages.
             </li>
             <li>
               <strong>PostHog</strong> &mdash; product usage analytics.

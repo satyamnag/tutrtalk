@@ -4,41 +4,41 @@ The wizard has completed a deep integration of PostHog analytics into the TutrTa
 
 ## Events instrumented
 
-| Event name | Description | File |
-|---|---|---|
-| `session_started` | User clicks the start button to begin a live tutoring session. | `components/app/welcome-view.tsx` |
-| `session_ended` | User disconnects from a live tutoring session. | `components/app/app.tsx` |
-| `chapter_selected` | User selects a chapter to study from the chapter selector popup. | `components/app/chapter-selector.tsx` |
-| `book_changed` | User changes the selected book from the book selector dropdown. | `components/app/book-selector.tsx` |
-| `profile_saved` | User successfully saves their student profile information. | `app/profile/page.tsx` |
-| `report_exported` | User downloads their performance report as a PDF. | `app/report/page.tsx` |
-| `report_customized` | User toggles chart visibility to customize their performance dashboard. | `app/report/page.tsx` |
-| `transcript_searched` | User searches their past session transcripts for a keyword. | `app/progress/page.tsx` |
-| `session_token_requested` | Server generates a LiveKit token, marking the start of a new tutoring session. | `app/api/token/route.ts` |
-| `profile_updated` | Server records a student profile being created or updated via the API. | `app/api/profile/route.ts` |
+| Event name                | Description                                                                    | File                                  |
+| ------------------------- | ------------------------------------------------------------------------------ | ------------------------------------- |
+| `session_started`         | User clicks the start button to begin a live tutoring session.                 | `components/app/welcome-view.tsx`     |
+| `session_ended`           | User disconnects from a live tutoring session.                                 | `components/app/app.tsx`              |
+| `chapter_selected`        | User selects a chapter to study from the chapter selector popup.               | `components/app/chapter-selector.tsx` |
+| `book_changed`            | User changes the selected book from the book selector dropdown.                | `components/app/book-selector.tsx`    |
+| `profile_saved`           | User successfully saves their student profile information.                     | `app/profile/page.tsx`                |
+| `report_exported`         | User downloads their performance report as a PDF.                              | `app/report/page.tsx`                 |
+| `report_customized`       | User toggles chart visibility to customize their performance dashboard.        | `app/report/page.tsx`                 |
+| `transcript_searched`     | User searches their past session transcripts for a keyword.                    | `app/progress/page.tsx`               |
+| `session_token_requested` | Server generates a LiveKit token, marking the start of a new tutoring session. | `app/api/token/route.ts`              |
+| `profile_updated`         | Server records a student profile being created or updated via the API.         | `app/api/profile/route.ts`            |
 
 ## New files created
 
-| File | Purpose |
-|---|---|
+| File                        | Purpose                                                    |
+| --------------------------- | ---------------------------------------------------------- |
 | `instrumentation-client.ts` | Client-side PostHog initialization (Next.js 15.3+ pattern) |
-| `lib/posthog-server.ts` | Singleton server-side PostHog client for API routes |
+| `lib/posthog-server.ts`     | Singleton server-side PostHog client for API routes        |
 
 ## Modified files
 
-| File | Changes |
-|---|---|
-| `next.config.ts` | Added `/ingest` reverse proxy rewrites + `skipTrailingSlashRedirect` |
-| `.env.local` | Added `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST` |
-| `components/app/app.tsx` | Added `posthog.identify()` on Clerk user load; `session_ended` capture |
-| `components/app/welcome-view.tsx` | `session_started` capture on start button click |
-| `components/app/chapter-selector.tsx` | `chapter_selected` capture with chapter name property |
-| `components/app/book-selector.tsx` | `book_changed` capture on successful book preference save |
-| `app/profile/page.tsx` | `profile_saved` capture + `captureException` on save error |
-| `app/report/page.tsx` | `report_exported` with stats + `report_customized` per chart toggle + `captureException` |
-| `app/progress/page.tsx` | `transcript_searched` with result count + `captureException` |
-| `app/api/token/route.ts` | Server-side `session_token_requested` with Clerk user as `distinctId` |
-| `app/api/profile/route.ts` | Server-side `profile_updated` with class/board/study_type properties |
+| File                                  | Changes                                                                                  |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `next.config.ts`                      | Added `/ingest` reverse proxy rewrites + `skipTrailingSlashRedirect`                     |
+| `.env.local`                          | Added `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST`                 |
+| `components/app/app.tsx`              | Added `posthog.identify()` on Clerk user load; `session_ended` capture                   |
+| `components/app/welcome-view.tsx`     | `session_started` capture on start button click                                          |
+| `components/app/chapter-selector.tsx` | `chapter_selected` capture with chapter name property                                    |
+| `components/app/book-selector.tsx`    | `book_changed` capture on successful book preference save                                |
+| `app/profile/page.tsx`                | `profile_saved` capture + `captureException` on save error                               |
+| `app/report/page.tsx`                 | `report_exported` with stats + `report_customized` per chart toggle + `captureException` |
+| `app/progress/page.tsx`               | `transcript_searched` with result count + `captureException`                             |
+| `app/api/token/route.ts`              | Server-side `session_token_requested` with Clerk user as `distinctId`                    |
+| `app/api/profile/route.ts`            | Server-side `profile_updated` with class/board/study_type properties                     |
 
 ## Next steps
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { type ComponentProps, useState, useMemo } from 'react';
+import { type ComponentProps, useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { type AgentState, type ReceivedMessage } from '@livekit/components-react';
 import { AgentChatIndicator } from '@/components/agents-ui/agent-chat-indicator';
@@ -11,7 +12,8 @@ import {
 } from '@/components/ai-elements/conversation';
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react'; // Icon for closing the popup
+
+// Icon for closing the popup
 
 /**
  * Props for the AgentChatTranscript component.
@@ -49,7 +51,7 @@ export function AgentChatTranscript({
 }: AgentChatTranscriptProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [popupImage, setPopupImage] = useState<string | null>(null);
-  
+
   // NEW: Custom Pagination State for smooth performance
   const [visibleCount, setVisibleCount] = useState(30);
 
@@ -86,9 +88,9 @@ export function AgentChatTranscript({
           {/* NEW: Load More Button for older messages */}
           {hasMore && (
             <div className="flex justify-center py-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={loadMore}
                 className="text-xs font-medium"
               >
@@ -103,7 +105,7 @@ export function AgentChatTranscript({
             const messageOrigin = from?.isLocal ? 'user' : 'assistant';
             const time = new Date(timestamp);
             const title = time.toLocaleTimeString(locale, { timeStyle: 'full' });
-            
+
             const imageUrl = extractImageUrl(message);
             const cleanedText = cleanMessageText(message, imageUrl);
             const isExpanded = expandedIds.has(id);
@@ -113,22 +115,22 @@ export function AgentChatTranscript({
                 <MessageContent>
                   {/* Render cleaned text without the raw URL */}
                   <MessageResponse>{cleanedText || message}</MessageResponse>
-                  
+
                   {/* Render Reference Diagram if available */}
                   {imageUrl && (
                     <div className="mt-3 border-t pt-2">
-                      <p className="text-xs font-semibold text-muted-foreground mb-1">
+                      <p className="text-muted-foreground mb-1 text-xs font-semibold">
                         Reference Diagram:
                       </p>
                       <button
                         onClick={() => setPopupImage(imageUrl)}
-                        className="block overflow-hidden rounded-lg border hover:border-primary transition-colors w-full"
+                        className="hover:border-primary block w-full overflow-hidden rounded-lg border transition-colors"
                         aria-label="Click to expand diagram"
                       >
                         <img
                           src={imageUrl}
                           alt="Reference diagram"
-                          className={`object-contain transition-all w-full ${
+                          className={`w-full object-contain transition-all ${
                             isExpanded ? 'max-h-96' : 'max-h-48'
                           }`}
                         />
@@ -148,22 +150,22 @@ export function AgentChatTranscript({
 
       {/* NEW: Popup Image Modal */}
       {popupImage && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
           onClick={() => setPopupImage(null)}
         >
-          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center">
-            <button 
+          <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col items-center">
+            <button
               onClick={() => setPopupImage(null)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+              className="absolute -top-10 right-0 text-white transition-colors hover:text-gray-300"
               aria-label="Close popup"
             >
               <X size={32} />
             </button>
-            <img 
-              src={popupImage} 
-              alt="Full size reference diagram" 
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            <img
+              src={popupImage}
+              alt="Full size reference diagram"
+              className="max-h-[85vh] max-w-full rounded-lg object-contain shadow-2xl"
               onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
             />
           </div>

@@ -119,7 +119,7 @@ function AgentChatInput({ chatOpen, onSend = async () => {}, className }: AgentC
         placeholder="Type something..."
         onKeyDown={handleKeyDown}
         onChange={(e) => setMessage(e.target.value)}
-        className="field-sizing-content max-h-16 min-h-8 flex-1 resize-none [scrollbar-width:thin] py-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        className="field-sizing-content max-h-16 min-h-8 flex-1 resize-none py-2 [scrollbar-width:thin] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       />
       <Button
         size="icon"
@@ -185,7 +185,7 @@ export interface AgentControlBarProps extends UseInputControlsProps {
   variant?: 'default' | 'outline' | 'livekit';
   /**
    * This takes an object with the following keys: `leave`, `microphone`, `screenShare`, `camera`,
-   * `chat`, `noiseCancellation`. Each key maps to a boolean value that determines whether the 
+   * `chat`, `noiseCancellation`. Each key maps to a boolean value that determines whether the
    * control is displayed.
    *
    * @default
@@ -227,7 +227,7 @@ export interface AgentControlBarProps extends UseInputControlsProps {
 
 /**
  * A control bar specifically designed for voice assistant interfaces. Provides controls for
- * microphone, camera, screen share, chat, noise cancellation, and disconnect. Includes an 
+ * microphone, camera, screen share, chat, noise cancellation, and disconnect. Includes an
  * expandable chat input for text-based interaction with the agent.
  *
  * @example
@@ -277,11 +277,8 @@ export function AgentControlBar({
   } = useInputControls({ onDeviceError, saveUserChoices });
 
   // NEW: Krisp Noise Cancellation Hook
-  const { 
-    isNoiseFilterEnabled, 
-    setNoiseFilterEnabled, 
-    isNoiseFilterPending 
-  } = useKrispNoiseFilter();
+  const { isNoiseFilterEnabled, setNoiseFilterEnabled, isNoiseFilterPending } =
+    useKrispNoiseFilter();
 
   const handleSendMessage = async (message: string) => {
     await send(message);

@@ -16,7 +16,7 @@ export async function GET() {
     .maybeSingle();
 
   if (!profile?.class) {
-    return NextResponse.json([]);  // no class → no subjects yet
+    return NextResponse.json([]); // no class → no subjects yet
   }
 
   // Get class id

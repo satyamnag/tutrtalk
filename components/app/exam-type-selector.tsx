@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/shadcn/utils';
 import {
   Select,
   SelectContent,
@@ -8,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/shadcn/utils';
 
 interface ExamTypeSelectorProps {
   className?: string;
@@ -20,7 +20,7 @@ export function ExamTypeSelector({ className, value, onValueChange }: ExamTypeSe
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger
         className={cn(
-          'w-[180px] rounded-full bg-background/90 backdrop-blur-sm shadow-lg border text-sm font-medium',
+          'bg-background/90 w-[180px] rounded-full border text-sm font-medium shadow-lg backdrop-blur-sm',
           className
         )}
       >

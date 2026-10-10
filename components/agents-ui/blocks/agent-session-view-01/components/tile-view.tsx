@@ -4,10 +4,10 @@ import { AnimatePresence, type MotionProps, motion } from 'motion/react';
 import {
   type TrackReference,
   VideoTrack,
+  useIsSpeaking,
   useLocalParticipant,
   useTracks,
   useVoiceAssistant,
-  useIsSpeaking,
 } from '@livekit/components-react';
 import { cn } from '@/lib/shadcn/utils';
 import { AudioVisualizer } from './audio-visualizer';
@@ -231,7 +231,7 @@ export function TileLayout({
                     opacity: 1,
                     scale: 1,
                     // NEW: Add a glowing ring when the student is speaking
-                    boxShadow: isUserSpeaking 
+                    boxShadow: isUserSpeaking
                       ? '0 0 0 4px rgba(34, 197, 94, 0.5)' // Green glow
                       : '0 0 0 0px rgba(34, 197, 94, 0)',
                   }}
@@ -244,7 +244,7 @@ export function TileLayout({
                     delay: animationDelay,
                     boxShadow: { duration: 0.2 }, // Fast transition for speaking feedback
                   }}
-                  className="aspect-square size-[90px] drop-shadow-lg/20 rounded-md overflow-hidden bg-muted"
+                  className="bg-muted aspect-square size-[90px] overflow-hidden rounded-md drop-shadow-lg/20"
                 >
                   <VideoTrack
                     trackRef={cameraTrack || screenShareTrack}

@@ -13,11 +13,11 @@ export async function GET(request: Request) {
   const chapterId = searchParams.get('chapter_id');
   const search = searchParams.get('search');
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-  
+
   // NEW: limit parameter, default 10, max 1000 for safety
   let limit = parseInt(searchParams.get('limit') || '10', 10);
   if (isNaN(limit)) limit = 10;
-  limit = Math.min(1000, Math.max(1, limit));  // between 1 and 1000
+  limit = Math.min(1000, Math.max(1, limit)); // between 1 and 1000
 
   const sort = searchParams.get('sort') || 'asc';
 
@@ -43,7 +43,9 @@ export async function GET(request: Request) {
 
   let baseQuery = supabase
     .from('questions')
-    .select('id, question_text, answer_text, chapter_id, image_url, chapters(name)', { count: 'exact' })
+    .select('id, question_text, answer_text, chapter_id, image_url, chapters(name)', {
+      count: 'exact',
+    })
     .order(orderColumn, { ascending });
 
   if (chapterId) {
@@ -72,14 +74,15 @@ export async function GET(request: Request) {
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 
-  const items = data?.map((q: any) => ({
-    id: q.id,
-    question_text: q.question_text,
-    answer_text: q.answer_text,
-    chapter_id: q.chapter_id,
-    chapter_name: q.chapters?.name ?? 'Unknown',
-    image_url: q.image_url || null,
-  })) ?? [];
+  const items =
+    data?.map((q: any) => ({
+      id: q.id,
+      question_text: q.question_text,
+      answer_text: q.answer_text,
+      chapter_id: q.chapter_id,
+      chapter_name: q.chapters?.name ?? 'Unknown',
+      image_url: q.image_url || null,
+    })) ?? [];
 
   return NextResponse.json({
     items,
@@ -108,14 +111,12 @@ export async function POST(request: Request) {
     return new NextResponse('Invalid chapter_id', { status: 400 });
   }
 
-  const { error } = await supabase
-    .from('questions')
-    .insert({
-      question_text,
-      answer_text,
-      chapter_id: numericChapterId,
-      image_url: image_url || null,
-    });
+  const { error } = await supabase.from('questions').insert({
+    question_text,
+    answer_text,
+    chapter_id: numericChapterId,
+    image_url: image_url || null,
+  });
 
   if (error) {
     console.error('Error creating question:', error);

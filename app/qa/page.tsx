@@ -1,8 +1,10 @@
 // FILE: app/qa/page.tsx
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+
+// FILE: app/qa/page.tsx
 
 interface QAItem {
   id: number;
@@ -66,7 +68,9 @@ export default function QAPage() {
     if (!isSignedIn) return;
     fetch('/api/filters')
       .then((res) => res.json())
-      .then((data: FilterOptions) => setFilterOptions((prev) => ({ ...prev, classes: data.classes })))
+      .then((data: FilterOptions) =>
+        setFilterOptions((prev) => ({ ...prev, classes: data.classes }))
+      )
       .catch(console.error);
   }, [isSignedIn]);
 
@@ -329,7 +333,7 @@ export default function QAPage() {
 
   return (
     <main className="container mx-auto max-w-6xl px-4 py-16">
-      <h1 className="mb-8 text-3xl font-bold text-center">Questions &amp; Answers</h1>
+      <h1 className="mb-8 text-center text-3xl font-bold">Questions &amp; Answers</h1>
 
       {/* Search bar + sort + limit + Add button */}
       <div className="mb-8 lg:flex lg:gap-8">
@@ -337,7 +341,7 @@ export default function QAPage() {
         <div className="flex-1">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">
                 Search question
               </label>
               <input
@@ -345,13 +349,11 @@ export default function QAPage() {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Type to search..."
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
-                Sort
-              </label>
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">Sort</label>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
@@ -365,7 +367,7 @@ export default function QAPage() {
             </div>
             {/* NEW: Limit dropdown */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">
                 Per page
               </label>
               <select
@@ -380,14 +382,16 @@ export default function QAPage() {
             </div>
             {/* Add New Question button */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground invisible">
+              <label className="text-muted-foreground invisible mb-1 block text-sm font-medium">
                 Action
               </label>
               <button
                 onClick={handleAdd}
                 disabled={!selectedChapter}
-                title={!selectedChapter ? 'Select a chapter to add questions' : 'Add a new question'}
-                className="rounded-md border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={
+                  !selectedChapter ? 'Select a chapter to add questions' : 'Add a new question'
+                }
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md border px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Add New Question
               </button>
@@ -401,7 +405,7 @@ export default function QAPage() {
         <aside className="w-full shrink-0 lg:w-56">
           <div className="space-y-4 rounded-xl border p-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">Class</label>
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">Class</label>
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
@@ -410,12 +414,16 @@ export default function QAPage() {
               >
                 <option value="">All Classes</option>
                 {filterOptions.classes.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">Subject</label>
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">
+                Subject
+              </label>
               <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
@@ -424,12 +432,14 @@ export default function QAPage() {
               >
                 <option value="">All Subjects</option>
                 {filterOptions.subjects.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">Book</label>
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">Book</label>
               <select
                 value={selectedBook}
                 onChange={(e) => setSelectedBook(e.target.value)}
@@ -438,12 +448,16 @@ export default function QAPage() {
               >
                 <option value="">All Books</option>
                 {filterOptions.books.map((b) => (
-                  <option key={b} value={b}>{b}</option>
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">Chapter</label>
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">
+                Chapter
+              </label>
               <select
                 value={selectedChapter}
                 onChange={(e) => setSelectedChapter(e.target.value)}
@@ -452,7 +466,9 @@ export default function QAPage() {
               >
                 <option value="">All Chapters</option>
                 {filterOptions.chapters.map((ch) => (
-                  <option key={ch.id} value={ch.id}>{ch.name}</option>
+                  <option key={ch.id} value={ch.id}>
+                    {ch.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -463,7 +479,7 @@ export default function QAPage() {
         <div className="flex-1">
           {loading && (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+              <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
             </div>
           )}
           {!loading && data.items.length === 0 && (
@@ -474,26 +490,30 @@ export default function QAPage() {
               <div className="space-y-6">
                 {data.items.map((item) => (
                   <div key={item.id} className="rounded-xl border p-4">
-                    <p className="text-sm text-muted-foreground">Chapter: {item.chapter_name}</p>
-                    <p className="text-xs text-muted-foreground/70 mt-0.5">Question #{item.id}</p>
+                    <p className="text-muted-foreground text-sm">Chapter: {item.chapter_name}</p>
+                    <p className="text-muted-foreground/70 mt-0.5 text-xs">Question #{item.id}</p>
                     <p className="mt-2 font-semibold">Q: {item.question_text}</p>
                     <p className="mt-1 text-green-700 dark:text-green-400">A: {item.answer_text}</p>
                     {item.image_url && (
                       <div className="mt-2">
-                        <img src={item.image_url} alt="Diagram" className="max-h-32 rounded-lg border" />
+                        <img
+                          src={item.image_url}
+                          alt="Diagram"
+                          className="max-h-32 rounded-lg border"
+                        />
                       </div>
                     )}
                     <div className="mt-3 flex gap-2">
                       <button
                         onClick={() => handleEdit(item)}
-                        className="text-xs px-2 py-1 rounded border hover:bg-accent transition"
+                        className="hover:bg-accent rounded border px-2 py-1 text-xs transition"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
                         disabled={deletingId === item.id}
-                        className="text-xs px-2 py-1 rounded border border-destructive/30 text-destructive hover:bg-destructive/10 transition disabled:opacity-50"
+                        className="border-destructive/30 text-destructive hover:bg-destructive/10 rounded border px-2 py-1 text-xs transition disabled:opacity-50"
                       >
                         {deletingId === item.id ? 'Deleting...' : 'Delete'}
                       </button>
@@ -507,7 +527,7 @@ export default function QAPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-3 py-1.5 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-md border px-3 py-1.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Previous
                 </button>
@@ -526,7 +546,7 @@ export default function QAPage() {
                     <button
                       key={p}
                       onClick={() => setPage(p)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-md border ${
+                      className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
                         p === current ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                       }`}
                     >
@@ -537,7 +557,7 @@ export default function QAPage() {
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={page === data.totalPages}
-                  className="px-3 py-1.5 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-md border px-3 py-1.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -550,15 +570,15 @@ export default function QAPage() {
       {/* Dialog for Add/Edit – centred, polished UI */}
       <dialog
         ref={dialogRef}
-        className="fixed inset-0 m-auto max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border-0 bg-background p-6 shadow-2xl backdrop:bg-black/50 backdrop:opacity-100 transition-all"
+        className="bg-background fixed inset-0 m-auto max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border-0 p-6 shadow-2xl transition-all backdrop:bg-black/50 backdrop:opacity-100"
       >
-        <div className="flex items-start justify-between mb-4">
+        <div className="mb-4 flex items-start justify-between">
           <h2 className="text-lg font-semibold">
             {isAddMode ? 'Add New Question' : 'Edit Question'}
           </h2>
           <button
             onClick={() => dialogRef.current?.close()}
-            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
             aria-label="Close"
           >
             ✕
@@ -568,36 +588,41 @@ export default function QAPage() {
         <div className="space-y-4">
           {isAddMode && selectedChapter && (
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Chapter</label>
+              <label className="text-muted-foreground mb-1 block text-sm font-medium">
+                Chapter
+              </label>
               <input
                 type="text"
                 readOnly
-                value={filterOptions.chapters.find(ch => ch.id === parseInt(selectedChapter))?.name ?? selectedChapter}
-                className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
+                value={
+                  filterOptions.chapters.find((ch) => ch.id === parseInt(selectedChapter))?.name ??
+                  selectedChapter
+                }
+                className="border-input bg-muted text-muted-foreground w-full rounded-md border px-3 py-2 text-sm"
               />
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Question</label>
+            <label className="text-muted-foreground mb-1 block text-sm font-medium">Question</label>
             <textarea
               value={editQuestion}
               onChange={(e) => setEditQuestion(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="border-input bg-background focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
               rows={3}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Answer</label>
+            <label className="text-muted-foreground mb-1 block text-sm font-medium">Answer</label>
             <textarea
               value={editAnswer}
               onChange={(e) => setEditAnswer(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="border-input bg-background focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
               rows={3}
             />
           </div>
           {/* Diagram upload */}
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
+            <label className="text-muted-foreground mb-1 block text-sm font-medium">
               Supporting Diagram (optional)
             </label>
             {diagramPreview && (
@@ -605,9 +630,9 @@ export default function QAPage() {
                 <img
                   src={diagramPreview}
                   alt="Diagram preview"
-                  className="h-20 w-20 rounded-lg object-cover border"
+                  className="h-20 w-20 rounded-lg border object-cover"
                 />
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {diagramFile ? 'New diagram selected' : 'Current diagram'}
                 </span>
                 <button
@@ -616,7 +641,7 @@ export default function QAPage() {
                     setDiagramFile(null);
                     setDiagramPreview(null);
                   }}
-                  className="text-xs text-destructive hover:underline"
+                  className="text-destructive text-xs hover:underline"
                 >
                   Remove
                 </button>
@@ -635,15 +660,9 @@ export default function QAPage() {
                   setDiagramPreview(editingItem?.image_url || null);
                 }
               }}
-              className="w-full text-sm text-muted-foreground
-                         file:mr-4 file:py-2 file:px-4
-                         file:rounded-md file:border-0
-                         file:text-sm file:font-medium
-                         file:bg-primary file:text-primary-foreground
-                         hover:file:bg-primary/90
-                         cursor-pointer"
+              className="text-muted-foreground file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 w-full cursor-pointer text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-medium"
             />
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Max 5 MB. Supported: JPG, PNG, WebP, GIF
             </p>
           </div>
@@ -651,14 +670,14 @@ export default function QAPage() {
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={() => dialogRef.current?.close()}
-            className="px-4 py-2 text-sm rounded-md border hover:bg-accent transition"
+            className="hover:bg-accent rounded-md border px-4 py-2 text-sm transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving || !editQuestion.trim() || !editAnswer.trim()}
-            className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm transition disabled:opacity-50"
           >
             {isSaving ? 'Saving...' : isAddMode ? 'Create' : 'Save'}
           </button>

@@ -75,12 +75,13 @@ export async function GET() {
       }
 
       const totalAnswers = answers?.length || 0;
-      const chapters = [...new Set(answers?.map(a => a.chapter) || [])];
+      const chapters = [...new Set(answers?.map((a) => a.chapter) || [])];
       const lastActive = answers?.length ? answers[0].created_at : null;
       // Compute average attempts per question
-      const avgAttempts = totalAnswers > 0
-        ? (answers || []).reduce((sum, a) => sum + a.attempt_number, 0) / totalAnswers
-        : 0;
+      const avgAttempts =
+        totalAnswers > 0
+          ? (answers || []).reduce((sum, a) => sum + a.attempt_number, 0) / totalAnswers
+          : 0;
 
       return {
         id: link.id,
@@ -134,13 +135,11 @@ export async function POST(request: Request) {
     }
     const studentId = users.data[0].id;
 
-    const { error } = await supabase
-      .from('guardian_students')
-      .insert({
-        guardian_id: userId,
-        student_email: email,
-        student_id: studentId,
-      });
+    const { error } = await supabase.from('guardian_students').insert({
+      guardian_id: userId,
+      student_email: email,
+      student_id: studentId,
+    });
 
     if (error) {
       console.error(error);

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/shadcn/utils';
 import {
   Select,
   SelectContent,
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/shadcn/utils';
 
 interface SubjectSelectorProps {
   className?: string;
@@ -23,7 +23,7 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
   // Fetch available subjects for this student
   useEffect(() => {
     fetch('/api/subjects')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then((data: string[]) => {
         setSubjects(data);
         setLoading(false);
@@ -36,8 +36,8 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
     if (subjects.length === 0) return;
 
     fetch('/api/profile')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         // Check if the profile has been created (name, class, board exist)
         const hasProfile = !!(data?.name && data?.class && data?.board);
 
@@ -56,7 +56,7 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ preferred_subject: defaultSubject }),
           })
-            .then(res => {
+            .then((res) => {
               if (res.ok) {
                 setSelected(defaultSubject);
                 setProfileMissing(false);
@@ -65,7 +65,7 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
                 setSelected(defaultSubject);
               }
             })
-            .catch(err => {
+            .catch((err) => {
               console.error('Network error', err);
               setSelected(defaultSubject);
             });
@@ -109,12 +109,12 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
         <SelectTrigger
           aria-label="Select subject"
           className={cn(
-            'w-auto rounded-full pl-4 pr-3 py-2',
+            'w-auto rounded-full py-2 pr-3 pl-4',
             'bg-background/70 backdrop-blur-xl',
-            'border border-border/50 hover:border-border/80',
-            'text-sm font-medium text-foreground',
+            'border-border/50 hover:border-border/80 border',
+            'text-foreground text-sm font-medium',
             'shadow-sm hover:shadow-md',
-            'focus:ring-2 focus:ring-primary/40 focus:border-primary/60',
+            'focus:ring-primary/40 focus:border-primary/60 focus:ring-2',
             'transition-all duration-200 ease-in-out',
             'data-[placeholder]:text-muted-foreground'
           )}
@@ -122,10 +122,10 @@ export function SubjectSelector({ className }: SubjectSelectorProps) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent
-          className="rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-lg min-w-[160px]"
+          className="border-border/50 bg-background/80 min-w-[160px] rounded-xl border shadow-lg backdrop-blur-xl"
           align="end"
         >
-          {subjects.map(sub => (
+          {subjects.map((sub) => (
             <SelectItem key={sub} value={sub} className="text-sm font-medium">
               {sub}
             </SelectItem>

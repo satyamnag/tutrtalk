@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase/server';
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { userId } = await auth();
   if (!userId) {
     return new NextResponse('Unauthorized', { status: 401 });
@@ -42,10 +39,7 @@ export async function PUT(
   return new NextResponse(null, { status: 200 });
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { userId } = await auth();
   if (!userId) {
     return new NextResponse('Unauthorized', { status: 401 });
@@ -57,10 +51,7 @@ export async function DELETE(
     return new NextResponse('Invalid ID', { status: 400 });
   }
 
-  const { error } = await supabase
-    .from('questions')
-    .delete()
-    .eq('id', numericId);
+  const { error } = await supabase.from('questions').delete().eq('id', numericId);
 
   if (error) {
     console.error('Error deleting question:', error);

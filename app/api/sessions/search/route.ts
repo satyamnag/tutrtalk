@@ -36,7 +36,9 @@ export async function GET(request: Request) {
   });
 
   const results = Array.from(sessionMap.entries()).map(([sessionId, msgs]) => {
-    const sorted = msgs.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    const sorted = msgs.sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
     return {
       sessionId,
       messages: sorted,

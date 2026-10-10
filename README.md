@@ -192,5 +192,4 @@ These are required for the voice agent functionality to work with your LiveKit p
 
 This template is open source and we welcome contributions! Please open a PR or issue through GitHub, and don't forget to join us in the [LiveKit Community Slack](https://livekit.io/join-slack)!
 
-
 website link: https://tutrtalk.vercel.app/

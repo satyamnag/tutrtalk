@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 
 // app/progress/page.tsx
 
+// app/progress/page.tsx
+
 interface TranscriptTurn {
   role: 'agent' | 'user' | 'assistant';
   content: string;

@@ -21,6 +21,8 @@ import { getSandboxTokenSource } from '@/lib/utils';
 
 // components/app/app.tsx
 
+// components/app/app.tsx
+
 const IN_DEVELOPMENT = process.env.NODE_ENV !== 'production';
 
 function AppSetup() {

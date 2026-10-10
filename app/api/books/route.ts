@@ -53,8 +53,7 @@ export async function GET() {
       const bookNames = (books ?? []).map((b: any) => b.name);
 
       // Determine if this subject has a single book with the same name
-      const singleBookSameName =
-        bookNames.length === 1 && bookNames[0] === subject.name;
+      const singleBookSameName = bookNames.length === 1 && bookNames[0] === subject.name;
 
       return {
         subject: subject.name,

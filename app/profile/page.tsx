@@ -7,6 +7,8 @@ import { useUser } from '@clerk/nextjs';
 
 // app/profile/page.tsx
 
+// app/profile/page.tsx
+
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [name, setName] = useState('');

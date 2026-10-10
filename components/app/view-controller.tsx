@@ -5,8 +5,10 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useSessionContext } from '@livekit/components-react';
 import type { AppConfig } from '@/app-config';
 import { AgentSessionView_01 } from '@/components/agents-ui/blocks/agent-session-view-01';
+import { BookSelector } from '@/components/app/book-selector';
 import { WelcomeView } from '@/components/app/welcome-view';
-import { BookSelector } from '@/components/app/book-selector';   // changed import
+
+// changed import
 
 const MotionWelcomeView = motion.create(WelcomeView);
 const MotionSessionView = motion.create(AgentSessionView_01);
@@ -41,7 +43,7 @@ export function ViewController({ appConfig, canStart = true }: ViewControllerPro
     <>
       {/* Book selector – only when NOT in a session */}
       {!isConnected && (
-        <div className="fixed z-50 right-4 top-16 sm:top-4">
+        <div className="fixed top-16 right-4 z-50 sm:top-4">
           <BookSelector className="bg-background/80 backdrop-blur-md" />
         </div>
       )}

@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   }
 
   // Validate file type
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',];
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
   if (!allowedTypes.includes(file.type)) {
     return new NextResponse('Only JPG, PNG, WebP, and GIF images are allowed', { status: 400 });
   }
@@ -35,21 +35,17 @@ export async function POST(request: Request) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const { error } = await supabase.storage
-    .from('question-diagrams')
-    .upload(filePath, buffer, {
-      contentType: file.type,
-      upsert: false,
-    });
+  const { error } = await supabase.storage.from('question-diagrams').upload(filePath, buffer, {
+    contentType: file.type,
+    upsert: false,
+  });
 
   if (error) {
     console.error('Upload error:', error);
     return new NextResponse('Upload failed', { status: 500 });
   }
 
-  const { data: publicUrlData } = supabase.storage
-    .from('question-diagrams')
-    .getPublicUrl(filePath);
+  const { data: publicUrlData } = supabase.storage.from('question-diagrams').getPublicUrl(filePath);
 
   return NextResponse.json({ url: publicUrlData.publicUrl });
 }

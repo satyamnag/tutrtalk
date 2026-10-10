@@ -1,8 +1,8 @@
 // app/api/sessions/route.ts
 import { NextResponse } from 'next/server';
+import Sentiment from 'sentiment';
 import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase/server';
-import Sentiment from 'sentiment';
 
 const sentimentAnalyzer = new Sentiment();
 
@@ -28,9 +28,13 @@ export async function GET() {
   const pointsLookup = new Map<string, { points: number; correctness: string }>();
   for (const a of answers || []) {
     const pts =
-      a.correctness === 'correct' ? 3 :
-      a.correctness === 'partial' ? 2 :
-      a.correctness === 'wrong' ? 1 : 0;
+      a.correctness === 'correct'
+        ? 3
+        : a.correctness === 'partial'
+          ? 2
+          : a.correctness === 'wrong'
+            ? 1
+            : 0;
     const correctness =
       a.correctness && ['correct', 'partial', 'wrong'].includes(a.correctness)
         ? a.correctness
@@ -50,7 +54,7 @@ export async function GET() {
 
   const sessionList = await Promise.all(
     Array.from(sessionsMap.entries()).map(async ([sessionId, items]) => {
-      const timestamps = items.map(i => new Date(i.created_at).getTime());
+      const timestamps = items.map((i) => new Date(i.created_at).getTime());
       const startedAt = new Date(Math.min(...timestamps)).toISOString();
       const endedAt = new Date(Math.max(...timestamps)).toISOString();
       const durationMs = Math.max(...timestamps) - Math.min(...timestamps);
@@ -66,14 +70,14 @@ export async function GET() {
 
       // Correctness breakdown
       const correctness = {
-        correct: items.filter(i => i.correctness === 'correct').length,
-        partial: items.filter(i => i.correctness === 'partial').length,
-        wrong: items.filter(i => i.correctness === 'wrong').length,
-        skip: items.filter(i => i.correctness === 'skip' || !i.correctness).length,
+        correct: items.filter((i) => i.correctness === 'correct').length,
+        partial: items.filter((i) => i.correctness === 'partial').length,
+        wrong: items.filter((i) => i.correctness === 'wrong').length,
+        skip: items.filter((i) => i.correctness === 'skip' || !i.correctness).length,
       };
 
       // Unique chapter names
-      const chapterNames = [...new Set(items.map(i => i.chapter))];
+      const chapterNames = [...new Set(items.map((i) => i.chapter))];
 
       // Get book names for these chapters (via chapters.book_id -> books.name)
       let books: string[] = [];
@@ -83,9 +87,9 @@ export async function GET() {
           .select('name, books(name)')
           .in('name', chapterNames);
         if (chapterRows) {
-          books = [...new Set(chapterRows
-            .map((c: any) => c.books?.name)
-            .filter(Boolean) as string[])];
+          books = [
+            ...new Set(chapterRows.map((c: any) => c.books?.name).filter(Boolean) as string[]),
+          ];
         }
       }
 
@@ -127,12 +131,13 @@ export async function GET() {
 
       // --- SENTIMENT ANALYSIS (NEW) ---
       const userMessages = transcript
-        .filter(msg => msg.role === 'user')
-        .map(msg => msg.content)
+        .filter((msg) => msg.role === 'user')
+        .map((msg) => msg.content)
         .join(' ');
       const sentimentResult = sentimentAnalyzer.analyze(userMessages);
       const sentimentScore = sentimentResult.score;
-      const sentimentLabel = sentimentScore > 0 ? 'positive' : sentimentScore < 0 ? 'negative' : 'neutral';
+      const sentimentLabel =
+        sentimentScore > 0 ? 'positive' : sentimentScore < 0 ? 'negative' : 'neutral';
 
       // --- END SENTIMENT ---
 

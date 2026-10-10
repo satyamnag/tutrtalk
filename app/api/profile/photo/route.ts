@@ -31,21 +31,17 @@ export async function POST(request: Request) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const { error } = await supabase.storage
-    .from('profile-photos')
-    .upload(filePath, buffer, {
-      contentType: file.type,
-      upsert: true,
-    });
+  const { error } = await supabase.storage.from('profile-photos').upload(filePath, buffer, {
+    contentType: file.type,
+    upsert: true,
+  });
 
   if (error) {
     console.error('Upload error:', error);
     return new NextResponse('Upload failed', { status: 500 });
   }
 
-  const { data: publicUrlData } = supabase.storage
-    .from('profile-photos')
-    .getPublicUrl(filePath);
+  const { data: publicUrlData } = supabase.storage.from('profile-photos').getPublicUrl(filePath);
 
   return NextResponse.json({ url: publicUrlData.publicUrl });
 }

@@ -9,10 +9,20 @@ export function FloatingSidebarToggle() {
   return (
     <button
       onClick={handleClick}
-      className="rounded-full bg-primary p-3 text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+      className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full p-3 shadow-lg transition-colors"
       aria-label="Open sidebar"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <line x1="3" y1="12" x2="21" y2="12" />
         <line x1="3" y1="6" x2="21" y2="6" />
         <line x1="3" y1="18" x2="21" y2="18" />

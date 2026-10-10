@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, type MotionProps, motion } from 'motion/react';
-import { 
-  useAgent, 
-  useSessionContext, 
-  useSessionMessages, 
-  useTranscriptions,
-  useConnectionQualityIndicator,
-  useLocalParticipant,
-  ConnectionStateToast 
-} from '@livekit/components-react';
 import { ConnectionQuality } from 'livekit-client';
 import { Wifi, WifiOff } from 'lucide-react';
+import { AnimatePresence, type MotionProps, motion } from 'motion/react';
+import {
+  ConnectionStateToast,
+  useAgent,
+  useConnectionQualityIndicator,
+  useLocalParticipant,
+  useSessionContext,
+  useSessionMessages,
+  useTranscriptions,
+} from '@livekit/components-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
 import {
   AgentControlBar,
@@ -117,10 +117,10 @@ function LiveCaptions({ chatOpen }: { chatOpen: boolean }) {
   if (chatOpen) return null;
 
   const transcriptions = useTranscriptions();
-  
+
   // Safely get the latest non-empty transcription text
-  const latest = Array.isArray(transcriptions) 
-    ? transcriptions.filter((t: any) => t.text && t.text.trim().length > 0).pop() 
+  const latest = Array.isArray(transcriptions)
+    ? transcriptions.filter((t: any) => t.text && t.text.trim().length > 0).pop()
     : null;
 
   const text = latest ? latest.text : '';
@@ -128,15 +128,15 @@ function LiveCaptions({ chatOpen }: { chatOpen: boolean }) {
   if (!text) return null;
 
   return (
-    <div className="absolute bottom-36 md:bottom-44 left-1/2 -translate-x-1/2 z-[55] max-w-xl w-full px-4 pointer-events-none">
+    <div className="pointer-events-none absolute bottom-36 left-1/2 z-[55] w-full max-w-xl -translate-x-1/2 px-4 md:bottom-44">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-card/90 backdrop-blur-xl border border-border/50 shadow-lg rounded-2xl px-6 py-3 text-center"
+        className="bg-card/90 border-border/50 rounded-2xl border px-6 py-3 text-center shadow-lg backdrop-blur-xl"
       >
-        <p className="text-foreground font-medium text-base md:text-lg leading-relaxed tracking-wide">
+        <p className="text-foreground text-base leading-relaxed font-medium tracking-wide md:text-lg">
           {text}
         </p>
       </motion.div>
@@ -150,7 +150,7 @@ function ConnectionQualityBadge() {
   // FIX: Explicitly fetch the local participant to satisfy the hook's requirement
   const { localParticipant } = useLocalParticipant();
   const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
-  
+
   let icon = <Wifi className="size-4 text-green-500" />;
   let label = 'Excellent';
   let textColor = 'text-green-600 dark:text-green-400';
@@ -164,20 +164,18 @@ function ConnectionQualityBadge() {
     label = 'Good';
     textColor = 'text-yellow-600 dark:text-yellow-400';
   } else if (quality === ConnectionQuality.Unknown) {
-    icon = <WifiOff className="size-4 text-muted-foreground" />;
+    icon = <WifiOff className="text-muted-foreground size-4" />;
     label = 'Unknown';
     textColor = 'text-muted-foreground';
   }
 
   return (
-    <div 
-      className="absolute top-4 right-4 z-[60] flex items-center gap-2 rounded-full bg-background/80 backdrop-blur-md border px-3 py-1.5 shadow-sm transition-all"
+    <div
+      className="bg-background/80 absolute top-4 right-4 z-[60] flex items-center gap-2 rounded-full border px-3 py-1.5 shadow-sm backdrop-blur-md transition-all"
       title={`Network connection: ${label}`}
     >
       {icon}
-      <span className={`text-xs font-semibold ${textColor}`}>
-        {label}
-      </span>
+      <span className={`text-xs font-semibold ${textColor}`}>{label}</span>
     </div>
   );
 }
@@ -311,7 +309,7 @@ export function AgentSessionView_01({
           )}
         </AnimatePresence>
       </div>
-      
+
       {/* Tile layout */}
       <TileLayout
         chatOpen={chatOpen}

@@ -2,9 +2,9 @@ import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 import { ClerkProvider } from '@clerk/nextjs';
+import { HeaderLogo, Sidebar, SidebarProvider, SidebarToggle } from '@/components/app/sidebar';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
-import { SidebarProvider, Sidebar, SidebarToggle, HeaderLogo } from '@/components/app/sidebar';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -63,11 +63,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       <html
         lang="en"
         suppressHydrationWarning
-        className={cn(
-          inter.variable,
-          commitMono.variable,
-          'scroll-smooth font-sans antialiased'
-        )}
+        className={cn(inter.variable, commitMono.variable, 'scroll-smooth font-sans antialiased')}
       >
         <head>
           {styles && <style>{styles}</style>}

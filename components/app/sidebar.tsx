@@ -1,21 +1,23 @@
 // components/app/sidebar.tsx
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useUser, UserButton } from '@clerk/nextjs';
 import {
-  HomeIcon,
   ActivityIcon,
   BarChart3Icon,
-  UserCircleIcon,
-  ShieldCheckIcon,
-  SettingsIcon,
+  HomeIcon,
   MenuIcon,
+  SettingsIcon,
+  ShieldCheckIcon,
+  UserCircleIcon,
   XIcon,
 } from 'lucide-react';
+import { UserButton, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/shadcn/utils';
+
+// components/app/sidebar.tsx
 
 // ---- Context ----
 interface SidebarContextValue {
@@ -37,11 +39,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('sidebar-toggle', handleToggle);
   }, []);
 
-  return (
-    <SidebarContext.Provider value={{ open, setOpen }}>
-      {children}
-    </SidebarContext.Provider>
-  );
+  return <SidebarContext.Provider value={{ open, setOpen }}>{children}</SidebarContext.Provider>;
 }
 
 function useSidebar() {
@@ -53,8 +51,8 @@ export function HeaderLogo() {
   const { open } = useSidebar();
   if (open) return null;
   return (
-    <div className="bg-background/80 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-sm border border-border/50">
-      <span className="text-primary font-bold text-lg tracking-tight">TutrTalk</span>
+    <div className="bg-background/80 border-border/50 rounded-full border px-4 py-1.5 shadow-sm backdrop-blur-sm">
+      <span className="text-primary text-lg font-bold tracking-tight">TutrTalk</span>
     </div>
   );
 }
@@ -68,11 +66,11 @@ export function SidebarToggle() {
   if (open) return null;
 
   return (
-    <div className="h-10 w-10 flex items-center justify-center">
+    <div className="flex h-10 w-10 items-center justify-center">
       {isLoaded && isSignedIn && (
         <button
           onClick={() => setOpen(true)}
-          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg p-1.5 transition-colors"
           title="Open sidebar"
           aria-label="Open sidebar"
         >
@@ -116,16 +114,11 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
   return (
     <>
       {/* Invisible overlay – closes sidebar when clicking outside, no blur */}
-      {open && (
-        <div
-          className="fixed inset-0 z-30 bg-transparent"
-          onClick={() => setOpen(false)}
-        />
-      )}
+      {open && <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setOpen(false)} />}
 
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 flex h-svh w-64 flex-col border-r bg-background/95 backdrop-blur-md shadow-lg',
+          'bg-background/95 fixed top-0 left-0 z-40 flex h-svh w-64 flex-col border-r shadow-lg backdrop-blur-md',
           'transition-transform duration-300 ease-in-out',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -134,18 +127,14 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
         <div className="flex items-center justify-between px-4 py-3 pt-8">
           <div className="flex items-center gap-2">
             <img src={logo} alt="TutrTalk Logo" className="block size-6 dark:hidden" />
-            <img
-              src={logoDark ?? logo}
-              alt="TutrTalk Logo"
-              className="hidden size-6 dark:block"
-            />
+            <img src={logoDark ?? logo} alt="TutrTalk Logo" className="hidden size-6 dark:block" />
           </div>
           <button
             onClick={(e) => {
               e.stopPropagation();
               setOpen(false);
             }}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
             aria-label="Close sidebar"
           >
             <XIcon size={20} />
@@ -154,7 +143,7 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
 
         {/* Navigation links */}
         {isLoaded && isSignedIn ? (
-          <nav className="flex flex-col gap-1 px-3 mt-2">
+          <nav className="mt-2 flex flex-col gap-1 px-3">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -187,9 +176,9 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
             </Link>
           </nav>
         ) : (
-          <nav className="flex flex-col gap-2 px-3 mt-2 animate-pulse">
+          <nav className="mt-2 flex animate-pulse flex-col gap-2 px-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-8 w-full rounded-lg bg-muted" />
+              <div key={i} className="bg-muted h-8 w-full rounded-lg" />
             ))}
           </nav>
         )}
@@ -222,7 +211,7 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
 
         {/* User section at bottom – Clerk UserButton replaces manual avatar */}
         {isLoaded && isSignedIn && (
-          <div className="mt-auto p-4 border-t">
+          <div className="mt-auto border-t p-4">
             <div className="flex items-center gap-3">
               <UserButton
                 appearance={{
@@ -231,11 +220,11 @@ export function Sidebar({ logo, logoDark }: SidebarProps) {
                   },
                 }}
               />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">
                   {user?.fullName || user?.primaryEmailAddress?.emailAddress}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-muted-foreground truncate text-xs">
                   {user?.primaryEmailAddress?.emailAddress}
                 </p>
               </div>

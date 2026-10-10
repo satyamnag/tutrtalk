@@ -19,10 +19,7 @@ export async function GET() {
 
   // 2. If no preferred book, return all chapters (fallback)
   if (!preferredBook) {
-    const { data, error } = await supabase
-      .from('chapters')
-      .select('name')
-      .order('order_index');
+    const { data, error } = await supabase.from('chapters').select('name').order('order_index');
 
     if (error) {
       console.error(error);
