@@ -19,10 +19,6 @@ import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
 import { getSandboxTokenSource } from '@/lib/utils';
 
-// components/app/app.tsx
-
-// components/app/app.tsx
-
 const IN_DEVELOPMENT = process.env.NODE_ENV !== 'production';
 
 function AppSetup() {

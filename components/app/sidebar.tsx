@@ -17,8 +17,6 @@ import {
 import { UserButton, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/shadcn/utils';
 
-// components/app/sidebar.tsx
-
 // ---- Context ----
 interface SidebarContextValue {
   open: boolean;
