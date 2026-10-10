@@ -113,10 +113,12 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
 
 // --- NEW: Real-Time Live Captions Component (Updated UI/UX) ---
 function LiveCaptions({ chatOpen }: { chatOpen: boolean }) {
-  // NEW: Only show captions when chat is CLOSED to avoid redundancy
-  if (chatOpen) return null;
-
+  // Hook must be called unconditionally (Rules of Hooks): it runs on every
+  // render even when the captions are hidden, so the hook order stays stable.
   const transcriptions = useTranscriptions();
+
+  // Only show captions when chat is CLOSED to avoid redundancy
+  if (chatOpen) return null;
 
   // Safely get the latest non-empty transcription text
   const latest = Array.isArray(transcriptions)
