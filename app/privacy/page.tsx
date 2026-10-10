@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const LAST_UPDATED = '19 September 2026';
+const LAST_UPDATED = '11 October 2026';
 const CONTACT_EMAIL = 'karthik@famerelay.com';
 
 export default function PrivacyPolicyPage() {
@@ -40,11 +40,25 @@ export default function PrivacyPolicyPage() {
 
           <h3 className="mt-5 font-semibold">Voice and audio</h3>
           <p>
-            TutrTalk is a voice tutor. When you start a session, your device&apos;s microphone audio
-            is streamed in real time to LiveKit and to Amazon Web Services, where Amazon Nova 2
-            Sonic processes it to understand your speech and generate the tutor&apos;s spoken
-            replies. The audio is processed to run the conversation. We also store a text transcript
-            of what was said so you can review the session later.
+            TutrTalk is a voice tutor and uses your device&apos;s microphone while you are in a
+            session. There are two ways you can use your voice.
+          </p>
+          <p className="mt-3">
+            <strong>Live tutoring sessions:</strong> your microphone audio is streamed in real time
+            to LiveKit and to Amazon Web Services, where Amazon Nova 2 Sonic processes it to
+            understand your speech and generate the tutor&apos;s spoken replies. The audio is
+            processed to run the conversation and is not kept as a recording.
+          </p>
+          <p className="mt-3">
+            <strong>Voice messages:</strong> if you use voice-message mode, a short recorded message
+            is sent securely to our server so that third-party providers can process it: Deepgram
+            transcribes your speech to text, OpenAI drafts the tutor&apos;s reply, and Amazon Polly
+            speaks the reply back to you. The recording is processed to produce your reply and is
+            not retained as a recording.
+          </p>
+          <p className="mt-3">
+            In both modes we store a text transcript of what was said so you and your guardian can
+            review the session later and so we can grade your answers.
           </p>
           <p className="mt-3">
             Please do not share sensitive personal information (such as health, financial, or
@@ -111,6 +125,17 @@ export default function PrivacyPolicyPage() {
               <strong>Amazon Web Services (Amazon Bedrock, Amazon Nova 2 Sonic)</strong> &mdash;
               speech-to-speech processing that understands your speech and generates the
               tutor&apos;s voice.
+            </li>
+            <li>
+              <strong>Deepgram</strong> &mdash; speech-to-text transcription of voice messages.
+            </li>
+            <li>
+              <strong>OpenAI</strong> &mdash; generates the tutor&apos;s reply text for voice
+              messages.
+            </li>
+            <li>
+              <strong>Amazon Polly</strong> &mdash; converts the tutor&apos;s reply text into
+              speech for voice messages.
             </li>
             <li>
               <strong>PostHog</strong> &mdash; product usage analytics.
@@ -197,6 +222,17 @@ export default function PrivacyPolicyPage() {
           <p className="mt-3">
             To make a request, email {CONTACT_EMAIL}. If you are a minor, a parent or guardian can
             make the request on your behalf.
+          </p>
+          <p className="mt-3">
+            You can also start an account or data deletion request from a web browser at{' '}
+            <Link className="underline" href="/account-deletion">
+              Account deletion
+            </Link>{' '}
+            or{' '}
+            <Link className="underline" href="/data-deletion">
+              Data deletion
+            </Link>
+            .
           </p>
         </section>
 
