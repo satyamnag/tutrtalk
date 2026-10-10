@@ -30,4 +30,14 @@ jobs:
         run: pnpm format:check
 
       - name: Ensure build succeeds
-        run: pnpm build
+        # Route Handlers construct the Supabase client at module load, so `next
+        # build` needs SUPABASE_URL + SERVICE_ROLE_KEY even just to collect page
+        # data. Real values live only in Vercel; CI needs placeholders so the
+        # build can complete. Production keys are never required or stored here.
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          export SUPABASE_URL="${SUPABASE_URL:-https://ci-placeholder.supabase.co}"
+          export SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-ci-placeholder-key}"
+          pnpm build
