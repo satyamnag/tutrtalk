@@ -1,0 +1,52 @@
+# Maintenance workflow: normalize repository formatting with Prettier.
+# Runs only on manual dispatch (workflow_dispatch). Used to fix
+# shadcn-installed components or CRLF files that drift from the repo's
+# Prettier config, so the "Lint and Build" CI stays green.
+# Compute runs here on GitHub Actions — never on a local machine
+# (see COMPUTE-POLICY.md).
+name: Format normalize (prettier)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run prettier (write)
+        run: pnpm format
+
+      - name: Commit normalized formatting
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "tutrtalk-ci"
+            git config user.email "tutrtalk-ci@users.noreply.github.com"
+            git add -A
+            git commit -m "style: normalize formatting with prettier"
+            git push origin main
+            echo "Formatting normalized and pushed."
+          else
+            echo "No formatting changes needed."
+          fi
