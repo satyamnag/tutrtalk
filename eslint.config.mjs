@@ -14,8 +14,12 @@ const eslintConfig = [
     'next/core-web-vitals',
     'next/typescript',
     'plugin:import/recommended',
-    'prettier',
-    'plugin:prettier/recommended'
+    'prettier'
+    // Note: 'plugin:prettier/recommended' is intentionally NOT used. Running
+    // prettier through eslint-plugin-prettier conflicts with the
+    // @trivago/prettier-plugin-sort-imports plugin (duplicates file-header
+    // comments and disagrees with prettier --write output). Formatting is
+    // enforced by the dedicated `pnpm format:check` step in CI instead.
   ),
 ];
 
